@@ -176,7 +176,7 @@
       else pos = chain(0, t);
       return pdbLines(tmpl, pos);
     }
-    const c = centroid(ca0), L = 50;
+    const c = centroid(ca0), L = 64;
     return { L, origin:sub(c, [L / 2, L / 2, L / 2]), frame, _test:{ chain, ca0, n } };
   }
 
