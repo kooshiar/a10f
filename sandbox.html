@@ -120,6 +120,7 @@ function applyState(s){
   if (!$('#engine').options.length){
     Object.entries(s.engines).forEach(([k, l]) => $('#engine').add(new Option(l, k)));
     compEl.value = s.comp.map(([e, n]) => (n === null ? '' : n + ' ') + e).join(' + ');
+    compSent = JSON.stringify(s.comp);
   }
   [...$('#engine').options].forEach(o => o.text = s.engines[o.value] || o.text);
   $('#engine').value = s.engine;
@@ -199,14 +200,22 @@ function showComp(c){
     + (c.over ? ` <span style="color:var(--danger)">· ${SITES} sites max, you have ${c.used}</span>` : '')
     + (c.bad ? ` <span style="color:var(--danger)">· "${c.bad}" not an element here</span>` : '');
 }
-let compTimer;
+let compTimer, compInFlight = false, compPending = null, compSent = null;
 function applyComp(){
   const c = parseComp(compEl.value);
   showComp(c);
   if (c.over || !c.comp.length) return;
-  api('set_comp', { comp:c.comp }).then(s => { firstFrame = true; applyState(s); });
+  const key = JSON.stringify(c.comp);
+  if (key === compSent) return;                       // nothing changed
+  if (compInFlight){ compPending = c.comp; return; }  // one rebuild at a time, keep only the latest
+  sendComp(c.comp);
 }
-compEl.oninput = () => { showComp(parseComp(compEl.value)); clearTimeout(compTimer); compTimer = setTimeout(applyComp, 350); };
+function sendComp(comp){
+  compInFlight = true; compSent = JSON.stringify(comp); compPending = null;
+  api('set_comp', { comp }).then(s => { firstFrame = true; applyState(s); })
+    .finally(() => { compInFlight = false; if (compPending && JSON.stringify(compPending) !== compSent) sendComp(compPending); });
+}
+compEl.oninput = () => { showComp(parseComp(compEl.value)); clearTimeout(compTimer); compTimer = setTimeout(applyComp, 800); };
 compEl.onkeydown = e => { if (e.key === 'Enter'){ e.preventDefault(); clearTimeout(compTimer); applyComp(); } };
 
 /* ---------- movable boxes ---------- */
