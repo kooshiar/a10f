@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Scale</title>
 <script src="https://unpkg.com/3dmol/build/3Dmol-min.js"></script>
+<script src="scenes.js"></script>
 <style>
   :root{
     --font-text:"SF Pro Text",-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
     --font-display:"SF Pro Display",-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-    --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781; --line:rgba(0,0,0,.10); --accent:#2a78d6;
-    --inset:clamp(28px,5vw,84px);
+    --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781; --accent:#2a78d6; --inset:clamp(28px,5vw,84px);
   }
   *{box-sizing:border-box}
   html,body{height:100%; margin:0; background:#fff; color:var(--ink); font-family:var(--font-text); -webkit-font-smoothing:antialiased}
@@ -23,12 +23,11 @@
   .wrap{position:relative}
   .viz{position:relative; width:var(--s); height:var(--s); cursor:grab}
   .viz canvas{display:block}
-  .dim{position:absolute; left:calc(100% + 6px); bottom:8%; font-size:12.5px; color:var(--muted); white-space:nowrap}
+  .dim{position:absolute; left:calc(100% + 6px); bottom:10%; font-size:12.5px; color:var(--muted); white-space:nowrap}
   .tier .n{font-family:var(--font-display); font-weight:600; letter-spacing:-.025em; font-size:clamp(22px,2.2vw,30px); line-height:1.1; white-space:nowrap}
   .tier .i{font-size:clamp(12.5px,1.05vw,14.5px); color:var(--ink-2); text-align:center; line-height:1.35; max-width:26ch}
   .tier .d{font-family:var(--font-display); font-weight:600; letter-spacing:-.025em; font-size:clamp(22px,2.2vw,30px); color:var(--accent); line-height:1.1; margin-top:2px}
   .tier .y{font-size:12.5px; color:var(--muted); white-space:nowrap}
-  .axis{margin-top:clamp(12px,2vh,20px); border-top:1px solid var(--line); padding-top:10px; font-size:13px; color:var(--muted)}
   .next{position:absolute; right:var(--inset); bottom:clamp(36px,5vh,56px); font-size:13px; color:var(--accent); text-decoration:none}
   @media (max-width:900px){ section{height:auto; overflow:visible} .row{flex-wrap:wrap; justify-content:center} }
 </style>
@@ -39,16 +38,15 @@
   <div class="eyebrow">Scale</div>
   <h1>The box AI can learn doubles every two years</h1>
   <div class="row" id="row"></div>
-  <div class="axis">Boxes not to scale, each is 10x more atoms · annual revenue of what each box is needed to design, approximate · hover to spin, drag to look around</div>
   <a class="next" href="../deck.html">Next →</a>
 </section>
 
 <script>
 const TIERS = [
-  { n:'~100 atoms', dim:'12 Å',  ind:'Chips, alloys, agrochemicals, aerospace',               usd:'$3T',   year:'2018 · ANI' },
-  { n:'1k',         dim:'40 Å',  ind:'Batteries, polymers, catalysts, carbon capture',        usd:'$1T',   year:'2022 · MACE, Allegro' },
-  { n:'10k',        dim:'56 Å',  ind:'Drug design, enzymes, food, agriculture',               usd:'$1.2T', year:'2024 · MACE-MP-0, MatterSim' },
-  { n:'100k',       dim:'100 Å', ind:'Antibodies, vaccines, cell and gene therapy, diagnostics', usd:'$0.6T', year:'2026 · UMA-1.2, Orb-v3' }
+  { n:'~100 atoms', dim:'12 Å',  ind:'Chips, alloys, agrochemicals, aerospace',                 usd:'$3T',   year:'2018 · ANI' },
+  { n:'1k',         dim:'32 Å',  ind:'Batteries, polymers, catalysts, carbon capture',          usd:'$1T',   year:'2022 · MACE, Allegro' },
+  { n:'10k',        dim:'50 Å',  ind:'Drug design, enzymes, food, agriculture',                 usd:'$1.2T', year:'2024 · MACE-MP-0, MatterSim' },
+  { n:'100k',       dim:'130 Å', ind:'Antibodies, vaccines, cell and gene therapy, diagnostics', usd:'$0.6T', year:'2026 · UMA-1.2, Orb-v3' }
 ];
 const base = Math.min(innerHeight * 0.15, innerWidth * 0.09);
 const sizes = TIERS.map((_, i) => Math.round(base * Math.pow(1.45, i)));
@@ -60,170 +58,76 @@ TIERS.forEach((t, i) => {
   row.appendChild(d);
 });
 
-/* ---------- helpers ---------- */
-let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-const gauss = () => (rnd() + rnd() + rnd() + rnd() - 2) * 1.7;
-const ease = t => t < 0 ? 0 : t > 1 ? 1 : t * t * (3 - 2 * t);
 const xyz = atoms => atoms.length + '\n\n' + atoms.map(a => `${a[0]} ${a[1].toFixed(3)} ${a[2].toFixed(3)} ${a[3].toFixed(3)}`).join('\n');
-const mix = (A, B, f) => A.map((p, i) => p.map((x, k) => x + (B[i][k] - x) * f));
 function viewer(i){
   const v = $3Dmol.createViewer(document.getElementById('v' + i), { backgroundColor:'#ffffff', antialias:true });
-  v.setViewStyle({ style:'outline', color:'black', width:0.05 });
+  v.setViewStyle({ style:'outline', color:'black', width:0.04 });
   return v;
 }
 function box(v, L, o){
   const P = i => ({ x:o[0] + ((i & 1) ? L : 0), y:o[1] + ((i & 2) ? L : 0), z:o[2] + ((i & 4) ? L : 0) });
   for (let i = 0; i < 8; i++) for (const b of [1, 2, 4]) if (!(i & b))
-    v.addLine({ start:P(i), end:P(i | b), color:'#8a8781', linewidth:1 });
+    v.addCylinder({ start:P(i), end:P(i | b), radius:L * .0035, color:'#c9c6be', fromCap:1, toCap:1 });
 }
-function finish(v, i, idle){
-  v.zoomTo(); v.zoom(0.92); v.rotate(18, 'x'); v.rotate(-28, 'y'); v.render();
-  if (idle) v.spin('y', idle);
+function finish(v, i, L, o){
+  box(v, L, o);
+  v.zoomTo(); v.zoom(0.9); v.rotate(16, 'x'); v.rotate(-26, 'y'); v.render();
   const el = document.getElementById('v' + i);
-  el.addEventListener('mouseenter', () => v.spin('y', 1.5));
-  el.addEventListener('mouseleave', () => v.spin(idle ? 'y' : false, idle || 0));
+  el.addEventListener('mouseenter', () => v.spin('y', 1.4));
+  el.addEventListener('mouseleave', () => v.spin(false));
 }
-function swap(v, model, text, fmt, style){        // replace one model's atoms, keep the camera
+function swap(v, slot, text, fmt, styles){       // replace one model's atoms, keep the camera
   const view = v.getView();
-  if (model.m) v.removeModel(model.m);
-  model.m = v.addModel(text, fmt);
-  for (const [sel, st] of style) model.m.setStyle(sel, st);
+  if (slot.m) v.removeModel(slot.m);
+  slot.m = v.addModel(text, fmt);
+  for (const [sel, st] of styles) slot.m.setStyle(sel, st);
   v.setView(view); v.render();
 }
-const anims = [], CYCLE = 20;
+const anims = [], C = Scenes.CYCLE;
 
-/* ---------- 1: 64 atoms, gas → ordered crystal → gas ---------- */
+/* 1: ordered NiAl alloy growing out of a gas, then melting away */
 (function(){
-  const a = 2.9, n = 4, lat = [], els = [];
-  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) for (let k = 0; k < n; k++){ lat.push([i * a, j * a, k * a]); els.push((i + j + k) % 2 ? 'Ni' : 'Cu'); }
-  const L = n * a, c = (n - 1) * a / 2, v = viewer(0), model = {};
-  const gas = () => lat.map(() => [0, 1, 2].map(() => c + (rnd() - .5) * L * 1.3));
-  let g0 = gas(), g1 = gas();
-  const style = [[{}, { sphere:{ scale:.62, colorscheme:'Jmol' } }]];
-  const frame = t => {
-    const T = (t / 1000) % CYCLE; let pos;
-    if (T < 4)        pos = g0.map((p, i) => p.map((x, k) => x + Math.sin(t / 600 + i + k) * 0.5));
-    else if (T < 9)   pos = mix(g0, lat, ease((T - 4) / 5));
-    else if (T < 15)  pos = lat.map(p => p.map(x => x + gauss() * 0.04));
-    else              pos = mix(lat, g1, ease((T - 15) / 5));
-    if (T > 19.9){ g0 = g1; g1 = gas(); }
-    swap(v, model, xyz(pos.map((p, i) => [els[i], ...p])), 'xyz', style);
-  };
-  frame(0); box(v, L, [-a / 2, -a / 2, -a / 2]); finish(v, 0, 0.35);
-  anims.push({ fps:24, frame });
+  const s = Scenes.alloy(), v = viewer(0), slot = {};
+  const st = [[{ elem:'Ni' }, { sphere:{ scale:.5, color:'#2a78d6' } }], [{ elem:'Al' }, { sphere:{ scale:.5, color:'#eb6834' } }]];
+  const frame = (T, t) => swap(v, slot, xyz(s.frame(T, t)), 'xyz', st);
+  frame(0, 0); finish(v, 0, s.L, s.origin); anims.push({ fps:24, frame });
 })();
 
-/* ---------- 2: zeolite framework (ZSM-5, 2x2x1 cells) capturing CO2 ---------- */
+/* 2: MOF-5 cage, CO2 diffusing in, binding at the zinc clusters, leaving */
+(function(){
+  const s = Scenes.mof(), v = viewer(1), slot = {};
+  v.addModel(xyz(s.framework), 'xyz');
+  v.setStyle({}, { stick:{ radius:.22, color:'#8d94a0' } });
+  v.setStyle({ elem:'H' }, {});
+  v.setStyle({ elem:'Zn' }, { sphere:{ scale:.55, color:'#1baf7a' } });
+  const st = [[{ elem:'C' }, { sphere:{ scale:.62, color:'#1d1d1f' } }], [{ elem:'O' }, { sphere:{ scale:.62, color:'#e24b4a' } }]];
+  const frame = (T, t) => swap(v, slot, xyz(s.frame(T, t)), 'xyz', st);
+  frame(0, 0); finish(v, 1, s.L, s.origin); anims.push({ fps:24, frame });
+})();
+
+/* 3: ubiquitin folding from a floppy chain, breathing, unfolding */
 (async function(){
-  const txt = await fetch('../data/zsm5.pdb').then(r => r.text());
-  const cell = txt.split('\n').find(l => l.startsWith('CRYST1')).slice(6).trim().split(/\s+/).slice(0, 3).map(Number);
-  const base = txt.split('\n').filter(l => l.startsWith('HETATM')).map(l => [l.slice(76, 78).trim(), +l.slice(30, 38), +l.slice(38, 46), +l.slice(46, 54)]);
-  const fw = [];
-  for (const dx of [0, 1]) for (const dy of [0, 1]) base.forEach(a => fw.push([a[0], a[1] + dx * cell[0], a[2] + dy * cell[1], a[3]]));
-  const W = [2 * cell[0], 2 * cell[1], cell[2]], L = Math.max(...W) + 2, o = W.map(w => (w - L) / 2);
-  const v = viewer(1);
-  v.addModel(xyz(fw), 'xyz');
-  v.setStyle({ elem:'Si' }, { stick:{ radius:.09, color:'#9aa3b2' }, sphere:{ scale:.12, color:'#6b7280' } });
-  v.setStyle({ elem:'O' },  { stick:{ radius:.09, color:'#9aa3b2' }, sphere:{ scale:.08, color:'#c9c7c0' } });
-  const inside = () => [rnd() * W[0], rnd() * W[1], 2 + rnd() * (W[2] - 4)];
-  const outside = () => { const p = inside(), k = Math.floor(rnd() * 2); p[k] = rnd() < .5 ? -8 : W[k] + 8; return p; };
-  const mols = Array.from({ length:14 }, () => ({ a:outside(), b:inside(), phase:rnd() * 9, d:[gauss(), gauss(), gauss()] }));
-  const model = {}, style = [[{ elem:'C' }, { sphere:{ scale:.42, color:'#333' } }], [{ elem:'O' }, { sphere:{ scale:.42, color:'#d85a30' } }]];
-  const frame = t => {
-    const out = [];
-    for (const m of mols){
-      const T = ((t / 1000) + m.phase) % 9;                     // 0..3 fly in, 3..7 held in the pore, 7..9 leave
-      const f = T < 3 ? ease(T / 3) : T < 7 ? 1 : 1 - ease((T - 7) / 2);
-      const p = m.a.map((x, k) => x + (m.b[k] - x) * f + (T >= 3 && T < 7 ? gauss() * 0.06 : 0));
-      const n = Math.hypot(...m.d), d = m.d.map(x => x / n * 1.16);
-      out.push(['O', p[0] - d[0], p[1] - d[1], p[2] - d[2]], ['C', ...p], ['O', p[0] + d[0], p[1] + d[1], p[2] + d[2]]);
-      if (T > 8.95){ m.a = outside(); m.b = inside(); }
-    }
-    swap(v, model, xyz(out), 'xyz', style);
-  };
-  frame(0); box(v, L, o); finish(v, 1, 0.35);
-  anims.push({ fps:20, frame });
+  const pdb = await fetch('https://files.rcsb.org/download/1D3Z.pdb').then(r => r.text());
+  const s = Scenes.fold(pdb), v = viewer(2), slot = {};
+  const st = [[{}, { cartoon:{ color:'spectrum', thickness:.6 } }]];
+  const frame = (T, t) => swap(v, slot, s.frame(T, t), 'pdb', st);
+  frame(0, 0); finish(v, 2, s.L, s.origin); anims.push({ fps:20, frame });
 })();
 
-/* ---------- 3: ubiquitin (1D3Z): a chain along a curve folds into the structure, then breathes ---------- */
+/* 4: antibody searching for PD-1, clamping on, turning as one, letting go */
 (async function(){
-  const txt = await fetch('https://files.rcsb.org/download/1D3Z.pdb').then(r => r.text());
-  const models = []; let cur = null;
-  for (const l of txt.split('\n')){
-    if (l.startsWith('MODEL')) cur = [];
-    else if (l.startsWith('ATOM') && cur) cur.push(l);
-    else if (l.startsWith('ENDMDL')){ models.push(cur); cur = null; }
-  }
-  const tmpl = models[0], coords = models.map(m => m.map(l => [+l.slice(30, 38), +l.slice(38, 46), +l.slice(46, 54)]));
-  const res = tmpl.map(l => +l.slice(22, 26)), name = tmpl.map(l => l.slice(12, 16).trim());
-  const cen = [0, 1, 2].map(k => coords[0].reduce((s, p) => s + p[k], 0) / coords[0].length);
-  // the unfolded chain: residues spaced 3.5 Å along a helix of radius 17 Å that fits the box
-  const ca = {}; tmpl.forEach((l, i) => { if (name[i] === 'CA') ca[res[i]] = coords[0][i]; });
-  const R = 17, turn = Math.hypot(2 * Math.PI * R, 16);
-  const str = coords[0].map((p, i) => {
-    const r = res[i], s = (r - 1) * 3.5, th = s / turn * 2 * Math.PI, z = -20 + 16 * th / (2 * Math.PI);
-    const q = [cen[0] + R * Math.cos(th), cen[1] + R * Math.sin(th), cen[2] + z];
-    return q.map((x, k) => x + (p[k] - ca[r][k]));
-  });
-  const L = 56, v = viewer(2), model = {}, style = [[{}, { cartoon:{ color:'spectrum', thickness:.55 } }]];
-  const pdbAt = pos => tmpl.map((l, i) => l.slice(0, 30) + pos[i].map(x => x.toFixed(3).padStart(8)).join('') + l.slice(54)).join('\n');
-  const frame = t => {
-    const T = (t / 1000) % CYCLE; let pos;
-    if (T < 3)        pos = str.map((p, i) => p.map((x, k) => x + Math.sin(t / 500 + res[i] / 2 + k) * 0.6));   // the chain, wobbling
-    else if (T < 10)  pos = mix(str, coords[0], ease((T - 3) / 7));                                                 // folds
-    else if (T < 13)  pos = coords[0].map(p => p.map(x => x + gauss() * 0.05));
-    else if (T < 18){ const u = (T - 13) / 1.25, i = Math.floor(u) % models.length, j = (i + 1) % models.length; pos = mix(coords[i], coords[j], ease(u - Math.floor(u))); }
-    else              pos = mix(coords[0], str, ease((T - 18) / 2));                                                 // back to a chain
-    swap(v, model, pdbAt(pos), 'pdb', style);
-  };
-  frame(0); box(v, L, cen.map(x => x - L / 2)); finish(v, 2, 0.3);
-  anims.push({ fps:14, frame });
+  const pdb = await fetch('https://files.rcsb.org/download/5JXE.pdb').then(r => r.text());
+  const s = Scenes.bind(pdb), v = viewer(3), fab = {}, pd = {};
+  const sf = [[{}, { cartoon:{ color:'#9aa3b2', thickness:.5 } }]], sp = [[{}, { cartoon:{ color:'#eb6834', thickness:.6 } }]];
+  const frame = (T, t) => { const f = s.frame(T, t); swap(v, fab, f.fab, 'pdb', sf); swap(v, pd, f.pd1, 'pdb', sp); };
+  frame(0, 0); finish(v, 3, s.L, s.origin); anims.push({ fps:14, frame });
 })();
 
-/* ---------- 4: pembrolizumab Fab and PD-1 (5JXE): loops open, target docks, loops clamp, complex turns, release ---------- */
-(async function(){
-  const txt = await fetch('https://files.rcsb.org/download/5JXE.pdb').then(r => r.text());
-  const atoms = txt.split('\n').filter(l => l.startsWith('ATOM'));
-  const byChain = {}; atoms.forEach(l => (byChain[l[21]] = byChain[l[21]] || []).push(l));
-  const P = l => [+l.slice(30, 38), +l.slice(38, 46), +l.slice(46, 54)];
-  const cenOf = ls => [0, 1, 2].map(k => ls.reduce((s, l) => s + P(l)[k], 0) / ls.length);
-  const pd1 = byChain['A'], cA = cenOf(pd1);
-  const fabIds = Object.keys(byChain).filter(c => c !== 'A' && c !== 'B')
-    .map(c => [c, Math.hypot(...cenOf(byChain[c]).map((x, k) => x - cA[k]))]).sort((p, q) => p[1] - q[1]).slice(0, 2).map(p => p[0]);
-  const fab = fabIds.flatMap(c => byChain[c]), cF = cenOf(fab);
-  const u = cA.map((x, k) => x - cF[k]), m = Math.hypot(...u), dir = u.map(x => x / m);
-  const side = [dir[1], -dir[0], 0], sn = Math.hypot(...side), sd = side.map(x => x / sn);
-  const fabP = fab.map(P), pdP = pd1.map(P);
-  // how much each antibody atom belongs to the binding region: near the target it moves, far away it stays put
-  const w = fabP.map(p => { const d = Math.hypot(...p.map((x, k) => x - cA[k])); return Math.exp(-(d * d) / (2 * 14 * 14)); });
-  const rot = (p, c, ang) => { const s = Math.sin(ang), co = Math.cos(ang), [x, y, z] = p.map((v, k) => v - c[k]);
-    return [c[0] + x * co - z * s, c[1] + y, c[2] + x * s + z * co]; };
-  const v = viewer(3), fabM = {}, pdM = {};
-  const fabStyle = [[{}, { cartoon:{ color:'#9aa3b2', thickness:.5 } }]], pdStyle = [[{}, { cartoon:{ color:'#eb6834', thickness:.55 } }]];
-  const put = (lines, pos) => lines.map((l, i) => l.slice(0, 30) + pos[i].map(x => x.toFixed(3).padStart(8)).join('') + l.slice(54)).join('\n');
-  const frame = t => {
-    const T = (t / 1000) % CYCLE, far = 45;                       // 0..4 approach, 4..6 clamp, 6..14 bound + turn, 14..17 release
-    const dock = T < 4 ? 1 - ease(T / 4) : T < 14 ? 0 : T < 17 ? ease((T - 14) / 3) : 1;
-    const clamp = T < 4 ? 0 : T < 6 ? ease((T - 4) / 2) : T < 14 ? 1 : T < 17 ? 1 - ease((T - 14) / 3) : 0;
-    const open = (1 - clamp) * 4.5, sway = Math.sin(t / 900) * 1.2 * (1 - clamp);
-    const fabPos = fabP.map((p, i) => p.map((x, k) => x + w[i] * (open * dir[k] + sway * sd[k])));
-    const ang = (1 - clamp) * 0.5;                                // the target tilts into place as the loops close
-    const pdPos = pdP.map(p => rot(p, cA, ang).map((x, k) => x + dir[k] * far * dock));
-    swap(v, fabM, put(fab, fabPos), 'pdb', fabStyle);
-    swap(v, pdM, put(pd1, pdPos), 'pdb', pdStyle);
-    if (T >= 6 && T < 14) v.spin('y', 0.9); else v.spin(false);
-  };
-  frame(0);
-  const all = cenOf([...fab, ...pd1]), L = 100;
-  box(v, L, all.map(x => x - L / 2)); finish(v, 3, 0);
-  anims.push({ fps:12, frame });
-})();
-
-/* ---------- one clock ---------- */
 const last = new Map();
-function loop(t){
+function loop(ms){
+  const t = ms / 1000, T = t % C;
   if (!document.hidden) for (const a of anims){
-    if (t - (last.get(a) || 0) >= 1000 / a.fps){ last.set(a, t); try { a.frame(t); } catch(e){} }
+    if (ms - (last.get(a) || 0) >= 1000 / a.fps){ last.set(a, ms); try { a.frame(T, t); } catch(e){ console.error(e); } }
   }
   requestAnimationFrame(loop);
 }
