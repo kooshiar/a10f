@@ -172,8 +172,9 @@ const NAMES = { aluminium:'Al', aluminum:'Al', copper:'Cu', nickel:'Ni', silver:
                 zirconium:'Zr', tin:'Sn', lithium:'Li', sodium:'Na', calcium:'Ca', silicon:'Si' };
 const SITES = 256;
 const elColor = e => { const c = ($3Dmol.elementColors.Jmol || {})[e]; return c === undefined ? '#999' : '#' + c.toString(16).padStart(6, '0'); };
+const ELS = ['Al','Cu','Ni','Ag','Au','Pd','Pt','Pb','Ir','Rh','Fe','Co','Cr','Mn','Ti','V','Zn','Mg','Mo','W','Nb','Ta','Zr','Sn','Li','Na','Ca','Si'];
 const resolveEl = raw => { const r = raw.toLowerCase();
-  return NAMES[r] || (state ? state.elements : []).find(e => e.toLowerCase() === r) || null; };
+  return NAMES[r] || ((state && state.elements) || ELS).find(e => e.toLowerCase() === r) || null; };
 
 function parseComp(text){
   const terms = text.split(/[+,;]/).map(t => t.trim()).filter(Boolean);
