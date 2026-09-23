@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scale</title>
+<script src="https://unpkg.com/3dmol/build/3Dmol-min.js"></script>
+<style>
+  :root{
+    --font-text:"SF Pro Text",-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --font-display:"SF Pro Display",-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781; --line:rgba(0,0,0,.10); --accent:#2a78d6;
+    --inset:clamp(28px,5vw,84px);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%; margin:0; background:#fff; color:var(--ink); font-family:var(--font-text); -webkit-font-smoothing:antialiased}
+  section{
+    height:100dvh; overflow:hidden; display:flex; flex-direction:column;
+    padding:clamp(48px,7vh,80px) var(--inset) clamp(36px,5vh,56px);
+  }
+  .eyebrow{font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:16px}
+  h1{
+    font-family:var(--font-display); font-weight:700; font-size:clamp(32px,4.8vw,58px);
+    line-height:1.04; letter-spacing:-.028em; margin:0; max-width:24ch;
+  }
+  .no{position:absolute; right:var(--inset); top:clamp(48px,7vh,80px); font-size:13px; color:var(--muted)}
+
+  .row{
+    flex:1; min-height:0; display:flex; align-items:flex-end; justify-content:space-between;
+    gap:clamp(12px,2vw,32px); padding-top:clamp(16px,3vh,32px);
+  }
+  .tier{display:flex; flex-direction:column; align-items:center; gap:10px; flex:none}
+  .viz{position:relative; width:var(--s); height:var(--s); cursor:grab}
+  .viz canvas{display:block}
+  .tier .n{font-family:var(--font-display); font-weight:600; letter-spacing:-.025em; font-size:clamp(17px,1.7vw,24px); line-height:1.1; white-space:nowrap}
+  .tier .c{font-size:clamp(13px,1.15vw,15px); color:var(--ink-2); text-align:center; line-height:1.4; max-width:22ch}
+  .tier .y{font-size:13px; color:var(--muted); white-space:nowrap}
+
+  .axis{
+    margin-top:clamp(14px,2.5vh,24px); border-top:1px solid var(--line); padding-top:10px;
+    display:flex; justify-content:space-between; font-size:13px; color:var(--muted);
+  }
+  .next{position:absolute; right:var(--inset); bottom:clamp(36px,5vh,56px); font-size:13px; color:var(--accent); text-decoration:none}
+  @media (max-width:900px){
+    section{height:auto; overflow:visible}
+    .row{flex-wrap:wrap; justify-content:center; align-items:flex-end}
+  }
+</style>
+</head>
+<body>
+<section>
+  <div class="no">01</div>
+  <div class="eyebrow">Scale</div>
+  <h1>The box AI can learn doubles every two years</h1>
+
+  <div class="row" id="row"></div>
+
+  <div class="axis"><span>Box edge not to scale: each step is 2x wider and 8x more atoms · hover to rotate, drag to look around</span></div>
+  <a class="next" href="../deck.html">Next →</a>
+</section>
+
+<script>
+/* four boxes, real sizes 15 / 30 / 60 / 120 Å; on screen each is ~1.45x the previous so the small one stays legible */
+const TIERS = [
+  { edge:15,  atoms:'256 atoms',     what:'Alloy lattice',              year:'2018 · ANI',                 kind:'alloy',   src:null },
+  { edge:30,  atoms:'~2,000 atoms',  what:'Nanoparticle catalyst',      year:'2022 · MACE, Allegro',       kind:'nano',    src:null },
+  { edge:60,  atoms:'~20,000 atoms', what:'Protein in water',           year:'2024 · MACE-MP-0, MatterSim', kind:'protein', src:'1FSL' },
+  { edge:120, atoms:'~150,000 atoms',what:'Antibody, membrane, virus',  year:'2026 · UMA-1.2, Orb-v3',     kind:'protein', src:'5DK3' }
+];
+const base = Math.min(innerHeight * 0.16, innerWidth * 0.10);
+const sizes = TIERS.map((_, i) => Math.round(base * Math.pow(1.45, i)));
+
+const row = document.getElementById('row');
+TIERS.forEach((t, i) => {
+  const d = document.createElement('div'); d.className = 'tier';
+  d.innerHTML = `<div class="viz" id="v${i}" style="--s:${sizes[i]}px"></div>
+    <div class="n">${t.edge} Å · ${t.atoms}</div><div class="c">${t.what}</div><div class="y">${t.year}</div>`;
+  row.appendChild(d);
+});
+
+/* ---------- structures: two generated, two from the PDB ---------- */
+function fccAlloy(){                                  // 4×4×4 Cu with Ni and Au substituted, 256 atoms, 14.5 Å
+  const a = 3.615, n = 4, basis = [[0,0,0],[.5,.5,0],[.5,0,.5],[0,.5,.5]], out = [];
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) for (let k = 0; k < n; k++) for (const b of basis){
+    const r = rnd(), el = r < .12 ? 'Au' : r < .37 ? 'Ni' : 'Cu';
+    out.push(`${el} ${((i + b[0]) * a).toFixed(3)} ${((j + b[1]) * a).toFixed(3)} ${((k + b[2]) * a).toFixed(3)}`);
+  }
+  return { xyz: out.length + '\n\n' + out.join('\n'), box: n * a, style:{ sphere:{ scale:.36, colorscheme:'Jmol' } } };
+}
+function nanoparticle(){                              // gold fcc sphere, radius 12 Å, centred in a 30 Å box
+  const a = 4.08, R = 12, L = 30, out = [], basis = [[0,0,0],[.5,.5,0],[.5,0,.5],[0,.5,.5]];
+  for (let i = -4; i <= 4; i++) for (let j = -4; j <= 4; j++) for (let k = -4; k <= 4; k++) for (const b of basis){
+    const x = (i + b[0]) * a, y = (j + b[1]) * a, z = (k + b[2]) * a;
+    if (x*x + y*y + z*z <= R*R) out.push(`Au ${(x + L/2).toFixed(3)} ${(y + L/2).toFixed(3)} ${(z + L/2).toFixed(3)}`);
+  }
+  return { xyz: out.length + '\n\n' + out.join('\n'), box: L, style:{ sphere:{ scale:.36, colorscheme:'Jmol' } } };
+}
+
+function drawBox(v, L, x0, y0, z0){
+  const P = i => ({ x:x0 + ((i & 1) ? L : 0), y:y0 + ((i & 2) ? L : 0), z:z0 + ((i & 4) ? L : 0) });
+  for (let i = 0; i < 8; i++) for (const b of [1, 2, 4]) if (!(i & b))
+    v.addLine({ start:P(i), end:P(i | b), color:'#8a8781', linewidth:1 });
+}
+
+async function build(i){
+  const t = TIERS[i], el = document.getElementById('v' + i);
+  const v = $3Dmol.createViewer(el, { backgroundColor:'#ffffff', antialias:true });
+  v.setViewStyle({ style:'outline', color:'black', width:0.05 });
+  let L = t.edge, origin = [0, 0, 0];
+  if (t.kind === 'alloy'){ const m = fccAlloy(); v.addModel(m.xyz, 'xyz'); v.setStyle({}, m.style); L = m.box; }
+  else if (t.kind === 'nano'){ const m = nanoparticle(); v.addModel(m.xyz, 'xyz'); v.setStyle({}, m.style); }
+  else {
+    const pdb = await fetch(`https://files.rcsb.org/download/${t.src}.pdb`).then(r => r.text());
+    const m = v.addModel(pdb, 'pdb');
+    v.setStyle({}, { cartoon:{ color:'spectrum', thickness:.5 } });
+    v.setStyle({ hetflag:true }, { stick:{ radius:.2 } });
+    v.setStyle({ resn:['HOH','WAT'] }, {});
+    // centre the box on the molecule
+    const at = m.selectedAtoms({}), c = [0, 1, 2].map(k => at.reduce((s, a) => s + [a.x, a.y, a.z][k], 0) / at.length);
+    origin = c.map(x => x - L / 2);
+  }
+  drawBox(v, L, ...origin);
+  v.zoomTo(); v.zoom(0.95); v.rotate(18, 'x'); v.rotate(-28, 'y'); v.render();
+  el.addEventListener('mouseenter', () => v.spin('y', 1.2));
+  el.addEventListener('mouseleave', () => { v.spin(false); });
+}
+(async () => { for (let i = 0; i < TIERS.length; i++) await build(i); })();
+
+addEventListener('keydown', e => { if (e.key === 'ArrowRight') location.href = '../deck.html'; });
+</script>
+</body>
+</html>
