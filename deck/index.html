@@ -24,27 +24,19 @@
     line-height:1.04; letter-spacing:-.028em; margin:0; max-width:24ch;
   }
   .no{position:absolute; right:var(--inset); top:clamp(48px,7vh,80px); font-size:13px; color:var(--muted)}
-
   .row{
     flex:1; min-height:0; display:flex; align-items:flex-end; justify-content:space-between;
     gap:clamp(12px,2vw,32px); padding-top:clamp(16px,3vh,32px);
   }
-  .tier{display:flex; flex-direction:column; align-items:center; gap:10px; flex:none}
+  .tier{display:flex; flex-direction:column; align-items:center; gap:8px; flex:none}
   .viz{position:relative; width:var(--s); height:var(--s); cursor:grab}
   .viz canvas{display:block}
-  .tier .n{font-family:var(--font-display); font-weight:600; letter-spacing:-.025em; font-size:clamp(17px,1.7vw,24px); line-height:1.1; white-space:nowrap}
+  .tier .n{font-family:var(--font-display); font-weight:600; letter-spacing:-.025em; font-size:clamp(20px,2vw,28px); line-height:1.1; white-space:nowrap}
   .tier .c{font-size:clamp(13px,1.15vw,15px); color:var(--ink-2); text-align:center; line-height:1.4; max-width:22ch}
   .tier .y{font-size:13px; color:var(--muted); white-space:nowrap}
-
-  .axis{
-    margin-top:clamp(14px,2.5vh,24px); border-top:1px solid var(--line); padding-top:10px;
-    display:flex; justify-content:space-between; font-size:13px; color:var(--muted);
-  }
+  .axis{margin-top:clamp(14px,2.5vh,24px); border-top:1px solid var(--line); padding-top:10px; font-size:13px; color:var(--muted)}
   .next{position:absolute; right:var(--inset); bottom:clamp(36px,5vh,56px); font-size:13px; color:var(--accent); text-decoration:none}
-  @media (max-width:900px){
-    section{height:auto; overflow:visible}
-    .row{flex-wrap:wrap; justify-content:center; align-items:flex-end}
-  }
+  @media (max-width:900px){ section{height:auto; overflow:visible} .row{flex-wrap:wrap; justify-content:center} }
 </style>
 </head>
 <body>
@@ -52,81 +44,166 @@
   <div class="no">01</div>
   <div class="eyebrow">Scale</div>
   <h1>The box AI can learn doubles every two years</h1>
-
   <div class="row" id="row"></div>
-
-  <div class="axis"><span>Box edge not to scale: each step is 2x wider and 8x more atoms · hover to rotate, drag to look around</span></div>
+  <div class="axis">Boxes not to scale: each is 10x more atoms · hover to rotate, drag to look around</div>
   <a class="next" href="../deck.html">Next →</a>
 </section>
 
 <script>
-/* four boxes, real sizes 15 / 30 / 60 / 120 Å; on screen each is ~1.45x the previous so the small one stays legible */
 const TIERS = [
-  { edge:15,  atoms:'256 atoms',     what:'Alloy lattice',              year:'2018 · ANI',                 kind:'alloy',   src:null },
-  { edge:30,  atoms:'~2,000 atoms',  what:'Nanoparticle catalyst',      year:'2022 · MACE, Allegro',       kind:'nano',    src:null },
-  { edge:60,  atoms:'~20,000 atoms', what:'Protein in water',           year:'2024 · MACE-MP-0, MatterSim', kind:'protein', src:'1FSL' },
-  { edge:120, atoms:'~150,000 atoms',what:'Antibody, membrane, virus',  year:'2026 · UMA-1.2, Orb-v3',     kind:'protein', src:'5DK3' }
+  { n:'100 atoms',  what:'Atoms settling into a crystal', year:'2018 · ANI' },
+  { n:'1k atoms',   what:'Catalysis on a nanoparticle',   year:'2022 · MACE, Allegro' },
+  { n:'10k atoms',  what:'Protein folding',               year:'2024 · MACE-MP-0, MatterSim' },
+  { n:'100k atoms', what:'Antibody binding its target',   year:'2026 · UMA-1.2, Orb-v3' }
 ];
 const base = Math.min(innerHeight * 0.16, innerWidth * 0.10);
 const sizes = TIERS.map((_, i) => Math.round(base * Math.pow(1.45, i)));
-
 const row = document.getElementById('row');
 TIERS.forEach((t, i) => {
   const d = document.createElement('div'); d.className = 'tier';
   d.innerHTML = `<div class="viz" id="v${i}" style="--s:${sizes[i]}px"></div>
-    <div class="n">${t.edge} Å · ${t.atoms}</div><div class="c">${t.what}</div><div class="y">${t.year}</div>`;
+    <div class="n">${t.n}</div><div class="c">${t.what}</div><div class="y">${t.year}</div>`;
   row.appendChild(d);
 });
 
-/* ---------- structures: two generated, two from the PDB ---------- */
-function fccAlloy(){                                  // 4×4×4 Cu with Ni and Au substituted, 256 atoms, 14.5 Å
-  const a = 3.615, n = 4, basis = [[0,0,0],[.5,.5,0],[.5,0,.5],[0,.5,.5]], out = [];
-  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) for (let k = 0; k < n; k++) for (const b of basis){
-    const r = rnd(), el = r < .12 ? 'Au' : r < .37 ? 'Ni' : 'Cu';
-    out.push(`${el} ${((i + b[0]) * a).toFixed(3)} ${((j + b[1]) * a).toFixed(3)} ${((k + b[2]) * a).toFixed(3)}`);
-  }
-  return { xyz: out.length + '\n\n' + out.join('\n'), box: n * a, style:{ sphere:{ scale:.36, colorscheme:'Jmol' } } };
+/* ---------- helpers ---------- */
+let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const gauss = () => (rnd() + rnd() + rnd() + rnd() - 2) * 1.7;
+const ease = t => t < 0 ? 0 : t > 1 ? 1 : t * t * (3 - 2 * t);
+const xyz = atoms => atoms.length + '\n\n' + atoms.map(a => `${a[0]} ${a[1].toFixed(3)} ${a[2].toFixed(3)} ${a[3].toFixed(3)}`).join('\n');
+function viewer(i){
+  const v = $3Dmol.createViewer(document.getElementById('v' + i), { backgroundColor:'#ffffff', antialias:true });
+  v.setViewStyle({ style:'outline', color:'black', width:0.05 });
+  return v;
 }
-function nanoparticle(){                              // gold fcc sphere, radius 12 Å, centred in a 30 Å box
-  const a = 4.08, R = 12, L = 30, out = [], basis = [[0,0,0],[.5,.5,0],[.5,0,.5],[0,.5,.5]];
-  for (let i = -4; i <= 4; i++) for (let j = -4; j <= 4; j++) for (let k = -4; k <= 4; k++) for (const b of basis){
-    const x = (i + b[0]) * a, y = (j + b[1]) * a, z = (k + b[2]) * a;
-    if (x*x + y*y + z*z <= R*R) out.push(`Au ${(x + L/2).toFixed(3)} ${(y + L/2).toFixed(3)} ${(z + L/2).toFixed(3)}`);
-  }
-  return { xyz: out.length + '\n\n' + out.join('\n'), box: L, style:{ sphere:{ scale:.36, colorscheme:'Jmol' } } };
-}
-
-function drawBox(v, L, x0, y0, z0){
-  const P = i => ({ x:x0 + ((i & 1) ? L : 0), y:y0 + ((i & 2) ? L : 0), z:z0 + ((i & 4) ? L : 0) });
+function box(v, L, o = [0, 0, 0]){
+  const P = i => ({ x:o[0] + ((i & 1) ? L : 0), y:o[1] + ((i & 2) ? L : 0), z:o[2] + ((i & 4) ? L : 0) });
   for (let i = 0; i < 8; i++) for (const b of [1, 2, 4]) if (!(i & b))
     v.addLine({ start:P(i), end:P(i | b), color:'#8a8781', linewidth:1 });
 }
-
-async function build(i){
-  const t = TIERS[i], el = document.getElementById('v' + i);
-  const v = $3Dmol.createViewer(el, { backgroundColor:'#ffffff', antialias:true });
-  v.setViewStyle({ style:'outline', color:'black', width:0.05 });
-  let L = t.edge, origin = [0, 0, 0];
-  if (t.kind === 'alloy'){ const m = fccAlloy(); v.addModel(m.xyz, 'xyz'); v.setStyle({}, m.style); L = m.box; }
-  else if (t.kind === 'nano'){ const m = nanoparticle(); v.addModel(m.xyz, 'xyz'); v.setStyle({}, m.style); }
-  else {
-    const pdb = await fetch(`https://files.rcsb.org/download/${t.src}.pdb`).then(r => r.text());
-    const m = v.addModel(pdb, 'pdb');
-    v.setStyle({}, { cartoon:{ color:'spectrum', thickness:.5 } });
-    v.setStyle({ hetflag:true }, { stick:{ radius:.2 } });
-    v.setStyle({ resn:['HOH','WAT'] }, {});
-    // centre the box on the molecule
-    const at = m.selectedAtoms({}), c = [0, 1, 2].map(k => at.reduce((s, a) => s + [a.x, a.y, a.z][k], 0) / at.length);
-    origin = c.map(x => x - L / 2);
-  }
-  drawBox(v, L, ...origin);
+function finish(v, el){
   v.zoomTo(); v.zoom(0.95); v.rotate(18, 'x'); v.rotate(-28, 'y'); v.render();
   el.addEventListener('mouseenter', () => v.spin('y', 1.2));
-  el.addEventListener('mouseleave', () => { v.spin(false); });
+  el.addEventListener('mouseleave', () => v.spin(false));
 }
-(async () => { for (let i = 0; i < TIERS.length; i++) await build(i); })();
+function swap(v, model, text, fmt, style){        // replace one model's coordinates, keep the camera
+  const view = v.getView();
+  if (model.m) v.removeModel(model.m);
+  model.m = v.addModel(text, fmt);
+  for (const [sel, st] of style) model.m.setStyle(sel, st);
+  v.setView(view); v.render();
+}
+const anims = [];
 
+/* ---------- 1: 108 atoms shaken, settling back into the fcc lattice ---------- */
+(function(){
+  const a = 3.615, n = 3, basis = [[0,0,0],[.5,.5,0],[.5,0,.5],[0,.5,.5]], lat = [], els = [];
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) for (let k = 0; k < n; k++) for (const b of basis){
+    lat.push([(i + b[0]) * a, (j + b[1]) * a, (k + b[2]) * a]);
+    const r = rnd(); els.push(r < .12 ? 'Au' : r < .37 ? 'Ni' : 'Cu');
+  }
+  const L = n * a, v = viewer(0), model = {};
+  let dis = lat.map(p => p.map(c => c + gauss() * 1.1)), t0 = performance.now();
+  const style = [[{}, { sphere:{ scale:.36, colorscheme:'Jmol' } }]];
+  const frame = t => {
+    const T = ((t - t0) / 1000) % 4.4;                       // 0..2.6 settle, 2.6..3.8 hold, then re-shake
+    if (T > 4.3){ dis = lat.map(p => p.map(c => c + gauss() * 1.1)); t0 = t; }
+    const f = ease(T / 2.6), jig = 0.04;
+    swap(v, model, xyz(lat.map((p, i) => [els[i], ...p.map((c, k) => (dis[i][k] + (c - dis[i][k]) * f + gauss() * jig))])), 'xyz', style);
+  };
+  frame(t0); box(v, L + a / 2, [0, 0, 0].map(x => x - a / 4)); finish(v, document.getElementById('v0'));
+  anims.push({ fps:24, frame });
+})();
+
+/* ---------- 2: platinum nanoparticle, CO and O landing, leaving as CO2 ---------- */
+(function(){
+  const a = 3.92, R = 15, L = 36, c = L / 2, basis = [[0,0,0],[.5,.5,0],[.5,0,.5],[0,.5,.5]], pt = [];
+  for (let i = -4; i <= 4; i++) for (let j = -4; j <= 4; j++) for (let k = -4; k <= 4; k++) for (const b of basis){
+    const x = (i + b[0]) * a, y = (j + b[1]) * a, z = (k + b[2]) * a;
+    if (x*x + y*y + z*z <= R*R) pt.push(['Pt', x + c, y + c, z + c]);
+  }
+  const v = viewer(1);
+  v.addModel(xyz(pt), 'xyz'); v.setStyle({}, { sphere:{ scale:.34, colorscheme:'Jmol' } });
+  const dir = () => { const u = [gauss(), gauss(), gauss()], m = Math.hypot(...u); return u.map(x => x / m); };
+  const mols = Array.from({ length:9 }, (_, i) => ({ d:dir(), kind:i % 3 ? 'CO' : 'O2', phase:rnd() * 7 }));
+  const model = {}, style = [[{}, { stick:{ radius:.16 }, sphere:{ scale:.3, colorscheme:'Jmol' } }]];
+  const frame = t => {
+    const out = [];
+    for (const m of mols){
+      const T = ((t / 1000) + m.phase) % 7;                    // 0..2.5 fly in, 2.5..4.5 sit, 4.5..7 leave as CO2
+      let r, atoms;
+      if (T < 2.5) r = 17.5 - (17.5 - (R + 1.9)) * ease(T / 2.5);
+      else if (T < 4.5) r = R + 1.9 + Math.sin(T * 9) * 0.08;
+      else r = R + 1.9 + (T - 4.5) / 2.5 * 8;
+      const p = m.d.map(x => c + x * r), q = m.d.map(x => c + x * (r + 1.15));
+      if (T < 4.5) atoms = m.kind === 'CO' ? [['C', ...p], ['O', ...q]] : [['O', ...p], ['O', ...q]];
+      else atoms = [['O', ...m.d.map(x => c + x * (r - 1.16))], ['C', ...p], ['O', ...q]];
+      if (T >= 6.9) m.d = dir();
+      out.push(...atoms);
+    }
+    swap(v, model, xyz(out), 'xyz', style);
+  };
+  frame(0); box(v, L); finish(v, document.getElementById('v1'));
+  anims.push({ fps:24, frame });
+})();
+
+/* ---------- 3: ubiquitin NMR ensemble (1D3Z), morphing between its 10 conformers ---------- */
+(async function(){
+  const txt = await fetch('https://files.rcsb.org/download/1D3Z.pdb').then(r => r.text());
+  const models = [], lines = txt.split('\n'); let cur = null;
+  for (const l of lines){
+    if (l.startsWith('MODEL')) cur = [];
+    else if (l.startsWith('ATOM') && cur) cur.push(l);
+    else if (l.startsWith('ENDMDL')){ models.push(cur); cur = null; }
+  }
+  const coords = models.map(m => m.map(l => [+l.slice(30, 38), +l.slice(38, 46), +l.slice(46, 54)]));
+  const tmpl = models[0];
+  const cen = [0, 1, 2].map(k => coords[0].reduce((s, p) => s + p[k], 0) / coords[0].length);
+  const L = 48, v = viewer(2), model = {}, style = [[{}, { cartoon:{ color:'spectrum', thickness:.5 } }]];
+  const pdbAt = pos => tmpl.map((l, i) => l.slice(0, 30) + pos[i].map(x => x.toFixed(3).padStart(8)).join('') + l.slice(54)).join('\n');
+  const frame = t => {
+    const T = (t / 1000 / 1.6) % models.length, i = Math.floor(T), j = (i + 1) % models.length, f = ease(T - i);
+    swap(v, model, pdbAt(coords[i].map((p, k) => p.map((x, d) => x + (coords[j][k][d] - x) * f))), 'pdb', style);
+  };
+  frame(0); box(v, L, cen.map(x => x - L / 2)); finish(v, document.getElementById('v2'));
+  anims.push({ fps:12, frame });
+})();
+
+/* ---------- 4: pembrolizumab Fab and PD-1 (5JXE); the target docks, holds, leaves ---------- */
+(async function(){
+  const txt = await fetch('https://files.rcsb.org/download/5JXE.pdb').then(r => r.text());
+  const atoms = txt.split('\n').filter(l => l.startsWith('ATOM'));
+  const byChain = {}; atoms.forEach(l => (byChain[l[21]] = byChain[l[21]] || []).push(l));
+  const cenOf = ls => [0, 1, 2].map(k => ls.reduce((s, l) => s + +l.slice(30 + 8 * k, 38 + 8 * k), 0) / ls.length);
+  const pd1 = byChain['A'], cA = cenOf(pd1);
+  const fabIds = Object.keys(byChain).filter(c => c !== 'A' && c !== 'B')
+    .map(c => [c, Math.hypot(...cenOf(byChain[c]).map((x, k) => x - cA[k]))]).sort((p, q) => p[1] - q[1]).slice(0, 2).map(p => p[0]);
+  const fab = fabIds.flatMap(c => byChain[c]), cF = cenOf(fab);
+  const u = cA.map((x, k) => x - cF[k]), m = Math.hypot(...u), dir = u.map(x => x / m);
+  const v = viewer(3);
+  v.addModel(fab.join('\n'), 'pdb'); v.setStyle({}, { cartoon:{ color:'#9aa3b2', thickness:.5 } });
+  const model = {}, style = [[{}, { cartoon:{ color:'#eb6834', thickness:.55 } }]];
+  const shifted = s => pd1.map(l => l.slice(0, 30) + [0, 1, 2].map(k => (+l.slice(30 + 8 * k, 38 + 8 * k) + dir[k] * s).toFixed(3).padStart(8)).join('') + l.slice(54)).join('\n');
+  const frame = t => {
+    const T = (t / 1000) % 8, far = 42;                      // 0..3 dock, 3..5.5 bound, 5.5..8 leave
+    const s = T < 3 ? far * (1 - ease(T / 3)) : T < 5.5 ? 0 : far * ease((T - 5.5) / 2.5);
+    swap(v, model, shifted(s), 'pdb', style);
+  };
+  frame(0);
+  const all = cenOf([...fab, ...pd1]), L = 100;
+  box(v, L, all.map(x => x - L / 2)); finish(v, document.getElementById('v3'));
+  anims.push({ fps:12, frame });
+})();
+
+/* ---------- one clock for all four ---------- */
+const last = new Map();
+function loop(t){
+  if (!document.hidden) for (const a of anims){
+    if (t - (last.get(a) || 0) >= 1000 / a.fps){ last.set(a, t); try { a.frame(t); } catch(e){} }
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
 addEventListener('keydown', e => { if (e.key === 'ArrowRight') location.href = '../deck.html'; });
 </script>
 </body>
