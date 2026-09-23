@@ -115,6 +115,7 @@ let state = null, tempBusy = false;
 const compEl = $('#comp'), tempEl = $('#temp');
 
 function applyState(s){
+  if (state && s.gen !== undefined && s.gen < state.gen) return;   // frame from before the last rebuild
   state = s;
   if (!$('#engine').options.length){
     Object.entries(s.engines).forEach(([k, l]) => $('#engine').add(new Option(l, k)));
