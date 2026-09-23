@@ -140,10 +140,13 @@ async function poll(){
   setTimeout(poll, state && state.running ? 66 : 500);
 }
 function subscribe(){
-  if (!window.EventSource) return poll();
-  const es = new EventSource(API + '/api/sim/stream');
-  es.onmessage = e => applyState(JSON.parse(e.data));
-  es.onerror = () => { es.close(); setTimeout(subscribe, 1500); };
+  if (!window.WebSocket) return poll();
+  const base = API || location.origin;
+  const ws = new WebSocket(base.replace(/^http/, 'ws') + '/api/sim/ws');
+  window.__frames = 0;
+  ws.onmessage = e => { window.__frames++; applyState(JSON.parse(e.data)); };
+  ws.onclose = () => setTimeout(subscribe, 1500);
+  ws.onerror = () => ws.close();
 }
 subscribe();
 
