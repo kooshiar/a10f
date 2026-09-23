@@ -167,7 +167,13 @@ async function poll(){
   try { applyState(await fetch((window.API_BASE || '') + '/api/sim/frame').then(r => r.json())); } catch(e){}
   setTimeout(poll, state && state.running ? 66 : 500);
 }
-poll();
+function subscribe(){
+  if (!window.EventSource) return poll();
+  const es = new EventSource((window.API_BASE || '') + '/api/sim/stream');
+  es.onmessage = e => applyState(JSON.parse(e.data));
+  es.onerror = () => { es.close(); setTimeout(subscribe, 1500); };
+}
+subscribe();
 
 /* ---------- controls ---------- */
 $('#run').onclick   = () => api(state.running ? 'pause' : 'run').then(applyState);
@@ -225,7 +231,7 @@ function applyComp(){
   if (c.over || !c.comp.length) return;
   api('set_comp', { comp:c.comp }).then(s => { firstFrame = true; applyState(s); });
 }
-compEl.oninput = () => { showComp(parseComp(compEl.value)); clearTimeout(compTimer); compTimer = setTimeout(applyComp, 600); };
+compEl.oninput = () => { showComp(parseComp(compEl.value)); clearTimeout(compTimer); compTimer = setTimeout(applyComp, 350); };
 compEl.onkeydown = e => { if (e.key === 'Enter'){ e.preventDefault(); clearTimeout(compTimer); applyComp(); } };
 
 addEventListener('resize', () => viewer.resize());
