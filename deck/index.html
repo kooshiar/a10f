@@ -14,27 +14,19 @@
   }
   *{box-sizing:border-box}
   html,body{height:100%; margin:0; background:#fff; color:var(--ink); font-family:var(--font-text); -webkit-font-smoothing:antialiased}
-  section{
-    height:100dvh; overflow:hidden; display:flex; flex-direction:column;
-    padding:clamp(48px,7vh,80px) var(--inset) clamp(36px,5vh,56px);
-  }
+  section{height:100dvh; overflow:hidden; display:flex; flex-direction:column; padding:clamp(48px,7vh,80px) var(--inset) clamp(36px,5vh,56px)}
   .eyebrow{font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:16px}
-  h1{
-    font-family:var(--font-display); font-weight:700; font-size:clamp(32px,4.8vw,58px);
-    line-height:1.04; letter-spacing:-.028em; margin:0; max-width:24ch;
-  }
+  h1{font-family:var(--font-display); font-weight:700; font-size:clamp(32px,4.8vw,58px); line-height:1.04; letter-spacing:-.028em; margin:0; max-width:24ch}
   .no{position:absolute; right:var(--inset); top:clamp(48px,7vh,80px); font-size:13px; color:var(--muted)}
-  .row{
-    flex:1; min-height:0; display:flex; align-items:flex-end; justify-content:space-between;
-    gap:clamp(12px,2vw,32px); padding-top:clamp(16px,3vh,32px);
-  }
-  .tier{display:flex; flex-direction:column; align-items:center; gap:8px; flex:none}
+  .row{flex:1; min-height:0; display:flex; align-items:flex-end; justify-content:space-between; gap:clamp(12px,2vw,32px); padding-top:clamp(12px,2vh,24px)}
+  .tier{display:flex; flex-direction:column; align-items:center; gap:6px; flex:none}
   .viz{position:relative; width:var(--s); height:var(--s); cursor:grab}
   .viz canvas{display:block}
-  .tier .n{font-family:var(--font-display); font-weight:600; letter-spacing:-.025em; font-size:clamp(20px,2vw,28px); line-height:1.1; white-space:nowrap}
-  .tier .c{font-size:clamp(13px,1.15vw,15px); color:var(--ink-2); text-align:center; line-height:1.4; max-width:22ch}
-  .tier .y{font-size:13px; color:var(--muted); white-space:nowrap}
-  .axis{margin-top:clamp(14px,2.5vh,24px); border-top:1px solid var(--line); padding-top:10px; font-size:13px; color:var(--muted)}
+  .tier .n{font-family:var(--font-display); font-weight:600; letter-spacing:-.025em; font-size:clamp(22px,2.2vw,30px); line-height:1.1}
+  .tier .i{font-size:clamp(13px,1.1vw,15px); color:var(--ink-2); text-align:center; line-height:1.35; max-width:24ch}
+  .tier .d{font-family:var(--font-display); font-weight:600; letter-spacing:-.025em; font-size:clamp(22px,2.2vw,30px); color:var(--accent); line-height:1.1; margin-top:2px}
+  .tier .y{font-size:12.5px; color:var(--muted); white-space:nowrap}
+  .axis{margin-top:clamp(12px,2vh,20px); border-top:1px solid var(--line); padding-top:10px; font-size:13px; color:var(--muted)}
   .next{position:absolute; right:var(--inset); bottom:clamp(36px,5vh,56px); font-size:13px; color:var(--accent); text-decoration:none}
   @media (max-width:900px){ section{height:auto; overflow:visible} .row{flex-wrap:wrap; justify-content:center} }
 </style>
@@ -42,27 +34,27 @@
 <body>
 <section>
   <div class="no">01</div>
-  <div class="eyebrow">Scale</div>
+  <div class="eyebrow">Atoms per box</div>
   <h1>The box AI can learn doubles every two years</h1>
   <div class="row" id="row"></div>
-  <div class="axis">Boxes not to scale: each is 10x more atoms · hover to rotate, drag to look around</div>
+  <div class="axis">Boxes not to scale, each is 10x more atoms · market sizes approximate · hover to rotate, drag to look around</div>
   <a class="next" href="../deck.html">Next →</a>
 </section>
 
 <script>
 const TIERS = [
-  { n:'100 atoms',  what:'Atoms settling into a crystal', year:'2018 · ANI' },
-  { n:'1k atoms',   what:'Catalysis on a nanoparticle',   year:'2022 · MACE, Allegro' },
-  { n:'10k atoms',  what:'Protein folding',               year:'2024 · MACE-MP-0, MatterSim' },
-  { n:'100k atoms', what:'Antibody binding its target',   year:'2026 · UMA-1.2, Orb-v3' }
+  { n:'100',  ind:'Drugs, alloys, chips',              usd:'$3T',   year:'2018 · ANI' },
+  { n:'1k',   ind:'Batteries, catalysts, polymers',    usd:'$1T',   year:'2022 · MACE, Allegro' },
+  { n:'10k',  ind:'Biologics, enzymes, food',          usd:'$0.6T', year:'2024 · MACE-MP-0, MatterSim' },
+  { n:'100k', ind:'Antibodies, vaccines, diagnostics', usd:'$0.4T', year:'2026 · UMA-1.2, Orb-v3' }
 ];
-const base = Math.min(innerHeight * 0.16, innerWidth * 0.10);
+const base = Math.min(innerHeight * 0.15, innerWidth * 0.095);
 const sizes = TIERS.map((_, i) => Math.round(base * Math.pow(1.45, i)));
 const row = document.getElementById('row');
 TIERS.forEach((t, i) => {
   const d = document.createElement('div'); d.className = 'tier';
   d.innerHTML = `<div class="viz" id="v${i}" style="--s:${sizes[i]}px"></div>
-    <div class="n">${t.n}</div><div class="c">${t.what}</div><div class="y">${t.year}</div>`;
+    <div class="n">${t.n}</div><div class="i">${t.ind}</div><div class="d">${t.usd}</div><div class="y">${t.year}</div>`;
   row.appendChild(d);
 });
 
@@ -76,100 +68,130 @@ function viewer(i){
   v.setViewStyle({ style:'outline', color:'black', width:0.05 });
   return v;
 }
-function box(v, L, o = [0, 0, 0]){
+function box(v, L, o, label){
   const P = i => ({ x:o[0] + ((i & 1) ? L : 0), y:o[1] + ((i & 2) ? L : 0), z:o[2] + ((i & 4) ? L : 0) });
   for (let i = 0; i < 8; i++) for (const b of [1, 2, 4]) if (!(i & b))
     v.addLine({ start:P(i), end:P(i | b), color:'#8a8781', linewidth:1 });
+  v.addLabel(label, { position:{ x:o[0] + L / 2, y:o[1] - L * 0.06, z:o[2] + L }, fontSize:13, fontColor:'#898781',
+                      backgroundOpacity:0, borderThickness:0, inFront:true });
 }
-function finish(v, el){
-  v.zoomTo(); v.zoom(0.95); v.rotate(18, 'x'); v.rotate(-28, 'y'); v.render();
-  el.addEventListener('mouseenter', () => v.spin('y', 1.2));
-  el.addEventListener('mouseleave', () => v.spin(false));
+function finish(v, i, idleSpin){
+  v.zoomTo(); v.zoom(0.92); v.rotate(18, 'x'); v.rotate(-28, 'y'); v.render();
+  if (idleSpin) v.spin('y', idleSpin);
+  const el = document.getElementById('v' + i);
+  el.addEventListener('mouseenter', () => v.spin('y', 1.5));
+  el.addEventListener('mouseleave', () => v.spin(idleSpin ? 'y' : false, idleSpin || 0));
 }
-function swap(v, model, text, fmt, style){        // replace one model's coordinates, keep the camera
+function swap(v, model, text, fmt, style){        // replace one model's atoms, keep the camera
   const view = v.getView();
   if (model.m) v.removeModel(model.m);
   model.m = v.addModel(text, fmt);
   for (const [sel, st] of style) model.m.setStyle(sel, st);
   v.setView(view); v.render();
 }
-const anims = [];
+const anims = [], CYCLE = 20;
 
-/* ---------- 1: 108 atoms shaken, settling back into the fcc lattice ---------- */
+/* ---------- 1: 108 atoms, gas → crystal → gas, 20 s ---------- */
 (function(){
   const a = 3.615, n = 3, basis = [[0,0,0],[.5,.5,0],[.5,0,.5],[0,.5,.5]], lat = [], els = [];
   for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) for (let k = 0; k < n; k++) for (const b of basis){
     lat.push([(i + b[0]) * a, (j + b[1]) * a, (k + b[2]) * a]);
     const r = rnd(); els.push(r < .12 ? 'Au' : r < .37 ? 'Ni' : 'Cu');
   }
-  const L = n * a, v = viewer(0), model = {};
-  let dis = lat.map(p => p.map(c => c + gauss() * 1.1)), t0 = performance.now();
-  const style = [[{}, { sphere:{ scale:.36, colorscheme:'Jmol' } }]];
+  const L = n * a, c = L / 2 - a / 4, v = viewer(0), model = {};
+  const gas = () => lat.map(() => [0, 1, 2].map(() => c + (rnd() - .5) * L * 1.5));
+  let g0 = gas(), g1 = gas();
+  const style = [[{}, { sphere:{ scale:.5, colorscheme:'Jmol' } }]];
   const frame = t => {
-    const T = ((t - t0) / 1000) % 4.4;                       // 0..2.6 settle, 2.6..3.8 hold, then re-shake
-    if (T > 4.3){ dis = lat.map(p => p.map(c => c + gauss() * 1.1)); t0 = t; }
-    const f = ease(T / 2.6), jig = 0.04;
-    swap(v, model, xyz(lat.map((p, i) => [els[i], ...p.map((c, k) => (dis[i][k] + (c - dis[i][k]) * f + gauss() * jig))])), 'xyz', style);
+    const T = (t / 1000) % CYCLE;
+    let pos;
+    if (T < 5)        pos = lat.map((p, i) => p.map((x, k) => g0[i][k] + Math.sin(t / 700 + i) * 0.6));            // drifting gas
+    else if (T < 10)  pos = lat.map((p, i) => p.map((x, k) => g0[i][k] + (x - g0[i][k]) * ease((T - 5) / 5)));      // condense
+    else if (T < 15)  pos = lat.map(p => p.map(x => x + gauss() * 0.05));                                            // crystal
+    else              pos = lat.map((p, i) => p.map((x, k) => x + (g1[i][k] - x) * ease((T - 15) / 5)));            // evaporate
+    if (T > 19.9){ g0 = g1; g1 = gas(); }
+    swap(v, model, xyz(pos.map((p, i) => [els[i], ...p])), 'xyz', style);
   };
-  frame(t0); box(v, L + a / 2, [0, 0, 0].map(x => x - a / 4)); finish(v, document.getElementById('v0'));
+  frame(0); box(v, L + a / 2, [-a / 4, -a / 4, -a / 4], '11 Å'); finish(v, 0, 0.4);
   anims.push({ fps:24, frame });
 })();
 
-/* ---------- 2: platinum nanoparticle, CO and O landing, leaving as CO2 ---------- */
+/* ---------- 2: layered battery cathode, lithium ions hopping between the layers ---------- */
 (function(){
-  const a = 3.92, R = 15, L = 36, c = L / 2, basis = [[0,0,0],[.5,.5,0],[.5,0,.5],[0,.5,.5]], pt = [];
-  for (let i = -4; i <= 4; i++) for (let j = -4; j <= 4; j++) for (let k = -4; k <= 4; k++) for (const b of basis){
-    const x = (i + b[0]) * a, y = (j + b[1]) * a, z = (k + b[2]) * a;
-    if (x*x + y*y + z*z <= R*R) pt.push(['Pt', x + c, y + c, z + c]);
+  const a = 2.82, N = 8, gap = 4.7, slabs = 4, co = [], o = [], W = N * a;
+  for (let s = 0; s < slabs; s++) for (let i = 0; i < N; i++) for (let j = 0; j < N; j++){
+    const x = ((i + j / 2) % N + N) % N * a, y = j * a * Math.sqrt(3) / 2, z = s * gap;
+    co.push(['Co', x, y, z]);
+    o.push(['O', (x + a / 2) % W, y + a / (2 * Math.sqrt(3)), z + 1.0], ['O', (x + a) % W, y - a / (2 * Math.sqrt(3)), z - 1.0]);
   }
-  const v = viewer(1);
-  v.addModel(xyz(pt), 'xyz'); v.setStyle({}, { sphere:{ scale:.34, colorscheme:'Jmol' } });
-  const dir = () => { const u = [gauss(), gauss(), gauss()], m = Math.hypot(...u); return u.map(x => x / m); };
-  const mols = Array.from({ length:9 }, (_, i) => ({ d:dir(), kind:i % 3 ? 'CO' : 'O2', phase:rnd() * 7 }));
-  const model = {}, style = [[{}, { stick:{ radius:.16 }, sphere:{ scale:.3, colorscheme:'Jmol' } }]];
+  const H = (slabs - 1) * gap, L = Math.max(W, H) + 4, v = viewer(1);
+  v.addModel(xyz([...co, ...o]), 'xyz');
+  v.setStyle({ elem:'Co' }, { sphere:{ scale:.34, color:'#3f6fc4' } });
+  v.setStyle({ elem:'O' },  { sphere:{ scale:.2, color:'#d85a30' } });
+  // lithium sites: hex grid in each gap; ~65% occupied; ions hop to free neighbours
+  const sites = [], occ = new Map();
+  for (let s = 0; s < slabs - 1; s++) for (let i = 0; i < N; i++) for (let j = 0; j < N; j++)
+    sites.push({ s, i, j, p:[((i + j / 2 + .5) % N + N) % N * a, (j + 1 / 3) * a * Math.sqrt(3) / 2, s * gap + gap / 2] });
+  const key = (s, i, j) => `${s},${(i + N) % N},${(j + N) % N}`;
+  const at = (s, i, j) => sites.find(q => q.s === s && q.i === (i + N) % N && q.j === (j + N) % N);
+  const ions = [];
+  sites.forEach(q => { if (rnd() < .65){ ions.push({ from:q, to:q, t0:-1, next:rnd() * 3 }); occ.set(key(q.s, q.i, q.j), true); } });
+  const nb = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
+  const model = {}, style = [[{}, { sphere:{ scale:.42, color:'#2ec27e' } }]];
   const frame = t => {
-    const out = [];
-    for (const m of mols){
-      const T = ((t / 1000) + m.phase) % 7;                    // 0..2.5 fly in, 2.5..4.5 sit, 4.5..7 leave as CO2
-      let r, atoms;
-      if (T < 2.5) r = 17.5 - (17.5 - (R + 1.9)) * ease(T / 2.5);
-      else if (T < 4.5) r = R + 1.9 + Math.sin(T * 9) * 0.08;
-      else r = R + 1.9 + (T - 4.5) / 2.5 * 8;
-      const p = m.d.map(x => c + x * r), q = m.d.map(x => c + x * (r + 1.15));
-      if (T < 4.5) atoms = m.kind === 'CO' ? [['C', ...p], ['O', ...q]] : [['O', ...p], ['O', ...q]];
-      else atoms = [['O', ...m.d.map(x => c + x * (r - 1.16))], ['C', ...p], ['O', ...q]];
-      if (T >= 6.9) m.d = dir();
-      out.push(...atoms);
+    const T = t / 1000, out = [];
+    for (const ion of ions){
+      if (T > ion.next){
+        const [di, dj] = nb[Math.floor(rnd() * 6)], q = at(ion.from.s, ion.from.i + di, ion.from.j + dj);
+        if (q && !occ.get(key(q.s, q.i, q.j))){
+          occ.delete(key(ion.from.s, ion.from.i, ion.from.j)); occ.set(key(q.s, q.i, q.j), true);
+          ion.to = q; ion.t0 = T;
+        }
+        ion.next = T + 0.8 + rnd() * 2.5;
+      }
+      let f = ion.t0 < 0 ? 1 : ease((T - ion.t0) / 0.5);
+      if (f >= 1) ion.from = ion.to;
+      const wrap = (u, w) => Math.abs(u) > w / 2 ? u - Math.sign(u) * w : u;
+      const p = ion.from.p.map((x, k) => x + (k < 2 ? wrap(ion.to.p[k] - x, k ? W * .87 : W) : ion.to.p[k] - x) * f + gauss() * 0.04);
+      out.push(['Li', ...p]);
     }
     swap(v, model, xyz(out), 'xyz', style);
   };
-  frame(0); box(v, L); finish(v, document.getElementById('v1'));
+  frame(0); box(v, L, [-2, -2, -(L - H) / 2], '24 Å'); finish(v, 1, 0.4);
   anims.push({ fps:24, frame });
 })();
 
-/* ---------- 3: ubiquitin NMR ensemble (1D3Z), morphing between its 10 conformers ---------- */
+/* ---------- 3: ubiquitin (1D3Z) unfolding and refolding, then breathing through its NMR conformers ---------- */
 (async function(){
   const txt = await fetch('https://files.rcsb.org/download/1D3Z.pdb').then(r => r.text());
-  const models = [], lines = txt.split('\n'); let cur = null;
-  for (const l of lines){
+  const models = []; let cur = null;
+  for (const l of txt.split('\n')){
     if (l.startsWith('MODEL')) cur = [];
     else if (l.startsWith('ATOM') && cur) cur.push(l);
     else if (l.startsWith('ENDMDL')){ models.push(cur); cur = null; }
   }
-  const coords = models.map(m => m.map(l => [+l.slice(30, 38), +l.slice(38, 46), +l.slice(46, 54)]));
-  const tmpl = models[0];
+  const tmpl = models[0], coords = models.map(m => m.map(l => [+l.slice(30, 38), +l.slice(38, 46), +l.slice(46, 54)]));
+  const res = tmpl.map(l => +l.slice(22, 26)), nres = Math.max(...res);
   const cen = [0, 1, 2].map(k => coords[0].reduce((s, p) => s + p[k], 0) / coords[0].length);
-  const L = 48, v = viewer(2), model = {}, style = [[{}, { cartoon:{ color:'spectrum', thickness:.5 } }]];
+  // an "unfolded" state: swollen 1.5x with a smooth random walk along the chain, so the fold visibly comes apart
+  const walk = [[0, 0, 0]]; for (let r = 1; r <= nres; r++) walk.push(walk[r - 1].map(x => x * 0.85 + gauss() * 1.6));
+  const unf = coords[0].map((p, i) => p.map((x, k) => cen[k] + (x - cen[k]) * 1.5 + walk[res[i]][k]));
+  const L = 56, v = viewer(2), model = {}, style = [[{}, { cartoon:{ color:'spectrum', thickness:.55 } }]];
   const pdbAt = pos => tmpl.map((l, i) => l.slice(0, 30) + pos[i].map(x => x.toFixed(3).padStart(8)).join('') + l.slice(54)).join('\n');
+  const mix = (A, B, f) => A.map((p, i) => p.map((x, k) => x + (B[i][k] - x) * f));
   const frame = t => {
-    const T = (t / 1000 / 1.6) % models.length, i = Math.floor(T), j = (i + 1) % models.length, f = ease(T - i);
-    swap(v, model, pdbAt(coords[i].map((p, k) => p.map((x, d) => x + (coords[j][k][d] - x) * f))), 'pdb', style);
+    const T = (t / 1000) % CYCLE; let pos;
+    if (T < 4)       pos = mix(coords[0], unf, ease(T / 4));                                   // unfold
+    else if (T < 6)  pos = unf.map(p => p.map(x => x + gauss() * 0.15));                        // loose chain
+    else if (T < 11) pos = mix(unf, coords[0], ease((T - 6) / 5));                              // refold
+    else { const u = (T - 11) / 1.5, i = Math.floor(u) % models.length, j = (i + 1) % models.length; pos = mix(coords[i], coords[j], ease(u - Math.floor(u))); }
+    swap(v, model, pdbAt(pos), 'pdb', style);
   };
-  frame(0); box(v, L, cen.map(x => x - L / 2)); finish(v, document.getElementById('v2'));
-  anims.push({ fps:12, frame });
+  frame(0); box(v, L, cen.map(x => x - L / 2), '56 Å'); finish(v, 2, 0.3);
+  anims.push({ fps:14, frame });
 })();
 
-/* ---------- 4: pembrolizumab Fab and PD-1 (5JXE); the target docks, holds, leaves ---------- */
+/* ---------- 4: pembrolizumab Fab and PD-1 (5JXE): dock, rotate as one, release ---------- */
 (async function(){
   const txt = await fetch('https://files.rcsb.org/download/5JXE.pdb').then(r => r.text());
   const atoms = txt.split('\n').filter(l => l.startsWith('ATOM'));
@@ -184,15 +206,18 @@ const anims = [];
   v.addModel(fab.join('\n'), 'pdb'); v.setStyle({}, { cartoon:{ color:'#9aa3b2', thickness:.5 } });
   const model = {}, style = [[{}, { cartoon:{ color:'#eb6834', thickness:.55 } }]];
   const shifted = s => pd1.map(l => l.slice(0, 30) + [0, 1, 2].map(k => (+l.slice(30 + 8 * k, 38 + 8 * k) + dir[k] * s).toFixed(3).padStart(8)).join('') + l.slice(54)).join('\n');
+  let lastT = 0;
   const frame = t => {
-    const T = (t / 1000) % 8, far = 42;                      // 0..3 dock, 3..5.5 bound, 5.5..8 leave
-    const s = T < 3 ? far * (1 - ease(T / 3)) : T < 5.5 ? 0 : far * ease((T - 5.5) / 2.5);
+    const T = (t / 1000) % CYCLE, far = 45;                    // 0..4 dock, 4..14 bound and turning, 14..17 release, then apart
+    const s = T < 4 ? far * (1 - ease(T / 4)) : T < 14 ? 0 : T < 17 ? far * ease((T - 14) / 3) : far;
+    if (T >= 4 && T < 14) v.rotate((T - lastT) * 36, 'y');    // one full turn while bound
+    lastT = T;
     swap(v, model, shifted(s), 'pdb', style);
   };
   frame(0);
   const all = cenOf([...fab, ...pd1]), L = 100;
-  box(v, L, all.map(x => x - L / 2)); finish(v, document.getElementById('v3'));
-  anims.push({ fps:12, frame });
+  box(v, L, all.map(x => x - L / 2), '100 Å'); finish(v, 3, 0);
+  anims.push({ fps:14, frame });
 })();
 
 /* ---------- one clock for all four ---------- */
