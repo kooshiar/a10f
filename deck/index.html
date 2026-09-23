@@ -39,16 +39,16 @@
   <div class="eyebrow">Scale</div>
   <h1>The box AI can learn doubles every two years</h1>
   <div class="row" id="row"></div>
-  <div class="axis">Boxes not to scale, each is 10x more atoms · revenue of industries built on each class, approximate · hover to spin, drag to look around</div>
+  <div class="axis">Boxes not to scale, each is 10x more atoms · annual revenue of what each box is needed to design, approximate · hover to spin, drag to look around</div>
   <a class="next" href="../deck.html">Next →</a>
 </section>
 
 <script>
 const TIERS = [
-  { n:'~100 atoms', dim:'12 Å',  ind:'Drugs, agrochemicals, alloys, aerospace, chips',       usd:'$3T',   year:'2018 · ANI' },
-  { n:'1k',         dim:'40 Å',  ind:'Carbon capture, catalysts, batteries, polymers',        usd:'$1T',   year:'2022 · MACE, Allegro' },
-  { n:'10k',        dim:'56 Å',  ind:'Biologics, enzymes, food, agriculture, biofuels',       usd:'$0.4T', year:'2024 · MACE-MP-0, MatterSim' },
-  { n:'100k',       dim:'100 Å', ind:'Antibodies, vaccines, diagnostics, gene therapy',      usd:'$0.5T', year:'2026 · UMA-1.2, Orb-v3' }
+  { n:'~100 atoms', dim:'12 Å',  ind:'Chips, alloys, agrochemicals, aerospace',               usd:'$3T',   year:'2018 · ANI' },
+  { n:'1k',         dim:'40 Å',  ind:'Batteries, polymers, catalysts, carbon capture',        usd:'$1T',   year:'2022 · MACE, Allegro' },
+  { n:'10k',        dim:'56 Å',  ind:'Drug design, enzymes, food, agriculture',               usd:'$1.2T', year:'2024 · MACE-MP-0, MatterSim' },
+  { n:'100k',       dim:'100 Å', ind:'Antibodies, vaccines, cell and gene therapy, diagnostics', usd:'$0.6T', year:'2026 · UMA-1.2, Orb-v3' }
 ];
 const base = Math.min(innerHeight * 0.15, innerWidth * 0.09);
 const sizes = TIERS.map((_, i) => Math.round(base * Math.pow(1.45, i)));
