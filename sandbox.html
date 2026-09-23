@@ -212,8 +212,9 @@ function applyComp(){
 }
 function sendComp(comp){
   compInFlight = true; compSent = JSON.stringify(comp); compPending = null;
+  $('#compOut').innerHTML += ' <span style="color:var(--accent)">· building</span>';
   api('set_comp', { comp }).then(s => { firstFrame = true; applyState(s); })
-    .finally(() => { compInFlight = false; if (compPending && JSON.stringify(compPending) !== compSent) sendComp(compPending); });
+    .finally(() => { compInFlight = false; showComp(parseComp(compEl.value)); if (compPending && JSON.stringify(compPending) !== compSent) sendComp(compPending); });
 }
 compEl.oninput = () => { showComp(parseComp(compEl.value)); clearTimeout(compTimer); compTimer = setTimeout(applyComp, 800); };
 compEl.onkeydown = e => { if (e.key === 'Enter'){ e.preventDefault(); clearTimeout(compTimer); applyComp(); } };
