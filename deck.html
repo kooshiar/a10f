@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Designed matter</title>
+<script src="https://unpkg.com/3dmol/build/3Dmol-min.js"></script>
+<style>
+  :root{
+    --font-text:"SF Pro Text",-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --font-display:"SF Pro Display",-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --bg:#ffffff; --surface-2:#f8f7f2;
+    --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+    --line:rgba(0,0,0,.10); --accent:#2a78d6;
+    --c0:#2a78d6; --c1:#eb6834; --c2:#1baf7a; --c3:#eda100; --c4:#e87ba4;
+    --inset:clamp(28px,5vw,84px);
+  }
+  *{box-sizing:border-box}
+  html{scroll-snap-type:y mandatory; scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--font-text); -webkit-font-smoothing:antialiased;
+  }
+  section{
+    height:100dvh; overflow:hidden; scroll-snap-align:start; position:relative;
+    padding:clamp(56px,7vh,88px) var(--inset) clamp(48px,6vh,72px);
+    display:flex; flex-direction:column; border-bottom:2px solid var(--ink);
+  }
+  .eyebrow{
+    font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:18px;
+  }
+  h1{
+    font-family:var(--font-display); font-weight:700;
+    font-size:clamp(34px,5.2vw,62px); line-height:1.04; letter-spacing:-.028em;
+    margin:0 0 clamp(24px,4vh,44px); max-width:24ch;
+  }
+  .lede{
+    font-size:clamp(17px,1.5vw,21px); line-height:1.42; letter-spacing:-.01em;
+    color:var(--ink-2); margin:0 0 clamp(26px,4vh,44px); max-width:62ch;
+  }
+  .lede b{color:var(--ink); font-weight:600}
+  .no{position:absolute; right:var(--inset); top:clamp(56px,7vh,88px); font-size:13px; color:var(--muted)}
+
+  /* page 1 treemap */
+  #tm{flex:1; position:relative; min-height:0}
+  .tb{
+    position:absolute; border:1px solid var(--line); border-radius:14px; background:var(--bg);
+    padding:clamp(9px,1vw,15px); display:flex; flex-direction:column; overflow:hidden;
+  }
+  .tb .lab{font-size:13px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .tb .mols{flex:1; min-height:0; display:flex; gap:clamp(6px,.8vw,12px); align-items:center; padding:5px 0}
+  .tb .m{display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0}
+  .tb .m .lab{max-width:100%; text-align:center; white-space:normal; line-height:1.2; max-height:2.4em; overflow:hidden}
+  .tb .viz{width:var(--side); height:var(--side); border-radius:8px; overflow:hidden; background:var(--bg); position:relative}
+  .tb .viz canvas{display:block}
+  .tb .num{
+    font-family:var(--font-display); font-weight:600; letter-spacing:-.03em;
+    font-size:var(--numsize,32px); line-height:1; white-space:nowrap;
+  }
+  .foot{
+    margin-top:clamp(10px,1.6vh,18px); font-size:13px; color:var(--muted);
+    border-top:1px solid var(--line); padding-top:10px;
+  }
+  #motion{
+    position:absolute; right:var(--inset); top:calc(clamp(56px,7vh,88px) + 22px);
+    font:inherit; font-size:12.5px; color:var(--ink-2); background:none;
+    border:1px solid var(--line); border-radius:999px; padding:4px 12px; cursor:pointer;
+  }
+  #motion:hover{background:rgba(0,0,0,.04)}
+  .foot{
+    margin-top:clamp(14px,2vh,22px); font-size:13px; color:var(--muted);
+    border-top:1px solid var(--line); padding-top:12px;
+  }
+
+  /* generic card rows */
+  .rows{flex:1; display:grid; gap:clamp(8px,1.2vw,14px); align-content:start; min-height:0}
+  .r4{grid-template-columns:repeat(4,1fr)}
+  .r3{grid-template-columns:repeat(3,1fr)}
+  .box{
+    border:1px solid var(--line); border-radius:14px; padding:clamp(16px,1.8vw,24px);
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .box .k{
+    font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+  }
+  .box h3{font-family:var(--font-display); font-size:clamp(17px,1.6vw,21px); font-weight:600; letter-spacing:-.015em; margin:0}
+  .box p{margin:0; font-size:15px; line-height:1.45; color:var(--ink-2)}
+  .box .big{
+    font-family:var(--font-display); font-weight:600; letter-spacing:-.03em;
+    font-size:clamp(26px,2.8vw,38px); line-height:1; margin-top:auto; padding-top:10px;
+  }
+  .k0{color:var(--c0)} .k1{color:var(--c1)} .k2{color:var(--c2)} .k3{color:var(--c3)}
+
+  .band{background:var(--surface-2)}
+  .split{flex:1; display:grid; gap:clamp(16px,2.5vw,44px); grid-template-columns:minmax(0,5fr) minmax(0,7fr); align-items:center; min-height:0}
+  .pts{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:clamp(14px,2.4vh,24px)}
+  .pts li{
+    font-size:clamp(17px,1.7vw,23px); line-height:1.35; letter-spacing:-.012em; color:var(--ink);
+    padding-left:20px; position:relative;
+  }
+  .pts li::before{
+    content:''; position:absolute; left:0; top:.52em; width:8px; height:8px;
+    border-radius:50%; background:var(--c0);
+  }
+  @media (max-width:860px){ .split{grid-template-columns:minmax(0,1fr)} }
+  .two{flex:1; display:grid; gap:clamp(10px,1.2vw,16px); grid-template-columns:minmax(0,7fr) minmax(0,11fr); min-height:0}
+  .stats{display:grid; gap:clamp(10px,1.2vw,16px); grid-template-rows:repeat(3,minmax(0,1fr)); min-height:0}
+  .box.sb{justify-content:center; gap:2px; overflow:hidden}
+  .box.sb .big{margin:0; padding:0; font-size:clamp(28px,3vw,42px)}
+  .box.sb h3{font-size:clamp(15px,1.3vw,17px)}
+  .box.sb p{font-size:14px}
+  .box.chart{justify-content:center; overflow:hidden; background:var(--bg)}
+  .box.chart svg{margin:6px 0}
+  .note{font-size:12.5px; color:var(--muted); margin:0}
+  @media (max-width:860px){ .two{grid-template-columns:minmax(0,1fr)} }
+
+  @media (max-width:860px){
+    section{height:auto; overflow:visible; padding-bottom:44px}
+    html{scroll-snap-type:none}
+    #tm{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
+    .tb{position:static; min-height:150px}
+    #motion{display:none}
+    .r4,.r3{grid-template-columns:1fr}
+    .cell{min-height:112px}
+    .no{display:none}
+  }
+  @media (max-width:520px){
+    #tm{grid-template-columns:minmax(0,1fr)}
+  }
+  @media print{
+    html{scroll-snap-type:none}
+    section{min-height:auto; height:100vh; page-break-after:always; border-bottom:0}
+  }
+</style>
+</head>
+<body>
+
+<section>
+  <div class="no">01</div>
+  <button id="motion">Pause motion</button>
+  <div class="eyebrow">The market</div>
+  <h1>$425B/yr from 14 designed molecules</h1>
+  <div id="tm"></div>
+  <div class="foot">Box value: peak annual revenue for drugs, annual market for materials. Approximate. Smallest boxes enlarged to stay readable.</div>
+</section>
+
+<section class="band">
+  <div class="no">02</div>
+  <div class="eyebrow">The shift</div>
+  <h1>AI raised design hit rates 100x</h1>
+
+  <div class="two">
+    <div class="stats">
+      <div class="box sb"><div class="big">1000x</div><p>AlphaFold predicted 200M protein structures. Experiments had solved 200k in 50 years.</p></div>
+      <div class="box sb"><div class="big">8x</div><p>GNoME found 380k stable crystals. Everything known before it totalled 48k.</p></div>
+      <div class="box sb"><div class="big">3x</div><p>Insilico went from target to drug candidate in 18 months. The industry average is 54.</p></div>
+    </div>
+
+    <div class="box chart">
+      <svg viewBox="0 0 560 250" width="100%" role="img" aria-label="Hit rate by method, log scale">
+        <g font-family="var(--font-text)" font-size="14">
+          <g fill="var(--muted)" font-size="12">
+            <text x="150" y="232">0.01%</text><text x="252" y="232">0.1%</text>
+            <text x="354" y="232">1%</text><text x="452" y="232">10%</text>
+          </g>
+          <g stroke="var(--line)"><path d="M150 24V214M252 24V214M354 24V214M456 24V214" fill="none"/></g>
+
+          <text x="0" y="46" fill="var(--ink-2)">HTS screening</text>
+          <rect x="150" y="32" width="8" height="20" rx="2" fill="#c9c7c0"/>
+          <text x="166" y="46" fill="var(--muted)" font-size="12">0.01%</text>
+
+          <text x="0" y="94" fill="var(--ink-2)">Phage display</text>
+          <rect x="150" y="80" width="102" height="20" rx="2" fill="#c9c7c0"/>
+          <text x="260" y="94" fill="var(--muted)" font-size="12">0.1%</text>
+
+          <text x="0" y="142" fill="var(--ink)">RFdiffusion</text>
+          <rect x="150" y="128" width="316" height="20" rx="2" fill="var(--c0)"/>
+          <text x="474" y="142" fill="var(--ink)" font-size="12">up to 19%</text>
+
+          <text x="0" y="190" fill="var(--ink)">Chai-2</text>
+          <rect x="150" y="176" width="320" height="20" rx="2" fill="var(--c0)"/>
+          <text x="478" y="190" fill="var(--ink)" font-size="12">~20%</text>
+        </g>
+      </svg>
+      <p class="note">Log scale. Blue is model-designed, grey is search.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="no">03</div>
+  <div class="eyebrow">The gap</div>
+  <h1>LLMs can't do chemistry</h1>
+
+  <div class="split">
+    <ul class="pts">
+      <li>Useful predictions need 1 kcal/mol accuracy. LLMs approximate.</li>
+      <li>The output is a force on every atom, in 3D, not text.</li>
+      <li>The same model must handle 2 atoms and 20,000 atoms.</li>
+    </ul>
+
+    <div class="box chart">
+      <svg viewBox="0 0 560 300" width="100%" role="img" aria-label="How energy error turns into potency error">
+        <g font-family="var(--font-text)" font-size="13">
+          <text x="70" y="28" fill="var(--ink)" font-weight="600" font-size="14">How far off the predicted drug potency is</text>
+          <path d="M70 250H530" stroke="var(--line)" fill="none"/>
+          <rect x="88" y="233" width="56" height="17" rx="3" fill="#c9c7c0"/>
+          <text x="116" y="225" text-anchor="middle" fill="var(--ink)" font-weight="600">2x</text>
+          <text x="116" y="270" text-anchor="middle" fill="var(--ink-2)">0.5</text>
+          <rect x="180" y="215" width="56" height="35" rx="3" fill="var(--c0)"/>
+          <text x="208" y="207" text-anchor="middle" fill="var(--ink)" font-weight="600">5x</text>
+          <text x="208" y="270" text-anchor="middle" fill="var(--ink-2)">1</text>
+          <rect x="272" y="180" width="56" height="70" rx="3" fill="#c9c7c0"/>
+          <text x="300" y="172" text-anchor="middle" fill="var(--ink)" font-weight="600">29x</text>
+          <text x="300" y="270" text-anchor="middle" fill="var(--ink-2)">2</text>
+          <rect x="364" y="146" width="56" height="104" rx="3" fill="#c9c7c0"/>
+          <text x="392" y="138" text-anchor="middle" fill="var(--ink)" font-weight="600">157x</text>
+          <text x="392" y="270" text-anchor="middle" fill="var(--ink-2)">3</text>
+          <rect x="456" y="76" width="56" height="174" rx="3" fill="#c9c7c0"/>
+          <text x="484" y="68" text-anchor="middle" fill="var(--ink)" font-weight="600">4,590x</text>
+          <text x="484" y="270" text-anchor="middle" fill="var(--ink-2)">5</text>
+          <text x="300" y="292" text-anchor="middle" fill="var(--muted)" font-size="12">error in the model's energy, kcal/mol (blue = the precision chemistry needs)</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="no">04</div>
+  <div class="eyebrow">Why now</div>
+  <h1>Training data is now computed, not measured</h1>
+
+  <div class="split">
+    <ul class="pts">
+      <li>Quantum simulation gives the exact answer without any lab work.</li>
+      <li>GPUs keep cutting the cost, so the data supply has no ceiling.</li>
+      <li>Meta has already published 200M+ labelled calculations, free to use.</li>
+    </ul>
+
+    <div class="box chart">
+      <svg viewBox="0 0 560 300" width="100%" role="img" aria-label="Atoms simulable per year">
+        <g font-family="var(--font-text)" font-size="13">
+          <rect x="70" y="145" width="460" height="35" fill="var(--c2)" opacity=".10"/>
+          <text x="76" y="140" fill="var(--muted)" font-size="12">a protein</text>
+
+          <path d="M70 40V250H530" stroke="var(--line)" fill="none"/>
+          <g fill="var(--muted)" font-size="12" text-anchor="end">
+            <text x="62" y="254">100</text><text x="62" y="184">10⁴</text>
+            <text x="62" y="114">10⁶</text><text x="62" y="44">10⁸</text>
+          </g>
+          <g fill="var(--muted)" font-size="12">
+            <text x="70" y="272">2015</text><text x="262" y="272">2020</text>
+            <text x="530" y="272" text-anchor="end">2026</text>
+          </g>
+
+          <path d="M70 239.5 L279 225.5 L530 208.7" stroke="#c9c7c0" stroke-width="2.5" fill="none"/>
+          <text x="424" y="202" fill="var(--ink-2)" text-anchor="end">quantum simulation</text>
+
+          <path d="M70 180 L279 145 L405 92.5 L530 40" stroke="var(--c0)" stroke-width="2.5" fill="none"/>
+          <circle cx="530" cy="40" r="5" fill="var(--c0)"/>
+          <text x="518" y="60" fill="var(--ink)" font-weight="600" text-anchor="end">learned models</text>
+
+          <text x="70" y="292" fill="var(--muted)" font-size="12">atoms simulable at fixed cost</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<script>
+const INDUSTRIES = [
+  { name:'Polymers', mols:[
+    { id:'pe',        name:'Polyethylene',    val:120, src:{k:'file', v:'data/pe.pdb'},      view:'molecule' },
+    { id:'nylon',     name:'Nylon 6,6',       val:30,  src:{k:'file', v:'data/nylon66.pdb'}, view:'molecule' },
+    { id:'ptfe',      name:'PTFE',            val:6,   src:{k:'file', v:'data/ptfe.pdb'},    view:'molecule' } ] },
+  { name:'Metals and alloys', mols:[
+    { id:'ss304',     name:'Stainless steel', val:110, src:{k:'file', v:'data/ss304.pdb'},   view:'metal' },
+    { id:'nitinol',   name:'Nitinol',         val:10,  src:{k:'file', v:'data/nitinol.pdb'}, view:'metal' } ] },
+  { name:'Biologic drugs', mols:[
+    { id:'keytruda',  name:'Keytruda',   val:29,  src:{k:'pdb', v:'5DK3'},              view:'protein' },
+    { id:'sema',      name:'Ozempic',         val:25,  src:{k:'pdb', v:'4ZGM'},              view:'protein' },
+    { id:'adalimumab',name:'Humira',          val:21,  src:{k:'pdb', v:'4NYL'},              view:'protein' } ] },
+  { name:'Batteries and catalysts', mols:[
+    { id:'lco',       name:'Li-ion cathode',  val:30,  src:{k:'file', v:'data/licoo2.pdb'},  view:'framework' },
+    { id:'zsm5',      name:'ZSM-5 zeolite',   val:4,   src:{k:'file', v:'data/zsm5.pdb'},    view:'framework' } ] },
+  { name:'Small-molecule drugs', mols:[
+    { id:'apixaban',  name:'Eliquis',         val:19,  src:{k:'cid', v:10182969},            view:'molecule' },
+    { id:'atorva',    name:'Lipitor',         val:13,  src:{k:'cid', v:60823},               view:'molecule' } ] },
+  { name:'Food and agriculture', mols:[
+    { id:'glyphosate',name:'Glyphosate',      val:8,   src:{k:'cid', v:3496},                view:'molecule' },
+    { id:'legh',      name:'Leghemoglobin',   val:0.4, src:{k:'pdb', v:'1FSL'},              view:'protein' } ] }
+];
+INDUSTRIES.forEach(g => g.sum = g.mols.reduce((t, m) => t + m.val, 0));
+
+const tm = document.getElementById('tm');
+tm.innerHTML = INDUSTRIES.map((g, i) =>
+  `<div class="tb" id="tb-${i}">
+     <div class="lab">${g.name}</div>
+     <div class="mols">${g.mols.map(m =>
+       `<div class="m"><div class="viz" id="v-${m.id}"></div><div class="lab">${m.name}</div></div>`).join('')}</div>
+     <div class="num">$${Math.round(g.sum)}B</div>
+   </div>`).join('');
+
+/* squarified treemap (Bruls et al.), weights clamped so small boxes stay usable */
+function squarify(items, x, y, w, h){
+  const total = items.reduce((t, i) => t + i.w, 0), scale = w * h / total;
+  const its = items.map(i => ({ ...i, a:i.w * scale })).sort((a, b) => b.a - a.a);
+  const rects = []; let row = [], X = x, Y = y, W = w, H = h;
+  const worst = (r, side) => { const s = r.reduce((t, i) => t + i.a, 0);
+    let mx = 0, mn = Infinity; r.forEach(i => { mx = Math.max(mx, i.a); mn = Math.min(mn, i.a); });
+    return Math.max(side * side * mx / (s * s), s * s / (side * side * mn)); };
+  const place = r => { const s = r.reduce((t, i) => t + i.a, 0);
+    if (W >= H){ const rw = s / H; let yy = Y; r.forEach(i => { const rh = i.a / rw; rects.push({ ...i, x:X, y:yy, w:rw, h:rh }); yy += rh; }); X += rw; W -= rw; }
+    else       { const rh = s / W; let xx = X; r.forEach(i => { const rw = i.a / rh; rects.push({ ...i, x:xx, y:Y, w:rw, h:rh }); xx += rw; }); Y += rh; H -= rh; } };
+  for (const it of its){
+    const side = Math.min(W, H);
+    if (!row.length || worst(row.concat(it), side) <= worst(row, side)) row.push(it); else { place(row); row = [it]; }
+  }
+  if (row.length) place(row);
+  return rects;
+}
+
+function layoutTreemap(){
+  const mobile = innerWidth < 860, W = tm.clientWidth, H = tm.clientHeight, gut = 5;
+  const total = INDUSTRIES.reduce((t, g) => t + g.sum, 0);
+  const items = INDUSTRIES.map((g, i) => ({ i, w:Math.max(g.sum, 0.09 * total) }));
+  const rects = mobile ? [] : squarify(items, 0, 0, W, H);
+  INDUSTRIES.forEach((g, i) => {
+    const el = document.getElementById('tb-' + i);
+    let bw, bh;
+    if (mobile){ el.style.cssText = ''; bw = el.clientWidth; bh = el.clientHeight; }
+    else {
+      const r = rects.find(q => q.i === i);
+      el.style.cssText = `left:${r.x + gut}px; top:${r.y + gut}px; width:${r.w - 2 * gut}px; height:${r.h - 2 * gut}px`;
+      bw = r.w - 2 * gut; bh = r.h - 2 * gut;
+    }
+    const pad = parseFloat(getComputedStyle(el).paddingLeft), n = g.mols.length;
+    const numSize = Math.max(22, Math.min(56, bh * 0.2));
+    const innerH = bh - 2 * pad - 18 - numSize - 10 - 34, innerW = bw - 2 * pad - 10 * (n - 1);
+    const side = Math.max(44, Math.floor(Math.min(innerH, innerW / n)));
+    el.style.setProperty('--side', side + 'px');
+    el.style.setProperty('--numsize', numSize + 'px');
+  });
+}
+
+async function grab(m){
+  const s = m.src;
+  const url = s.k === 'file' ? s.v
+            : s.k === 'pdb'  ? `https://files.rcsb.org/download/${s.v}.pdb`
+            : `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${s.v}/SDF?record_type=3d`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(r.status);
+  return { data: await r.text(), fmt: s.k === 'cid' ? 'sdf' : 'pdb' };
+}
+
+function dress(v, view){
+  v.setViewStyle({ style:'outline', color:'black', width:0.06 });
+  if (view === 'protein'){
+    v.setStyle({}, { cartoon:{ color:'spectrum', thickness:.4 } });
+    v.setStyle({ hetflag:true }, { stick:{ radius:.18 } });
+  } else if (view === 'framework'){
+    v.setStyle({}, { stick:{ radius:.14 }, sphere:{ scale:.18 } });
+  } else if (view === 'metal'){
+    v.setStyle({}, { sphere:{ scale:.44 } });
+  } else {
+    v.setStyle({}, { stick:{ radius:.16 }, sphere:{ scale:.28 } });
+  }
+  v.setStyle({ resn:['HOH','WAT','DOD'] }, {});
+}
+
+const viewers = [];
+let moving = true;
+layoutTreemap();
+
+(async () => {
+  for (const m of INDUSTRIES.flatMap(g => g.mols)){
+    const box = document.getElementById('v-' + m.id);
+    try {
+      const { data, fmt } = await grab(m);
+      const v = $3Dmol.createViewer(box, { backgroundColor:'#ffffff', antialias:true });
+      v.addModel(data, fmt);
+      dress(v, m.view);
+      v.rotate(22, 'x'); v.zoomTo(); v.zoom(0.82); v.render();
+      viewers.push(v);
+      if (moving) v.spin('y', 0.35);
+      await new Promise(r => setTimeout(r, 40));
+    } catch(e){
+      box.style.opacity = .25;
+    }
+  }
+})();
+
+const btn = document.getElementById('motion');
+btn.onclick = () => {
+  moving = !moving;
+  btn.textContent = moving ? 'Pause motion' : 'Resume motion';
+  viewers.forEach(v => v.spin(moving ? 'y' : false, 0.35));
+};
+
+// only burn GPU while page one is on screen
+new IntersectionObserver(([e]) => {
+  viewers.forEach(v => v.spin(e.isIntersecting && moving ? 'y' : false, 0.35));
+}, { threshold:.15 }).observe(document.querySelector('section'));
+
+addEventListener('resize', () => {
+  layoutTreemap();
+  viewers.forEach(v => { v.resize(); v.zoomTo(); v.zoom(0.82); v.render(); });
+});
+
+  const secs = [...document.querySelectorAll('section')];
+  addEventListener('keydown', e => {
+    const i = secs.findIndex(s => s.getBoundingClientRect().top > -window.innerHeight / 2);
+    if (e.key === 'ArrowDown' || e.key === 'PageDown'){ e.preventDefault(); secs[Math.min(i + 1, secs.length - 1)]?.scrollIntoView(); }
+    if (e.key === 'ArrowUp'   || e.key === 'PageUp'){   e.preventDefault(); secs[Math.max(i - 1, 0)]?.scrollIntoView(); }
+  });
+</script>
+</body>
+</html>

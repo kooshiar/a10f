@@ -1,0 +1,1089 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Structure viewer</title>
+<script src="https://unpkg.com/3dmol/build/3Dmol-min.js"></script>
+<script src="config.js"></script>
+<style>
+  :root{
+    --bg:#0B0C0E; --panel:rgba(255,255,255,.045); --panel-solid:#141619;
+    --line:rgba(255,255,255,.09); --line-strong:rgba(255,255,255,.16);
+    --fg:#EAEBEE; --fg-2:#9A9EA7; --fg-3:#63676F;
+    --accent:#6EA8FE; --danger:#F2777A;
+    --r:12px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--fg); overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  #viewer{position:fixed; inset:0; z-index:0}
+  #viewer canvas{display:block}
+
+  /* ---------- search ---------- */
+  .searchWrap{
+    position:fixed; left:50%; top:36vh; transform:translateX(-50%);
+    width:min(560px, calc(100vw - 32px)); z-index:30;
+    transition:top .55s cubic-bezier(.32,.72,0,1);
+  }
+  body.loaded .searchWrap{top:18px}
+
+  .searchBox{
+    display:flex; align-items:center; gap:10px;
+    background:rgba(20,22,25,.82); backdrop-filter:blur(20px) saturate(1.4);
+    -webkit-backdrop-filter:blur(20px) saturate(1.4);
+    border:1px solid var(--line); border-radius:var(--r);
+    padding:0 14px; height:48px;
+    box-shadow:0 8px 32px rgba(0,0,0,.5);
+    transition:border-color .2s;
+  }
+  .searchBox:focus-within{border-color:var(--line-strong)}
+  .searchBox svg{flex:none; color:var(--fg-3)}
+  #q{
+    flex:1; background:none; border:0; outline:0; color:var(--fg);
+    font-size:15px; font-family:inherit; height:100%;
+  }
+  #q::placeholder{color:var(--fg-3)}
+  .spin{
+    width:14px;height:14px;border:1.5px solid var(--line-strong);
+    border-top-color:var(--accent);border-radius:50%;
+    animation:sp .7s linear infinite; flex:none; display:none;
+  }
+  body.busy .spin{display:block}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  #sug{
+    margin-top:6px; background:rgba(20,22,25,.94);
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    border:1px solid var(--line); border-radius:var(--r);
+    overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,.55); display:none;
+  }
+  #sug.open{display:block}
+  .sug-item{
+    padding:10px 14px; font-size:14px; cursor:pointer; color:var(--fg-2);
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  .sug-item:hover,.sug-item.active{background:rgba(255,255,255,.06); color:var(--fg)}
+  .sug-item .tag{font-size:11px; color:var(--fg-3); letter-spacing:.02em}
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:fixed; left:50%; top:calc(36vh + 76px); transform:translateX(-50%);
+    width:min(560px, calc(100vw - 32px)); z-index:25; text-align:center;
+    transition:opacity .3s;
+  }
+  body.loaded .hero{opacity:0; pointer-events:none}
+  .hero p{margin:0 0 14px; font-size:13px; color:var(--fg-3)}
+  .chips{display:flex; flex-wrap:wrap; gap:7px; justify-content:center}
+  .chip{
+    font-size:12.5px; color:var(--fg-2); padding:6px 12px;
+    border:1px solid var(--line); border-radius:999px; cursor:pointer;
+    transition:all .15s; background:rgba(255,255,255,.02);
+  }
+  .chip:hover{color:var(--fg); border-color:var(--line-strong); background:rgba(255,255,255,.06)}
+
+  /* ---------- info panel ---------- */
+  #info{
+    position:fixed; left:18px; top:18px; z-index:20;
+    width:236px; padding:16px;
+    background:rgba(20,22,25,.72); backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    border:1px solid var(--line); border-radius:var(--r);
+    opacity:0; transform:translateY(-6px); pointer-events:none;
+    transition:opacity .35s .1s, transform .35s .1s;
+  }
+  body.loaded #info.show{opacity:1; transform:none; pointer-events:auto}
+  #info h1{
+    margin:0 0 3px; font-size:15px; font-weight:600; letter-spacing:-.01em;
+    line-height:1.3; word-break:break-word;
+  }
+  #info .sub{font-size:12px; color:var(--fg-3); margin-bottom:13px; line-height:1.45}
+  .row{display:flex; justify-content:space-between; gap:10px; padding:5px 0; font-size:12.5px}
+  .row + .row{border-top:1px solid rgba(255,255,255,.05)}
+  .row .k{color:var(--fg-3)}
+  .row .v{color:var(--fg-2); text-align:right; font-variant-numeric:tabular-nums}
+  .row .v sub{font-size:.72em}
+  #info a{color:var(--accent); text-decoration:none; font-size:12px}
+  #info a:hover{text-decoration:underline}
+
+  /* ---------- controls ---------- */
+  #ctrl{
+    position:fixed; left:50%; bottom:20px; transform:translateX(-50%) translateY(8px);
+    z-index:20; display:flex; align-items:center; gap:4px; padding:5px;
+    background:rgba(20,22,25,.8); backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    border:1px solid var(--line); border-radius:14px;
+    box-shadow:0 8px 32px rgba(0,0,0,.5);
+    opacity:0; pointer-events:none; transition:opacity .35s .1s, transform .35s .1s;
+  }
+  body.loaded #ctrl{opacity:1; transform:translateX(-50%); pointer-events:auto}
+  .btn{
+    height:32px; padding:0 11px; border-radius:9px; border:0; cursor:pointer;
+    background:none; color:var(--fg-2); font-size:12.5px; font-family:inherit;
+    display:flex; align-items:center; gap:6px; transition:all .15s; white-space:nowrap;
+  }
+  .btn:hover{background:rgba(255,255,255,.07); color:var(--fg)}
+  .btn.on{background:rgba(110,168,254,.16); color:var(--accent)}
+  .btn:disabled{opacity:.32; cursor:default}
+  .btn:disabled:hover{background:none; color:var(--fg-2)}
+  .sep{width:1px; height:20px; background:var(--line); margin:0 4px; flex:none}
+  #speedWrap{
+    display:flex; align-items:center; width:0; opacity:0; overflow:hidden;
+    transition:width .28s cubic-bezier(.4,0,.2,1), opacity .18s;
+  }
+  #speedWrap.on{width:98px; opacity:1}
+  #speed{
+    -webkit-appearance:none; appearance:none; width:86px; height:3px; margin:0 6px;
+    border-radius:2px; background:var(--line-strong); outline:0; cursor:pointer;
+  }
+  #speed::-webkit-slider-thumb{
+    -webkit-appearance:none; width:11px; height:11px; border-radius:50%;
+    background:var(--accent); border:0; cursor:pointer;
+  }
+  #speed::-moz-range-thumb{
+    width:11px; height:11px; border-radius:50%; background:var(--accent);
+    border:0; cursor:pointer;
+  }
+  #frameLabel{
+    font-size:11.5px; color:var(--fg-3); min-width:52px; text-align:center;
+    font-variant-numeric:tabular-nums;
+  }
+
+  #hint{
+    position:fixed; right:18px; bottom:22px; z-index:20; font-size:11.5px;
+    color:var(--fg-3); text-align:right; line-height:1.7; opacity:0;
+    transition:opacity .35s .2s; pointer-events:none;
+  }
+  body.loaded #hint{opacity:1}
+
+  #chat{
+    position:fixed; right:18px; bottom:76px; z-index:22; width:308px;
+    display:flex; flex-direction:column; overflow:hidden;
+    background:rgba(20,22,25,.86); backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    border:1px solid var(--line); border-radius:var(--r);
+    box-shadow:0 12px 40px rgba(0,0,0,.55);
+    opacity:0; transform:translateY(8px) scale(.98); pointer-events:none;
+    transform-origin:bottom right; transition:opacity .22s, transform .22s cubic-bezier(.32,.72,0,1);
+  }
+  #chat.open{opacity:1; transform:none; pointer-events:auto}
+  #chatLog{
+    max-height:280px; overflow-y:auto; padding:12px 13px;
+    display:flex; flex-direction:column; gap:9px; font-size:13px; line-height:1.55;
+  }
+  #chatLog:empty{display:none}
+  .msg{white-space:pre-wrap; word-break:break-word}
+  .msg.user{color:var(--fg-3)}
+  .msg.user::before{content:'› '; color:var(--fg-3)}
+  .msg.bot{color:var(--fg)}
+  .msg.sys{color:var(--fg-3); font-style:italic}
+  .msg.out{color:var(--accent); font-family:var(--font-mono,ui-monospace,SFMono-Regular,Menlo,monospace); font-size:12px}
+  .msg.err{color:var(--danger)}
+  #chatIn{
+    flex:none; border:0; border-top:1px solid var(--line); outline:0;
+    background:none; color:var(--fg); font:inherit; font-size:13.5px;
+    padding:11px 13px; width:100%;
+  }
+  #chatIn::placeholder{color:var(--fg-3)}
+  #chatIn:disabled{opacity:.5}
+  body.chatting #hint{opacity:0}
+  @media (max-width:720px){ #chat{left:12px; right:12px; width:auto} }
+
+  #toast{
+    position:fixed; left:50%; bottom:78px; transform:translateX(-50%);
+    z-index:40; padding:11px 18px; font-size:13.5px; color:var(--fg-2);
+    background:rgba(20,22,25,.9); border:1px solid var(--line);
+    border-radius:10px; display:none; backdrop-filter:blur(20px);
+  }
+  #toast.show{display:block}
+  #toast.err{color:var(--danger); border-color:rgba(242,119,122,.3)}
+
+  @media (max-width:720px){
+    #info{left:12px; right:12px; width:auto; top:74px}
+    #hint{display:none}
+    .searchWrap{width:calc(100vw - 24px)}
+  }
+</style>
+</head>
+<body>
+
+<div id="viewer"></div>
+
+<div class="searchWrap">
+  <div class="searchBox">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <input id="q" placeholder="Search a molecule, drug, or PDB id…" autocomplete="off" spellcheck="false">
+    <div class="spin"></div>
+  </div>
+  <div id="sug"></div>
+</div>
+
+<div class="hero">
+  <p>Type a name, formula, or 4-character PDB id</p>
+  <div class="chips">
+    <span class="chip">caffeine</span>
+    <span class="chip">aspirin</span>
+    <span class="chip">cholesterol</span>
+    <span class="chip">penicillin G</span>
+    <span class="chip">taxol</span>
+    <span class="chip">1CRN</span>
+  </div>
+</div>
+
+<div id="info"></div>
+
+<div id="ctrl">
+  <button class="btn" data-style="ballstick">Ball &amp; stick</button>
+  <button class="btn" data-style="stick">Stick</button>
+  <button class="btn" data-style="sphere">Spacefill</button>
+  <button class="btn" data-style="cartoon">Cartoon</button>
+  <div class="sep"></div>
+  <button class="btn" id="prev" title="Previous conformer">‹</button>
+  <span id="frameLabel">— / —</span>
+  <button class="btn" id="next" title="Next conformer">›</button>
+  <button class="btn" id="play">Animate</button>
+  <span id="speedWrap"><input type="range" id="speed" min="1" max="10" step="1" value="4"
+        title="Animation speed" aria-label="Animation speed"></span>
+  <button class="btn on" id="align" title="Superimpose conformers on the rigid core">Align</button>
+  <div class="sep"></div>
+  <button class="btn" id="spin">Spin</button>
+  <button class="btn" id="reset">Reset</button>
+  <button class="btn" id="chatBtn" title="Talk to this structure" aria-label="Talk to this structure"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-4-.9L3 21l1.9-4.6A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z"/></svg></button>
+</div>
+
+<div id="chat">
+  <div id="chatLog"></div>
+  <input id="chatIn" placeholder="make carbons green · help" autocomplete="off" spellcheck="false">
+</div>
+
+<div id="hint">drag to rotate · scroll to zoom<br>right-drag to pan</div>
+<div id="toast"></div>
+
+<script>
+const PC = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug';
+const AC = 'https://pubchem.ncbi.nlm.nih.gov/rest/autocomplete/compound';
+
+const $ = s => document.querySelector(s);
+const qEl = $('#q'), sugEl = $('#sug'), infoEl = $('#info'), toastEl = $('#toast');
+const frameLabel = $('#frameLabel'), prevBtn = $('#prev'), nextBtn = $('#next'),
+      playBtn = $('#play'), alignBtn = $('#align'),
+      speedWrap = $('#speedWrap'), speedEl = $('#speed');
+
+let viewer, curStyle = 'ballstick', frames = 1, frame = 0;
+let sdfFrames = [], rawFrames = [], parsedFrames = [], frameFmt = 'sdf';
+let animTimer = null, animDir = 1, animT = 0, alignOn = true;
+let animStep = 0.14;
+let animating = false, spinning = false, token = 0, isProtein = false;
+
+function boot(){
+  viewer = $3Dmol.createViewer($('#viewer'), { backgroundColor:'#0B0C0E', antialias:true });
+  viewer.render();
+}
+
+function toast(msg, isErr){
+  toastEl.textContent = msg;
+  toastEl.className = 'show' + (isErr ? ' err' : '');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toastEl.className = '', 2600);
+}
+const busy = on => document.body.classList.toggle('busy', on);
+
+/* ---------------- autocomplete ---------------- */
+let acTimer, acIdx = -1, acItems = [];
+
+qEl.addEventListener('input', () => {
+  clearTimeout(acTimer);
+  const v = qEl.value.trim();
+  if (v.length < 2) return closeSug();
+  acTimer = setTimeout(() => suggest(v), 170);
+});
+
+async function suggest(v){
+  const items = [];
+  if (/^[0-9][a-z0-9]{3}$/i.test(v)) items.push({ label:v.toUpperCase(), kind:'pdb' });
+  try {
+    const r = await fetch(`${AC}/${encodeURIComponent(v)}/json?limit=8`);
+    if (r.ok) {
+      const j = await r.json();
+      (j?.dictionary_terms?.compound || []).forEach(t => items.push({ label:t, kind:'compound' }));
+    }
+  } catch(e){}
+  if (qEl.value.trim() !== v) return;
+  acItems = items; acIdx = -1;
+  if (!items.length) return closeSug();
+  sugEl.innerHTML = items.map((it,i) =>
+    `<div class="sug-item" data-i="${i}"><span>${esc(it.label)}</span>` +
+    `<span class="tag">${it.kind === 'pdb' ? 'PDB entry' : 'PubChem'}</span></div>`).join('');
+  sugEl.classList.add('open');
+}
+
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const closeSug = () => { sugEl.classList.remove('open'); acItems = []; acIdx = -1; };
+
+sugEl.addEventListener('mousedown', e => {
+  const it = e.target.closest('.sug-item');
+  if (it) { e.preventDefault(); pick(acItems[+it.dataset.i]); }
+});
+
+qEl.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    if (!acItems.length) return;
+    e.preventDefault();
+    acIdx = (acIdx + (e.key === 'ArrowDown' ? 1 : -1) + acItems.length) % acItems.length;
+    [...sugEl.children].forEach((c,i) => c.classList.toggle('active', i === acIdx));
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (acIdx >= 0) pick(acItems[acIdx]);
+    else if (qEl.value.trim()) pick({ label:qEl.value.trim(), kind: /^[0-9][a-z0-9]{3}$/i.test(qEl.value.trim()) ? 'pdb' : 'compound' });
+  } else if (e.key === 'Escape') { closeSug(); qEl.blur(); }
+});
+
+qEl.addEventListener('blur', () => setTimeout(closeSug, 120));
+document.querySelectorAll('.chip').forEach(c =>
+  c.addEventListener('click', () => {
+    const t = c.textContent;
+    qEl.value = t;
+    pick({ label:t, kind: /^[0-9][a-z0-9]{3}$/i.test(t) ? 'pdb' : 'compound' });
+  }));
+
+function pick(item){
+  if (!item) return;
+  qEl.value = item.label;
+  closeSug(); qEl.blur();
+  item.kind === 'pdb' ? loadPDB(item.label) : loadCompound(item.label);
+}
+
+/* ---------------- loading ---------------- */
+async function loadPDB(id){
+  const t = ++token; busy(true); stopAnim(); stopSpin(); rawFrames = [];
+  try {
+    const r = await fetch(`https://files.rcsb.org/download/${id.toUpperCase()}.pdb`);
+    if (!r.ok) throw new Error('not found');
+    const txt = await r.text();
+    if (t !== token) return;
+    isProtein = true;
+    show([txt], 'pdb');
+    setStyle('cartoon');
+    renderInfo({ title:id.toUpperCase(), sub:pdbTitle(txt), rows:[
+      ['Source','RCSB PDB'],
+      ['Atoms', (txt.match(/^ATOM|^HETATM/gm) || []).length.toLocaleString()],
+      ['Chains', new Set([...txt.matchAll(/^ATOM.{17}(.)/gm)].map(m => m[1])).size]
+    ], link:`https://www.rcsb.org/structure/${id.toUpperCase()}` });
+  } catch(e){
+    toast(`No PDB entry "${id.toUpperCase()}"`, true);
+  } finally { if (t === token) busy(false); }
+}
+
+const pdbTitle = txt => {
+  const m = [...txt.matchAll(/^TITLE\s{0,5}\d?\s(.*)$/gm)].map(x => x[1].trim()).join(' ');
+  return m ? m.toLowerCase().replace(/\s+/g,' ') : 'Experimental structure';
+};
+
+async function loadCompound(name){
+  const t = ++token; busy(true); stopAnim(); stopSpin(); rawFrames = [];
+  try {
+    const cr = await fetch(`${PC}/compound/name/${encodeURIComponent(name)}/cids/JSON`);
+    if (!cr.ok) throw new Error('no match');
+    const cid = (await cr.json())?.IdentifierList?.CID?.[0];
+    if (!cid) throw new Error('no match');
+
+    let sdf, is3d = true;
+    let sr = await fetch(`${PC}/compound/cid/${cid}/SDF?record_type=3d`);
+    if (!sr.ok) { is3d = false; sr = await fetch(`${PC}/compound/cid/${cid}/SDF?record_type=2d`); }
+    if (!sr.ok) throw new Error('no structure');
+    sdf = await sr.text();
+    if (t !== token) return;
+
+    isProtein = false;
+    show([sdf], 'sdf');
+    setStyle('ballstick');
+    if (!is3d) toast('Only a 2D structure exists for this compound');
+
+    props(cid, name, sdf, is3d, t);
+    if (is3d) conformers(cid, t);
+  } catch(e){
+    toast(`Nothing found for "${name}"`, true);
+  } finally { if (t === token) busy(false); }
+}
+
+async function props(cid, name, sdf, is3d, t){
+  const rows = [];
+  let title = name, sub = '';
+  try {
+    const r = await fetch(`${PC}/compound/cid/${cid}/property/MolecularFormula,MolecularWeight,IUPACName,XLogP,TPSA/JSON`);
+    if (r.ok) {
+      const p = (await r.json())?.PropertyTable?.Properties?.[0] || {};
+      if (p.MolecularFormula) rows.push(['Formula', p.MolecularFormula.replace(/(\d+)/g,'<sub>$1</sub>')]);
+      if (p.MolecularWeight)  rows.push(['Weight', (+p.MolecularWeight).toFixed(2) + ' g/mol']);
+      if (p.XLogP != null)    rows.push(['logP', (+p.XLogP).toFixed(1)]);
+      if (p.TPSA != null)     rows.push(['TPSA', (+p.TPSA).toFixed(0) + ' Å²']);
+      sub = p.IUPACName || '';
+    }
+  } catch(e){}
+  const n = parseInt(sdf.split('\n')[3]?.slice(0,3), 10);
+  if (n) rows.push(['Atoms', n]);
+  rows.push(['Geometry', is3d ? '3D, PubChem' : '2D only']);
+  if (t !== token) return;
+  renderInfo({ title, sub, rows, link:`https://pubchem.ncbi.nlm.nih.gov/compound/${cid}` });
+}
+
+async function conformers(cid, t){
+  try {
+    const r = await fetch(`${PC}/compound/cid/${cid}/conformers/JSON`);
+    if (!r.ok) return;
+    const ids = ((await r.json())?.InformationList?.Information?.[0]?.ConformerID || []).slice(0, 10);
+    if (ids.length < 2) return;
+    const sdfs = [];
+    for (const id of ids) {
+      if (t !== token) return;
+      const s = await fetch(`${PC}/conformers/${id}/SDF`);
+      if (s.ok) sdfs.push(await s.text());
+    }
+    if (t !== token || sdfs.length < 2) return;
+    rawFrames = sdfs;
+    const view = viewer.getView();
+    show(alignOn ? prepareFrames(sdfs) : sdfs, 'sdf');
+    viewer.setView(view);
+    setStyle(curStyle);
+    toast(`${sdfs.length} conformers loaded`);
+  } catch(e){}
+}
+
+/* ---------------- superposition ---------------- */
+function parseSDF(text){
+  const L = text.split(/\r?\n/);
+  const n = parseInt(L[3].slice(0,3), 10);
+  const atoms = [];
+  for (let i = 0; i < n; i++){
+    const l = L[4+i];
+    atoms.push({ x:+l.slice(0,10), y:+l.slice(10,20), z:+l.slice(20,30), e:l.slice(31,34).trim() });
+  }
+  return { L, n, atoms };
+}
+function writeSDF(rec, atoms){
+  const L = rec.L.slice(), f = v => v.toFixed(4).padStart(10);
+  for (let i = 0; i < rec.n; i++)
+    L[4+i] = f(atoms[i].x) + f(atoms[i].y) + f(atoms[i].z) + L[4+i].slice(30);
+  return L.join('\n');
+}
+const centroid = (a, idx) => {
+  const c = [0,0,0];
+  for (const i of idx){ c[0]+=a[i].x; c[1]+=a[i].y; c[2]+=a[i].z; }
+  return c.map(v => v/idx.length);
+};
+const dist2 = (a,b) => (a.x-b.x)**2 + (a.y-b.y)**2 + (a.z-b.z)**2;
+const rmsd  = (a,b,idx) => Math.sqrt(idx.reduce((s,i) => s + dist2(a[i],b[i]), 0) / idx.length);
+
+/* largest eigenvector of a 4x4 symmetric matrix, by shifted power iteration */
+function maxEigVec4(K){
+  let s = 0; for (const r of K) for (const v of r) s = Math.max(s, Math.abs(v));
+  const A = K.map((r,i) => r.map((v,j) => v + (i===j ? 4*s : 0)));
+  let v = [1,1,1,1];
+  for (let it = 0; it < 400; it++){
+    const w = [0,0,0,0];
+    for (let i=0;i<4;i++) for (let j=0;j<4;j++) w[i] += A[i][j]*v[j];
+    const n = Math.hypot(...w); if (!n) break;
+    v = w.map(x => x/n);
+  }
+  return v;
+}
+
+/* optimal rigid-body fit of mob onto ref over atom indices idx (Horn quaternion method) */
+function superpose(ref, mob, idx){
+  const cR = centroid(ref, idx), cM = centroid(mob, idx);
+  const R = [[0,0,0],[0,0,0],[0,0,0]];
+  for (const i of idx){
+    const a = [mob[i].x-cM[0], mob[i].y-cM[1], mob[i].z-cM[2]];
+    const b = [ref[i].x-cR[0], ref[i].y-cR[1], ref[i].z-cR[2]];
+    for (let r=0;r<3;r++) for (let c=0;c<3;c++) R[r][c] += a[r]*b[c];
+  }
+  const K = [
+    [ R[0][0]+R[1][1]+R[2][2], R[1][2]-R[2][1],         R[2][0]-R[0][2],         R[0][1]-R[1][0]        ],
+    [ R[1][2]-R[2][1],         R[0][0]-R[1][1]-R[2][2], R[0][1]+R[1][0],         R[2][0]+R[0][2]        ],
+    [ R[2][0]-R[0][2],         R[0][1]+R[1][0],        -R[0][0]+R[1][1]-R[2][2], R[1][2]+R[2][1]        ],
+    [ R[0][1]-R[1][0],         R[2][0]+R[0][2],         R[1][2]+R[2][1],        -R[0][0]-R[1][1]+R[2][2]]
+  ];
+  const [w,x,y,z] = maxEigVec4(K);
+  const M = [
+    [1-2*(y*y+z*z), 2*(x*y-w*z),   2*(x*z+w*y)  ],
+    [2*(x*y+w*z),   1-2*(x*x+z*z), 2*(y*z-w*x)  ],
+    [2*(x*z-w*y),   2*(y*z+w*x),   1-2*(x*x+y*y)]
+  ];
+  return mob.map(p => {
+    const v = [p.x-cM[0], p.y-cM[1], p.z-cM[2]];
+    return { ...p,
+      x: M[0][0]*v[0]+M[0][1]*v[1]+M[0][2]*v[2]+cR[0],
+      y: M[1][0]*v[0]+M[1][1]*v[1]+M[1][2]*v[2]+cR[1],
+      z: M[2][0]*v[0]+M[2][1]*v[1]+M[2][2]*v[2]+cR[2] };
+  });
+}
+
+/* align every conformer on the rigid core, then order them so neighbours are similar */
+function prepareFrames(texts){
+  if (texts.length < 2) return texts;
+  const recs = texts.map(parseSDF);
+  if (new Set(recs.map(r => r.n)).size !== 1) return texts;
+  const raw = recs.map(r => r.atoms);
+  const heavy = raw[0].map((a,i) => a.e !== 'H' ? i : -1).filter(i => i >= 0);
+  if (heavy.length < 3) return texts;
+
+  // pass 1: fit on all heavy atoms, then score how much each atom actually moves
+  let sets = raw.map((a,i) => i ? superpose(raw[0], a, heavy) : a);
+  const dev = heavy.map(i => {
+    const m = [0,0,0];
+    for (const s of sets){ m[0]+=s[i].x; m[1]+=s[i].y; m[2]+=s[i].z; }
+    const c = { x:m[0]/sets.length, y:m[1]/sets.length, z:m[2]/sets.length };
+    return { i, d: sets.reduce((t,s) => t + dist2(s[i], c), 0) / sets.length };
+  }).sort((a,b) => a.d - b.d);
+
+  // pass 2: the least-mobile half is the core — pin that
+  const core = dev.slice(0, Math.max(3, Math.ceil(dev.length * 0.5))).map(o => o.i);
+  sets = raw.map((a,i) => i ? superpose(raw[0], a, core) : a);
+
+  // greedy nearest-neighbour ordering, so the animation walks rather than jumps
+  const used = new Set([0]), order = [0];
+  while (order.length < sets.length){
+    const last = sets[order[order.length-1]];
+    let best = -1, bd = Infinity;
+    for (let i = 0; i < sets.length; i++){
+      if (used.has(i)) continue;
+      const d = rmsd(last, sets[i], heavy);
+      if (d < bd){ bd = d; best = i; }
+    }
+    used.add(best); order.push(best);
+  }
+  return order.map(i => writeSDF(recs[i], sets[i]));
+}
+
+/* linear blend between conformer floor(t) and the next one */
+function interpFrame(t){
+  const i = Math.min(Math.floor(t), frames-1), j = Math.min(i+1, frames-1), f = t - i;
+  if (!parsedFrames.length || i === j || f < 1e-6) return sdfFrames[i];
+  const A = parsedFrames[i], B = parsedFrames[j];
+  return writeSDF(A, A.atoms.map((a,k) => ({ ...a,
+    x: a.x + (B.atoms[k].x - a.x)*f,
+    y: a.y + (B.atoms[k].y - a.y)*f,
+    z: a.z + (B.atoms[k].z - a.z)*f })));
+}
+
+/* ---------------- rendering ---------------- */
+function show(texts, fmt){
+  sdfFrames = texts; frameFmt = fmt; frames = texts.length; frame = 0;
+  overlays = [];
+  parsedFrames = (fmt === 'sdf' && frames > 1) ? texts.map(parseSDF) : [];
+  viewer.clear();
+  viewer.addModel(texts[0], fmt);
+  viewer.zoomTo(); viewer.render();
+  document.body.classList.add('loaded');
+  document.querySelector('[data-style=cartoon]').disabled = !isProtein;
+  infoEl.classList.add('show');
+  updateFrameUI();
+}
+
+const STYLE_SPECS = {
+  ballstick:{ stick:{ radius:.13 }, sphere:{ scale:.24 } },
+  stick:    { stick:{ radius:.18 } },
+  sphere:   { sphere:{} },
+  cartoon:  { cartoon:{ color:'spectrum' } }
+};
+function specFor(name, color){
+  const base = JSON.parse(JSON.stringify(STYLE_SPECS[name] || STYLE_SPECS.ballstick));
+  if (color) for (const k in base) base[k].color = color;
+  return base;
+}
+function setStyle(s){
+  curStyle = s;
+  viewer.setStyle({}, specFor(s));
+  if (s === 'cartoon') viewer.setStyle({ hetflag:true }, { stick:{ radius:.15 } });
+  applyOverlays();
+  viewer.render();
+  document.querySelectorAll('[data-style]').forEach(b => b.classList.toggle('on', b.dataset.style === s));
+}
+document.querySelectorAll('[data-style]').forEach(b =>
+  b.addEventListener('click', () => setStyle(b.dataset.style)));
+
+function updateFrameUI(){
+  const multi = frames > 1;
+  frameLabel.textContent = multi ? `${frame+1} / ${frames}` : '— / —';
+  prevBtn.disabled = nextBtn.disabled = playBtn.disabled = alignBtn.disabled = !multi;
+}
+function drawSDF(text){
+  const v = viewer.getView();
+  viewer.removeAllModels();
+  viewer.addModel(text, frameFmt);
+  setStyle(curStyle);
+  viewer.setView(v);
+  viewer.render();
+}
+function goFrame(i){
+  if (frames < 2) return;
+  frame = (i + frames) % frames;
+  animT = frame;
+  drawSDF(sdfFrames[frame]);
+  updateFrameUI();
+}
+prevBtn.onclick = () => { stopAnim(); goFrame(frame - 1); };
+nextBtn.onclick = () => { stopAnim(); goFrame(frame + 1); };
+
+playBtn.onclick = () => animating ? stopAnim() : startAnim();
+function startAnim(){
+  if (frames < 2) return;
+  animating = true; animDir = 1;
+  playBtn.classList.add('on'); playBtn.textContent = 'Stop';
+  animT = frame;
+  speedWrap.classList.add('on');
+  animTimer = setInterval(() => {
+    animT += animDir * animStep;
+    if (animT >= frames - 1){ animT = frames - 1; animDir = -1; }
+    if (animT <= 0)         { animT = 0;          animDir =  1; }
+    frame = Math.round(animT);
+    drawSDF(interpFrame(animT));
+    updateFrameUI();
+  }, 60);
+}
+function stopAnim(){
+  if (!animating) return;
+  animating = false; playBtn.classList.remove('on'); playBtn.textContent = 'Animate';
+  speedWrap.classList.remove('on');
+  clearInterval(animTimer); animTimer = null;
+}
+
+const spinBtn = $('#spin');
+spinBtn.onclick = () => spinning ? stopSpin() : startSpin();
+function startSpin(){ spinning = true; spinBtn.classList.add('on'); viewer.spin('y', 0.6); }
+function stopSpin(){ if(!spinning) return; spinning = false; spinBtn.classList.remove('on'); viewer.spin(false); }
+
+speedEl.oninput = () => { animStep = 0.03 + (speedEl.value - 1) * 0.0356; };
+
+alignBtn.onclick = () => {
+  alignOn = !alignOn;
+  alignBtn.classList.toggle('on', alignOn);
+  if (rawFrames.length < 2) return;
+  const wasAnim = animating; stopAnim();
+  const v = viewer.getView();
+  show(alignOn ? prepareFrames(rawFrames) : rawFrames, 'sdf');
+  setStyle(curStyle); viewer.setView(v); viewer.render();
+  if (wasAnim) startAnim();
+};
+
+$('#reset').onclick = () => { viewer.zoomTo(); viewer.render(); };
+
+function renderInfo({ title, sub, rows, link }){
+  infoEl.innerHTML =
+    `<h1>${esc(title)}</h1>` +
+    (sub ? `<div class="sub">${esc(sub.length > 64 ? sub.slice(0,64) + '…' : sub)}</div>` : '') +
+    rows.map(([k,v]) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('') +
+    (link ? `<div style="margin-top:11px"><a href="${link}" target="_blank" rel="noopener">Open source record ↗</a></div>` : '');
+  infoEl.classList.add('show');
+  curTitle = title;
+  curFacts = Object.fromEntries(rows.map(([k,v]) => [k.toLowerCase(), String(v).replace(/<[^>]+>/g,'')]));
+}
+
+/* ---------------- structure command API ---------------- */
+let overlays = [], chatHistory = [], curTitle = '', curFacts = {}, apiDown = null;
+
+function applyOverlays(){
+  for (const o of overlays)
+    viewer.setStyle(o.sel, o.spec !== undefined ? o.spec : specFor(curStyle, o.color));
+}
+const selAtoms = sel => { const m = viewer.getModel(); return m ? m.selectedAtoms(sel || {}) : []; };
+const byIndex = i => selAtoms({ index:i })[0];
+
+const mol = {
+  atoms: (sel) => selAtoms(sel || {}).map(a => ({ index:a.index, serial:a.serial, elem:a.elem,
+                                    x:a.x, y:a.y, z:a.z, resn:a.resn, resi:a.resi, chain:a.chain })),
+  color(sel, color){ overlays.push({ sel, color }); viewer.setStyle(sel, specFor(curStyle, color)); },
+  colorByElement(sel){ overlays.push({ sel, color:null }); viewer.setStyle(sel, specFor(curStyle)); },
+  style(sel, name, opts){ const spec = { [name]: opts || {} }; overlays.push({ sel, spec }); viewer.setStyle(sel, spec); },
+  hide(sel){ overlays.push({ sel, spec:{} }); viewer.setStyle(sel, {}); },
+  show(sel){ overlays.push({ sel, spec:specFor(curStyle) }); viewer.setStyle(sel, specFor(curStyle)); },
+  label(sel, text){ for (const a of selAtoms(sel)) mol.labelAt(a, String(text)); },
+  labelAt(pos, text){
+    viewer.addLabel(String(text), { position:{ x:pos.x, y:pos.y, z:pos.z }, fontSize:11,
+      fontColor:'#EAEBEE', backgroundColor:'#141619', backgroundOpacity:.82, borderThickness:0 });
+  },
+  clearLabels(){ viewer.removeAllLabels(); },
+  line(i, j, text){
+    const a = byIndex(i), b = byIndex(j);
+    if (!a || !b) throw new Error('no atom at index ' + (a ? j : i));
+    viewer.addLine({ start:{x:a.x,y:a.y,z:a.z}, end:{x:b.x,y:b.y,z:b.z}, dashed:true, color:'#6EA8FE', linewidth:2 });
+    if (text) mol.labelAt({ x:(a.x+b.x)/2, y:(a.y+b.y)/2, z:(a.z+b.z)/2 }, text);
+  },
+  clearShapes(){ viewer.removeAllShapes(); },
+  dist(i, j){
+    const a = byIndex(i), b = byIndex(j);
+    if (!a || !b) throw new Error('no atom at index ' + (a ? j : i));
+    return Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2 + (a.z-b.z)**2);
+  },
+  centerOn(sel){ viewer.zoomTo(sel || {}); },
+  background(c){ viewer.setBackgroundColor(c); },
+  reset(){ overlays = []; viewer.removeAllLabels(); viewer.removeAllShapes(); setStyle(curStyle); viewer.zoomTo(); },
+  say(text){ addChat('out', String(text)); },
+  render(){ viewer.render(); }
+};
+
+/* ---------------- local command parser ---------------- */
+const EL_NAMES = {
+  hydrogen:'H', carbon:'C', nitrogen:'N', oxygen:'O', fluorine:'F', phosphorus:'P',
+  phosphorous:'P', sulfur:'S', sulphur:'S', chlorine:'Cl', bromine:'Br', iodine:'I',
+  sodium:'Na', potassium:'K', calcium:'Ca', magnesium:'Mg', iron:'Fe', zinc:'Zn',
+  silicon:'Si', boron:'B', selenium:'Se', metal:'metal'
+};
+const EL_SYMS = ['H','C','N','O','F','P','S','Cl','Br','I','Na','K','Ca','Mg','Fe','Zn','Si','B','Se'];
+const COLORS = ['red','green','blue','yellow','orange','purple','magenta','cyan','pink','white',
+  'black','gray','grey','brown','teal','lime','navy','gold','silver','violet','indigo',
+  'turquoise','salmon','crimson','olive','maroon','beige','coral','khaki','plum'];
+const STYLE_WORDS = {
+  stick:'stick', sticks:'stick', line:'line', lines:'line', wire:'line', wireframe:'line',
+  sphere:'sphere', spheres:'sphere', spacefill:'sphere', ball:'sphere', balls:'sphere',
+  cartoon:'cartoon', cartoons:'cartoon', ribbon:'cartoon', ribbons:'cartoon'
+};
+
+const singular = w => w.replace(/s$/, '');
+const isColor = c => COLORS.includes(c.toLowerCase()) || /^#[0-9a-f]{3,8}$/i.test(c);
+
+function parseSel(raw){
+  let s = String(raw || '').trim().toLowerCase()
+    .replace(/[.?!]+$/, '')
+    .replace(/^(the|all|every)\s+/, '')
+    .trim();
+  if (!s || /^(all|everything|it|atoms?)$/.test(s)) return { sel:{}, label:'all atoms' };
+  s = s.replace(/^atoms?\s*#?\s*/, '').replace(/\s+atoms?$/, '').trim();
+  if (/^(heavy|non-?hydrogens?|non-?h)$/.test(s)) return { sel:{ invert:true, elem:'H' }, label:'heavy atoms' };
+  if (/^waters?$/.test(s)) return { sel:{ resn:['HOH','WAT'] }, label:'water' };
+  if (/^backbones?$/.test(s)) return { sel:{ atom:['N','CA','C','O'] }, label:'the backbone' };
+  if (/^(hetero|hetatm|ligands?)$/.test(s)) return { sel:{ hetflag:true }, label:'heteroatoms' };
+
+  let m = s.match(/^(\d+)\s*(?:-|–|—|to|through|\.\.)\s*(\d+)$/);
+  if (m){
+    const a = Math.min(+m[1], +m[2]), b = Math.max(+m[1], +m[2]), idx = [];
+    for (let i = a; i <= b; i++) idx.push(i - 1);
+    return { sel:{ index:idx }, label:`atoms ${a}–${b}` };
+  }
+  if (/^\d+(\s*,\s*\d+)*$/.test(s)){
+    const ns = s.split(/\s*,\s*/).map(Number);
+    return { sel:{ index:ns.map(n => n - 1) }, label:'atom' + (ns.length > 1 ? 's ' : ' ') + ns.join(', ') };
+  }
+  m = s.match(/^chain\s+([a-z0-9])$/);
+  if (m) return { sel:{ chain:m[1].toUpperCase() }, label:'chain ' + m[1].toUpperCase() };
+  m = s.match(/^residues?\s+(\d+)\s*(?:-|to)\s*(\d+)$/);
+  if (m){
+    const a = +m[1], b = +m[2], r = [];
+    for (let i = a; i <= b; i++) r.push(i);
+    return { sel:{ resi:r }, label:`residues ${a}–${b}` };
+  }
+  m = s.match(/^residues?\s+(\d+)$/);
+  if (m) return { sel:{ resi:+m[1] }, label:'residue ' + m[1] };
+  m = s.match(/^(?:residues?\s+)?([a-z]{3})$/);
+  if (m && !EL_NAMES[m[1]]){
+    const r = m[1].toUpperCase();
+    if (mol.atoms().some(a => a.resn === r)) return { sel:{ resn:r }, label:r };
+  }
+
+  const parts = s.split(/\s*(?:,|and|\+|&)\s*/).filter(Boolean);
+  const els = parts.map(p => {
+    const w = singular(p);
+    if (EL_NAMES[p]) return EL_NAMES[p];
+    if (EL_NAMES[w]) return EL_NAMES[w];
+    const hit = EL_SYMS.find(e => e.toLowerCase() === p || e.toLowerCase() === w);
+    return hit || null;
+  });
+  if (els.length && els.every(Boolean))
+    return { sel:{ elem: els.length === 1 ? els[0] : els }, label: els.join(' and ') + ' atoms' };
+  return null;
+}
+
+const atomRef = str => {
+  const m = String(str).trim().match(/^(?:atom\s*#?\s*)?(\d+)$/i);
+  return m ? +m[1] - 1 : null;
+};
+const count = sel => selAtoms(sel).length;
+
+function extremePair(sel, farthest){
+  const a = mol.atoms(sel);
+  if (a.length < 2) return null;
+  let best = null, bd = farthest ? -1 : Infinity;
+  for (let i = 0; i < a.length; i++)
+    for (let j = i + 1; j < a.length; j++){
+      const d = Math.hypot(a[i].x-a[j].x, a[i].y-a[j].y, a[i].z-a[j].z);
+      if (farthest ? d > bd : d < bd){ bd = d; best = [a[i], a[j]]; }
+    }
+  return { a:best[0], b:best[1], d:bd };
+}
+
+const HELP = [
+  'color        make carbons green · color chain A red',
+  'style        show hydrogens as spheres · all as stick',
+  'visibility   hide hydrogens · hide atoms 3-6 · show all',
+  'measure      distance between atom 3 and 7 · furthest atoms',
+  'labels       label oxygens · label atoms 1-4 · clear labels',
+  'view         zoom to nitrogens · background black · spin · reset',
+  'counts       how many carbons'
+];
+
+const RULES = [
+  [/^(help|commands|\?)$/i, () => { HELP.forEach(h => mol.say(h)); return 'Those are the commands I know.'; }],
+
+  [/^(reset|clear all|start over|undo all)$/i, () => { mol.reset(); return 'Reset to defaults.'; }],
+
+  [/^clear\s+(labels?|shapes?|lines?|measurements?)$/i, m => {
+    if (/label/i.test(m[1])) { mol.clearLabels(); return 'Labels cleared.'; }
+    mol.clearShapes(); return 'Measurements cleared.';
+  }],
+
+  [/^(?:set\s+)?(?:the\s+)?back(?:ground)?\s*(?:colou?r)?\s*(?:to\s+)?(\S+)$/i, m => {
+    if (!isColor(m[1])) return null;
+    mol.background(m[1]); return 'Background set to ' + m[1] + '.';
+  }],
+
+  [/^(spin|rotate)(?:\s+(on|off|stop))?$/i, m => {
+    const off = /off|stop/i.test(m[2] || '');
+    if (off || spinning){ stopSpin(); return 'Spin off.'; }
+    startSpin(); return 'Spinning.';
+  }],
+
+  // "distance between the furthest atoms" / "closest two atoms"
+  [/(furthest|farthest|longest|widest|closest|nearest|shortest)/i, (m, text) => {
+    if (!/dist|atom|pair|apart|wide|long|close|near|short/i.test(text)) return null;
+    const far = /furthest|farthest|longest|widest/i.test(m[1]);
+    const scope = /heavy|non-?hydrogen/i.test(text) ? { invert:true, elem:'H' } : {};
+    const r = extremePair(scope, far);
+    if (!r) return 'Not enough atoms to measure.';
+    mol.line(r.a.index, r.b.index, r.d.toFixed(2) + ' Å');
+    mol.say(`${r.a.elem}${r.a.serial} → ${r.b.elem}${r.b.serial} = ${r.d.toFixed(2)} Å`);
+    return (far ? 'Furthest' : 'Closest') + ' pair marked.';
+  }],
+
+  [/^(?:show |what.?s |measure |get |find )?(?:the )?dist(?:ance)?\s+(?:between|from)\s+(.+?)\s+(?:and|to)\s+(.+)$/i, m => {
+    const i = atomRef(m[1]), j = atomRef(m[2]);
+    if (i === null || j === null) return null;
+    const d = mol.dist(i, j);
+    mol.line(i, j, d.toFixed(2) + ' Å');
+    mol.say(`atom ${i+1} → atom ${j+1} = ${d.toFixed(2)} Å`);
+    return 'Distance marked.';
+  }],
+
+  [/^how many\s+(.+?)\??$/i, m => {
+    const p = parseSel(m[1]); if (!p) return null;
+    return `${count(p.sel)} — ${p.label}.`;
+  }],
+
+  // style must be tried before plain show/hide
+  [/^(?:show|display|render|draw|make|set)\s+(.+?)\s+(?:as|in|using)\s+(?:a\s+|the\s+)?([a-z]+)(?:\s+style)?$/i, m => {
+    const st = STYLE_WORDS[m[2].toLowerCase()]; if (!st) return null;
+    if (st === 'cartoon' && !isProtein) return 'Cartoon only works on proteins and nucleic acids.';
+    const p = parseSel(m[1]); if (!p) return null;
+    mol.style(p.sel, st, st === 'sphere' ? { scale:.4 } : {});
+    return `${p.label} as ${st}.`;
+  }],
+
+  [/^(?:make|set|colou?r|paint|turn)\s+(.+?)\s+(?:colou?r\s+)?(#[0-9a-f]{3,8}|[a-z]+)$/i, m => {
+    if (!isColor(m[2])) return null;
+    const p = parseSel(m[1]); if (!p) return null;
+    mol.color(p.sel, m[2].toLowerCase());
+    return `${p.label} coloured ${m[2].toLowerCase()}.`;
+  }],
+
+  [/^hide\s+(.+)$/i, m => {
+    const p = parseSel(m[1]); if (!p) return null;
+    mol.hide(p.sel); return `Hid ${p.label}.`;
+  }],
+
+  [/^(?:show|unhide|reveal)\s+(.+)$/i, m => {
+    const p = parseSel(m[1]); if (!p) return null;
+    mol.show(p.sel); return `Showing ${p.label}.`;
+  }],
+
+  [/^label\s+(.+?)(?:\s+with\s+(\w+))?$/i, m => {
+    const p = parseSel(m[1]); if (!p) return null;
+    const what = (m[2] || 'element').toLowerCase();
+    for (const a of mol.atoms(p.sel))
+      mol.labelAt(a, what === 'index' || what === 'number' ? String(a.serial) : a.elem + a.serial);
+    return `Labelled ${p.label}.`;
+  }],
+
+  [/^(?:zoom|center|centre|focus)(?:\s+(?:to|on|in on|into))?\s+(.+)$/i, m => {
+    const p = parseSel(m[1]); if (!p) return null;
+    mol.centerOn(p.sel); return `Centred on ${p.label}.`;
+  }]
+];
+
+function applySpec(sel, spec){ overlays.push({ sel, spec }); viewer.setStyle(sel, spec); }
+
+function normalize(t){
+  let s = t.trim();
+  for (let i = 0; i < 3; i++)
+    s = s.replace(/^(please|can you|could you|would you|pls|now|and)\s+/i, '')
+         .replace(/^(show me|let'?s|i want to|i'?d like to|help me|go ahead and|try to)\s+/i, '');
+  return s.replace(/\s+please$/i, '').replace(/[.!]+$/, '').trim();
+}
+
+const EXTRA = [
+  // bare style words: "spacefill", "cartoon view", "switch to stick"
+  [/^(?:switch to |use |set )?(sticks?|spacefill|spheres?|cartoons?|ribbons?|lines?|wireframe|ball[\s-]and[\s-]stick|ball ?& ?stick)(?:\s+(?:view|style|mode))?$/i, m => {
+    const w = m[1].toLowerCase().replace(/[\s-]/g, '');
+    const st = (w === 'ballandstick' || w === 'ball&stick') ? 'ballstick' : STYLE_WORDS[m[1].toLowerCase()] || STYLE_WORDS[w];
+    if (!st) return null;
+    if (st === 'cartoon' && !isProtein) return 'Cartoon only works on proteins and nucleic acids.';
+    setStyle(st); return 'Style: ' + st + '.';
+  }],
+
+  // "show only carbons"
+  [/^(?:show|display|keep|isolate)\s+(?:only|just)\s+(.+)$/i, m => {
+    const p = parseSel(m[1]); if (!p) return null;
+    mol.hide({}); mol.show(p.sel); mol.centerOn(p.sel);
+    return 'Showing only ' + p.label + '.';
+  }],
+
+  // "highlight the nitrogens" / "highlight carbons in orange"
+  [/^highlight\s+(.+?)(?:\s+(?:in|as)\s+([a-z]+|#[0-9a-f]{3,8}))?$/i, m => {
+    const p = parseSel(m[1]); if (!p) return null;
+    const c = (m[2] && isColor(m[2])) ? m[2].toLowerCase() : 'yellow';
+    mol.color(p.sel, c); return p.label + ' highlighted ' + c + '.';
+  }],
+
+  // "make the carbons bigger"
+  [/^(?:make|set)\s+(.+?)\s+(bigger|larger|smaller|tinier|thicker|thinner)$/i, m => {
+    const p = parseSel(m[1]); if (!p) return null;
+    const f = /bigger|larger|thicker/i.test(m[2]) ? 1.8 : 0.55;
+    const spec = specFor(curStyle);
+    if (spec.sphere) spec.sphere.scale = (spec.sphere.scale || 0.3) * f;
+    if (spec.stick)  spec.stick.radius = (spec.stick.radius || 0.15) * f;
+    applySpec(p.sel, spec);
+    return p.label + ' ' + m[2].toLowerCase() + '.';
+  }],
+
+  // background, allowing a leading verb
+  [/^(?:make|set|turn)\s+(?:the\s+)?back(?:ground)?\s+([a-z]+|#[0-9a-f]{3,8})$/i, m => {
+    if (!isColor(m[1])) return null;
+    mol.background(m[1].toLowerCase()); return 'Background set to ' + m[1].toLowerCase() + '.';
+  }],
+
+  // looser spin / stop
+  [/\b(spin\w*|rotat\w*)\b/i, (m, t) => {
+    if (!/^(spin|rotat|start|stop|keep)/i.test(t)) return null;
+    if (/\b(stop|off|halt|no)\b/i.test(t)){ stopSpin(); return 'Spin off.'; }
+    startSpin(); return 'Spinning.';
+  }],
+
+  [/^(zoom (?:in|out)|fit|fit to screen|reset (?:the )?view|recenter|re-?centre)$/i, () => {
+    viewer.zoomTo(); return 'View reset.';
+  }],
+
+  // questions the info panel can answer
+  [/^(?:what(?:'?s| is)?\s+(?:the\s+)?)?(formula|weight|mass|logp|tpsa|geometry|name|atoms?)\??$/i, m => {
+    const k = m[1].toLowerCase();
+    if (/^atoms?$/.test(k)) return mol.atoms().length + ' atoms.';
+    if (k === 'name') return curTitle || 'Nothing loaded.';
+    const key = k === 'mass' ? 'weight' : k;
+    return curFacts[key] ? key + ': ' + curFacts[key] : null;
+  }]
+];
+
+function parseHint(t){
+  const verbs = /colou?r|paint|hide|show|label|zoom|center|centre|distance|measure|count|style|spin|reset|highlight|make/i;
+  const sel = parseSel(t.replace(verbs, '').replace(/\b(the|a|an|to|in|as|of)\b/gi, ' ').trim());
+  if (sel) return `I recognised "${sel.label}" but not the action. Try: hide, color <colour>, label, zoom to, how many.`;
+  if (verbs.test(t)) return 'I got the action but not what to apply it to. Try an element, "atoms 3-6", or "chain A".';
+  return 'Type help to see the commands I understand.';
+}
+
+function runLocal(text){
+  const t = normalize(text);
+  for (const [re, fn] of RULES.concat(EXTRA)){
+    const m = t.match(re);
+    if (!m) continue;
+    try {
+      const out = fn(m, t);
+      if (out) return out;
+    } catch(e){ return 'Could not do that: ' + e.message; }
+  }
+  return null;
+}
+
+/* ---------------- chat ---------------- */
+const chatEl = $('#chat'), chatLog = $('#chatLog'), chatIn = $('#chatIn'), chatBtn = $('#chatBtn');
+
+function addChat(kind, text){
+  const d = document.createElement('div');
+  d.className = 'msg ' + kind; d.textContent = text;
+  chatLog.appendChild(d); chatLog.scrollTop = chatLog.scrollHeight;
+  return d;
+}
+chatBtn.onclick = () => {
+  const open = chatEl.classList.toggle('open');
+  chatBtn.classList.toggle('on', open);
+  document.body.classList.toggle('chatting', open);
+  if (open) chatIn.focus();
+};
+chatIn.addEventListener('keydown', e => {
+  if (e.key === 'Escape'){ chatBtn.onclick(); return; }
+  if (e.key !== 'Enter') return;
+  const v = chatIn.value.trim(); if (!v) return;
+  chatIn.value = ''; sendChat(v);
+});
+
+function chatContext(){
+  const a = mol.atoms(), counts = {};
+  a.forEach(x => counts[x.elem] = (counts[x.elem] || 0) + 1);
+  return {
+    title: curTitle || '(nothing loaded)',
+    source: isProtein ? 'RCSB PDB' : 'PubChem',
+    atomCount: a.length,
+    elements: counts,
+    conformers: frames,
+    currentStyle: curStyle,
+    chains: isProtein ? [...new Set(a.map(x => x.chain))].filter(Boolean).slice(0, 12) : undefined,
+    note: 'Atom serial numbers are 1-based; mol selections use 0-based index.'
+  };
+}
+
+async function sendChat(text){
+  addChat('user', text);
+  if (!viewer.getModel()) return addChat('err', 'Load a structure first.');
+
+  const local = runLocal(text);
+  if (local){ viewer.render(); addChat('bot', local); return; }
+
+  if (apiDown){
+    addChat('err', parseHint(text));
+    return;
+  }
+  chatIn.disabled = true;
+  const pending = addChat('sys', 'thinking…');
+  try {
+    const r = await fetch((window.API_BASE || '') + '/api/chat', {
+      method:'POST', headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ message:text, context:chatContext(), history:chatHistory })
+    });
+    const j = await r.json();
+    pending.remove();
+    if (j.error){
+      if (/credit|API key|permission/i.test(j.error)) apiDown = j.error;
+      addChat('err', parseHint(text));
+      addChat('sys', apiDown ? 'Claude fallback is off: ' + j.error : j.error);
+      return;
+    }
+    if (j.code){
+      try { new Function('mol', j.code)(mol); viewer.render(); }
+      catch(e){ addChat('err', 'Command failed: ' + e.message); }
+    }
+    if (j.reply) addChat('bot', j.reply);
+    chatHistory.push({ role:'user', content:text }, { role:'assistant', content:j.reply || '' });
+  } catch(e){
+    pending.remove(); addChat('err', String(e.message || e));
+  } finally {
+    chatIn.disabled = false; chatIn.focus();
+  }
+}
+
+window.addEventListener('resize', () => viewer && viewer.resize());
+boot();
+qEl.focus();
+</script>
+</body>
+</html>

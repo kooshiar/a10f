@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Small world</title>
+<script src="https://unpkg.com/3dmol/build/3Dmol-min.js"></script>
+<script src="config.js"></script>
+<style>
+  :root{
+    --bg:#0B0C0E; --panel:rgba(20,22,25,.82); --line:rgba(255,255,255,.09);
+    --line-strong:rgba(255,255,255,.16); --fg:#EAEBEE; --fg-2:#9A9EA7; --fg-3:#63676F;
+    --accent:#6EA8FE; --danger:#F2777A; --r:12px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%; overflow:hidden}
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased; font-size:13px;
+  }
+  #viewer{position:fixed; inset:0}
+  #viewer canvas{display:block}
+
+  #panel{
+    position:fixed; left:16px; top:16px; bottom:16px; width:292px; z-index:10;
+    display:flex; flex-direction:column; gap:10px; overflow:auto;
+    padding:16px; background:var(--panel); backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px); border:1px solid var(--line); border-radius:var(--r);
+  }
+  h1{margin:0 0 2px; font-size:15px; font-weight:600; letter-spacing:-.01em}
+  .sub{color:var(--fg-3); font-size:12px; margin-bottom:6px}
+  .k{color:var(--fg-3); font-size:11.5px; letter-spacing:.03em; text-transform:uppercase; margin-top:6px}
+  select,input[type=text]{
+    width:100%; height:34px; padding:0 10px; color:var(--fg); background:rgba(255,255,255,.04);
+    border:1px solid var(--line); border-radius:9px; font:inherit; outline:0;
+  }
+  select:focus,input:focus{border-color:var(--line-strong)}
+  select option{background:#141619}
+  .row{display:flex; gap:6px; align-items:center}
+  .btn{
+    height:32px; padding:0 12px; border-radius:9px; border:1px solid var(--line); cursor:pointer;
+    background:rgba(255,255,255,.03); color:var(--fg-2); font:inherit; white-space:nowrap;
+  }
+  .btn:hover{color:var(--fg); border-color:var(--line-strong)}
+  .btn.on{background:rgba(110,168,254,.16); color:var(--accent); border-color:rgba(110,168,254,.35)}
+  .btn.wide{flex:1}
+  .chips{display:flex; flex-wrap:wrap; gap:6px; min-height:18px}
+  .chip{
+    display:flex; gap:6px; align-items:center; padding:4px 8px 4px 10px; border-radius:999px;
+    border:1px solid var(--line); font-size:12px; color:var(--fg-2);
+  }
+  .chip b{color:var(--fg); font-weight:600}
+  .chip span{cursor:pointer; color:var(--fg-3)} .chip span:hover{color:var(--danger)}
+  #sug{display:none; border:1px solid var(--line); border-radius:9px; overflow:hidden; margin-top:-4px}
+  #sug.open{display:block}
+  #sug div{padding:7px 10px; color:var(--fg-2); cursor:pointer}
+  #sug div:hover,#sug div.active{background:rgba(255,255,255,.06); color:var(--fg)}
+  input[type=range]{width:100%; accent-color:var(--accent)}
+  .temp{display:flex; justify-content:space-between; align-items:baseline}
+  .temp b{font-size:20px; font-weight:600; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+
+  .stats{display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; padding-top:8px; border-top:1px solid var(--line)}
+  .stat .v{font-size:17px; font-weight:600; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+  .stat .l{font-size:11px; color:var(--fg-3)}
+  #rdf{width:100%; height:64px; display:block}
+  #err{color:var(--danger); font-size:12px; display:none}
+  #err.show{display:block}
+  #hint{position:fixed; right:16px; bottom:16px; color:var(--fg-3); font-size:11.5px; text-align:right; line-height:1.6}
+</style>
+</head>
+<body>
+<div id="viewer"></div>
+
+<div id="panel">
+  <div><h1>Small world</h1><div class="sub" id="boxSub">4×4×4 fcc lattice, 256 sites, hard walls</div></div>
+
+  <div class="k">Composition</div>
+  <input type="text" id="comp" placeholder="100 Al + 30 Au + 40 Ni" autocomplete="off" spellcheck="false">
+  <div id="compOut" class="sub"></div>
+
+  <div class="k">Force model</div>
+  <select id="engine"></select>
+  <div id="note" class="sub"></div>
+
+  <div class="k">Temperature</div>
+  <div class="temp"><span class="sub">target</span><b id="tval">300 K</b></div>
+  <input type="range" id="temp" min="1" max="3000" step="10" value="300">
+  <div class="row">
+    <button class="btn wide" data-t="300">300 K</button>
+    <button class="btn wide" data-t="1000">1000 K</button>
+    <button class="btn wide" data-t="2000">2000 K</button>
+  </div>
+
+  <div class="row" style="margin-top:4px">
+    <button class="btn wide on" id="run">Run</button>
+    <button class="btn wide" id="reset">Reset</button>
+  </div>
+  <div id="err"></div>
+
+  <div class="stats">
+    <div class="stat"><div class="v" id="sT">–</div><div class="l">actual K</div></div>
+    <div class="stat"><div class="v" id="sE">–</div><div class="l">eV per atom</div></div>
+    <div class="stat"><div class="v" id="st">–</div><div class="l">ps simulated</div></div>
+    <div class="stat"><div class="v" id="sS">–</div><div class="l">ps per second</div></div>
+  </div>
+  <div class="k">Pair distribution g(r), 0 to 7 Å</div>
+  <svg id="rdf" viewBox="0 0 260 64" preserveAspectRatio="none"><polyline id="rdfLine" fill="none" stroke="#6EA8FE" stroke-width="1.5"/></svg>
+  <div class="sub">Sharp peaks: crystal. Smooth: liquid.</div>
+</div>
+
+<div id="hint">drag to rotate · scroll to zoom</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const api = (op, body = {}) => fetch((window.API_BASE || '') + '/api/sim/cmd', { method:'POST', headers:{ 'Content-Type':'application/json' },
+  body: JSON.stringify({ op, ...body }) }).then(r => r.json());
+
+/* ---------- viewer ---------- */
+const viewer = $3Dmol.createViewer($('#viewer'), { backgroundColor:'#0B0C0E', antialias:true });
+let firstFrame = true, lastBox = 0;
+
+function draw(f){
+  const v = viewer.getView();
+  viewer.removeAllModels();
+  const xyz = (els, pts) => els.length + '\n\n' + els.map((e, i) => e + ' ' + pts[i].join(' ')).join('\n');
+  viewer.addModel(xyz(f.el, f.xyz), 'xyz');
+  viewer.setStyle({}, { sphere:{ scale:.34, colorscheme:'Jmol' } });
+  if (f.box !== lastBox){
+    viewer.removeAllShapes();
+    const L = f.box, P = i => ({ x:(i & 1) ? L : 0, y:(i & 2) ? L : 0, z:(i & 4) ? L : 0 });
+    for (let i = 0; i < 8; i++) for (const b of [1, 2, 4]) if (!(i & b))
+      viewer.addLine({ start:P(i), end:P(i | b), color:'#5a5e66', linewidth:1 });
+    lastBox = f.box;
+  }
+  if (firstFrame){ viewer.zoomTo(); viewer.rotate(20, 'x'); viewer.rotate(30, 'y'); firstFrame = false; }
+  else viewer.setView(v);
+  viewer.render();
+}
+
+/* ---------- state ---------- */
+let state = null;
+
+function applyState(s){
+  state = s;
+  if (!$('#engine').options.length){
+    Object.entries(s.engines).forEach(([k, l]) => $('#engine').add(new Option(l, k)));
+    compEl.value = s.comp.map(([e, n]) => (n === null ? '' : n + ' ') + e).join(' + ');
+  }
+  $('#engine').value = s.engine;
+  $('#note').textContent = s.note || '';
+  $('#boxSub').textContent = `4×4×4 fcc lattice, ${s.n_atoms} atoms in ${s.sites} sites, hard walls`;
+  if (document.activeElement !== compEl) showComp(parseComp(compEl.value));
+  $('#run').textContent = s.running ? 'Pause' : 'Run';
+  $('#run').classList.toggle('on', s.running);
+  $('#temp').value = s.target_T; $('#tval').textContent = Math.round(s.target_T) + ' K';
+  $('#sT').textContent = s.T.toFixed(0); $('#sE').textContent = s.E.toFixed(3);
+  $('#st').textContent = s.t_ps.toFixed(2); $('#sS').textContent = s.running ? s.speed.toFixed(2) : '–';
+  $('#err').textContent = s.error; $('#err').classList.toggle('show', !!s.error);
+  const pts = s.rdf.map((g, i) => (i / (s.rdf.length - 1) * 260).toFixed(1) + ',' + (62 - Math.min(g, 8) / 8 * 60).toFixed(1));
+  $('#rdfLine').setAttribute('points', pts.join(' '));
+  draw(s);
+}
+
+async function poll(){
+  try { applyState(await fetch((window.API_BASE || '') + '/api/sim/frame').then(r => r.json())); } catch(e){}
+  setTimeout(poll, state && state.running ? 66 : 500);
+}
+poll();
+
+/* ---------- controls ---------- */
+$('#run').onclick   = () => api(state.running ? 'pause' : 'run').then(applyState);
+$('#reset').onclick = () => api('reset').then(s => { firstFrame = true; applyState(s); });
+$('#engine').onchange = e => api('set_engine', { engine:e.target.value }).then(applyState);
+
+let tTimer;
+$('#temp').oninput = e => {
+  $('#tval').textContent = e.target.value + ' K';
+  clearTimeout(tTimer); tTimer = setTimeout(() => api('set_T', { T:+e.target.value }).then(applyState), 120);
+};
+document.querySelectorAll('[data-t]').forEach(b => b.onclick = () => api('set_T', { T:+b.dataset.t }).then(applyState));
+
+/* composition line: "30 Au + 40 Ni", "Al + 20 Ni", "gold 32, nickel 64", "Cu" */
+const NAMES = { aluminium:'Al', aluminum:'Al', copper:'Cu', nickel:'Ni', silver:'Ag', gold:'Au',
+                palladium:'Pd', platinum:'Pt', lead:'Pb', iridium:'Ir', rhodium:'Rh', iron:'Fe',
+                cobalt:'Co', chromium:'Cr', manganese:'Mn', titanium:'Ti', vanadium:'V', zinc:'Zn',
+                magnesium:'Mg', molybdenum:'Mo', tungsten:'W', niobium:'Nb', tantalum:'Ta',
+                zirconium:'Zr', tin:'Sn', lithium:'Li', sodium:'Na', calcium:'Ca', silicon:'Si' };
+const SITES = 256;
+const elColor = e => { const c = ($3Dmol.elementColors.Jmol || {})[e]; return c === undefined ? '#999' : '#' + c.toString(16).padStart(6, '0'); };
+const resolveEl = raw => { const r = raw.toLowerCase();
+  return NAMES[r] || (state ? state.elements : []).find(e => e.toLowerCase() === r) || null; };
+
+function parseComp(text){
+  const terms = text.split(/[+,;]/).map(t => t.trim()).filter(Boolean);
+  const comp = []; let bad = null, fill = null;
+  for (const t of terms){
+    const m = t.match(/^(\d+)?\s*[x×]?\s*([A-Za-z]+)\s*[x×]?\s*(\d+)?$/);
+    const el = m && resolveEl(m[2]);
+    if (!el){ bad = t; continue; }
+    const n = m[1] || m[3];
+    if (n === undefined) fill = el; else comp.push([el, +n]);
+  }
+  const used = comp.reduce((s, a) => s + a[1], 0);
+  if (fill) comp.push([fill, null]);                 // bare element = fill whatever is left
+  return { comp, bad, used, over: used > SITES };
+}
+
+function showComp(c){
+  const parts = c.comp.map(([e, n]) => [e, n === null ? Math.max(0, SITES - c.used) : n]).filter(([, n]) => n > 0);
+  const empty = SITES - parts.reduce((s, a) => s + a[1], 0);
+  $('#compOut').innerHTML = parts.map(([e, n]) =>
+    `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${elColor(e)};margin:0 5px 0 2px"></span>${e} ${n}`).join(' · ')
+    + (empty > 0 && !c.over ? ` · <span style="color:var(--fg-3)">${empty} empty</span>` : '')
+    + (c.over ? ` <span style="color:var(--danger)">· ${SITES} sites max, you have ${c.used}</span>` : '')
+    + (c.bad ? ` <span style="color:var(--danger)">· "${c.bad}" not an element here</span>` : '');
+}
+
+const compEl = $('#comp');
+let compTimer;
+function applyComp(){
+  const c = parseComp(compEl.value);
+  showComp(c);
+  if (c.over || !c.comp.length) return;
+  api('set_comp', { comp:c.comp }).then(s => { firstFrame = true; applyState(s); });
+}
+compEl.oninput = () => { showComp(parseComp(compEl.value)); clearTimeout(compTimer); compTimer = setTimeout(applyComp, 600); };
+compEl.onkeydown = e => { if (e.key === 'Enter'){ e.preventDefault(); clearTimeout(compTimer); applyComp(); } };
+
+addEventListener('resize', () => viewer.resize());
+</script>
+</body>
+</html>

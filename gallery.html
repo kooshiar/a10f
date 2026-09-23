@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ten molecular machines</title>
+<script src="https://unpkg.com/3dmol/build/3Dmol-min.js"></script>
+<style>
+  :root{
+    --bg:#0B0C0E; --card:#141619; --line:rgba(255,255,255,.09);
+    --line-2:rgba(255,255,255,.2); --fg:#EAEBEE; --fg-2:#9A9EA7; --fg-3:#63676F;
+    --accent:#6EA8FE;
+    --strip:132px; --head:50px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%; overflow:hidden}
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{height:100dvh; display:flex; flex-direction:column; overflow:hidden}
+
+  header{
+    flex:none; height:var(--head); display:flex; align-items:center; gap:12px;
+    padding:0 20px; border-bottom:1px solid var(--line);
+  }
+  header h1{margin:0; font-size:14.5px; font-weight:600; letter-spacing:-.01em; white-space:nowrap}
+  header .tag{font-size:12px; color:var(--fg-3); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  header a{font-size:12px; color:var(--accent); text-decoration:none; white-space:nowrap}
+
+  main{flex:1; position:relative; min-height:0}
+  #stage{position:absolute; inset:0}
+  #stage canvas{display:block}
+
+  #info{
+    position:absolute; left:18px; top:18px; width:272px; padding:15px 16px;
+    background:rgba(20,22,25,.8); border:1px solid var(--line); border-radius:12px;
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); pointer-events:none;
+  }
+  #info h2{margin:0 0 4px; font-size:17px; font-weight:600; letter-spacing:-.015em}
+  #info .why{margin:0 0 11px; font-size:12.5px; color:var(--fg-2); line-height:1.5}
+  #info .biz{margin:0 0 12px; font-size:12.5px; color:var(--fg-3); line-height:1.5}
+  #info .facts{display:flex; flex-wrap:wrap; gap:5px}
+  .chip{
+    font-size:10.5px; color:var(--fg-2); border:1px solid var(--line);
+    border-radius:999px; padding:3px 8px; white-space:nowrap;
+  }
+  .chip.v{color:var(--accent); border-color:rgba(110,168,254,.32)}
+
+  #tools{
+    position:absolute; right:18px; bottom:16px; display:flex; gap:3px; padding:4px;
+    border-radius:12px; background:rgba(20,22,25,.85); border:1px solid var(--line);
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  }
+  #tools button{
+    height:29px; padding:0 11px; border:0; border-radius:8px; background:none;
+    color:var(--fg-2); font:inherit; font-size:12px; cursor:pointer;
+  }
+  #tools button:hover{background:rgba(255,255,255,.07); color:var(--fg)}
+  #tools button.on{background:rgba(110,168,254,.16); color:var(--accent)}
+
+  #strip{
+    flex:none; height:var(--strip); display:flex; gap:9px; align-items:stretch;
+    padding:11px 16px; overflow-x:auto; overflow-y:hidden;
+    border-top:1px solid var(--line); scrollbar-width:thin;
+    -webkit-overflow-scrolling:touch; scroll-snap-type:x proximity;
+  }
+  #strip::-webkit-scrollbar{height:5px}
+  #strip::-webkit-scrollbar-thumb{background:var(--line-2); border-radius:3px}
+  .item{
+    flex:none; width:94px; cursor:pointer; scroll-snap-align:center;
+    display:flex; flex-direction:column; gap:6px; background:none; border:0; padding:0;
+    font:inherit; text-align:left; color:inherit;
+  }
+  .item .t{
+    width:94px; height:66px; border-radius:9px; overflow:hidden; background:#0E1013;
+    border:1px solid var(--line); transition:border-color .15s, transform .15s;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .item .t img{width:100%; height:100%; object-fit:cover; display:block}
+  .item .t .ph{font-size:9.5px; color:var(--fg-3)}
+  .item:hover .t{border-color:var(--line-2)}
+  .item.on .t{border-color:var(--accent); transform:translateY(-2px)}
+  .item .n{
+    font-size:11px; line-height:1.25; color:var(--fg-2);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .item.on .n{color:var(--fg)}
+  .item .d{font-size:10.5px; color:var(--fg-3); font-variant-numeric:tabular-nums}
+  .item.on .d{color:var(--accent)}
+
+  @media (max-width:760px){
+    :root{ --strip:112px; --head:44px; }
+    header{padding:0 14px} header h1{font-size:13.5px} header .tag{display:none}
+    #info{
+      left:10px; right:10px; top:10px; width:auto; padding:11px 13px; border-radius:10px;
+    }
+    #info h2{font-size:15px}
+    #info .why{margin-bottom:8px; font-size:12px}
+    #info .biz{display:none}
+    #tools{right:10px; bottom:10px}
+    #tools button{padding:0 9px; font-size:11.5px}
+    #strip{gap:8px; padding:9px 12px}
+    .item, .item .t{width:78px} .item .t{height:54px}
+  }
+  @media (max-height:560px){ #info .biz, #info .why{display:none} }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <h1>Ten molecular machines</h1>
+    <span class="tag">two atoms to twenty thousand · one renderer, one palette</span>
+    <a href="index.html">Search any structure →</a>
+  </header>
+
+  <main>
+    <div id="stage"></div>
+    <div id="info"></div>
+    <div id="tools">
+      <button data-act="spin" class="on">Spin</button>
+      <button data-act="style">Style</button>
+      <button data-act="fit">Fit</button>
+    </div>
+  </main>
+
+  <nav id="strip"></nav>
+</div>
+
+<script>
+const ITEMS = [
+  { id:'nitinol', name:'Nitinol', cls:'alloy', atoms:'2 / cell', year:1959,
+    val:'$10B/yr', by:'Buehler, US Naval Ordnance Lab',
+    why:'Bends, then remembers its shape on warming.',
+    biz:'Self-expanding stents and guidewires — a ~$10B device market.',
+    src:{ kind:'local', file:'data/nitinol.pdb' }, view:'metal' },
+
+  { id:'ptfe', name:'PTFE', cls:'polymer', atoms:'6 / repeat', year:1938,
+    val:'$6B/yr', by:'Plunkett, DuPont',
+    why:'A fluorine sheath makes the chain stick to nothing.',
+    biz:'Cookware, seals, wire insulation, gaskets.',
+    src:{ kind:'local', file:'data/ptfe.pdb' }, view:'molecule' },
+
+  { id:'metformin', name:'Metformin', cls:'small-molecule drug', atoms:'20', year:1957,
+    val:'$3B/yr', by:'Sterne, after Werner & Bell',
+    why:'Twenty atoms that lower blood glucose.',
+    biz:'First-line for type 2 diabetes. Over 150M patients.',
+    src:{ kind:'pubchem', cid:4091 }, view:'molecule' },
+
+  { id:'kevlar', name:'Kevlar', cls:'polymer', atoms:'28 / repeat', year:1965,
+    val:'$3B/yr', by:'Kwolek, DuPont',
+    why:'Rigid rods hydrogen-bond into sheets stronger than steel.',
+    biz:'Body armour, tyres, cables, composites.',
+    src:{ kind:'local', file:'data/kevlar.pdb' }, view:'molecule' },
+
+  { id:'atorvastatin', name:'Atorvastatin', cls:'small-molecule drug', atoms:'76', year:1985,
+    val:'$13B/yr', by:'Roth, Warner-Lambert',
+    why:'Mimics the substrate of the enzyme that builds cholesterol.',
+    biz:'Lipitor. Best-selling drug ever, ~$150B lifetime.',
+    src:{ kind:'pubchem', cid:60823 }, view:'molecule' },
+
+  { id:'zsm5', name:'ZSM-5', cls:'zeolite crystal', atoms:'288 / cell', year:1972,
+    val:'$4B/yr', by:'Argauer & Landolt, Mobil',
+    why:'Pores sized to admit only the molecules you want cracked.',
+    biz:'Catalytic cracking. Underpins most of the world’s gasoline.',
+    src:{ kind:'local', file:'data/zsm5.pdb' }, view:'framework' },
+
+  { id:'semaglutide', name:'Semaglutide', cls:'peptide', atoms:'582', year:2012,
+    val:'$25B/yr', by:'Novo Nordisk',
+    why:'A GLP-1 copy, fatty-acid tagged to survive a week in blood.',
+    biz:'Ozempic and Wegovy.',
+    src:{ kind:'pdb', id:'4ZGM' }, view:'protein' },
+
+  { id:'lispro', name:'Insulin lispro', cls:'engineered protein', atoms:'790', year:1996,
+    val:'$3B/yr', by:'Eli Lilly',
+    why:'Two swapped residues stop it clumping, so it acts fast.',
+    biz:'Humalog. The first fast-acting insulin analogue.',
+    src:{ kind:'pdb', id:'1LPH' }, view:'protein' },
+
+  { id:'legh', name:'Leghemoglobin', cls:'engineered protein', atoms:'~2,300', year:2014,
+    val:'$0.4B/yr', by:'Impossible Foods',
+    why:'A plant haem protein that makes plants taste of meat.',
+    biz:'Brewed in yeast at industrial scale.',
+    src:{ kind:'pdb', id:'1FSL' }, view:'protein' },
+
+  { id:'adalimumab', name:'Adalimumab', cls:'antibody', atoms:'~20,000', year:1990,
+    val:'$21B/yr', by:'Cambridge Antibody Technology / BASF',
+    why:'First fully human antibody. Binds and neutralises TNF.',
+    biz:'Humira. ~$200B lifetime, the biggest drug by revenue.',
+    src:{ kind:'pdb', id:'4NYL' }, view:'protein' }
+];
+
+const CACHE_V = 'v2';
+const $ = s => document.querySelector(s);
+const cache = {};
+
+async function fetchStructure(it){
+  if (cache[it.id]) return cache[it.id];
+  const s = it.src;
+  let url, fmt = 'pdb';
+  if (s.kind === 'local')      url = s.file;
+  else if (s.kind === 'pdb')   url = `https://files.rcsb.org/download/${s.id}.pdb`;
+  else { url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${s.cid}/SDF?record_type=3d`; fmt = 'sdf'; }
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(String(r.status));
+  return (cache[it.id] = { data: await r.text(), fmt });
+}
+
+/* one shared look for every structure */
+function dress(v, view, alt){
+  v.setViewStyle({ style:'outline', color:'black', width:0.05 });
+  if (alt){
+    v.setStyle({}, view === 'protein' ? { stick:{ radius:.12 } } : { sphere:{ scale:.9 } });
+  } else if (view === 'protein'){
+    v.setStyle({}, { cartoon:{ color:'spectrum', thickness:.4 } });
+    v.setStyle({ hetflag:true }, { stick:{ radius:.16 }, sphere:{ scale:.22 } });
+  } else if (view === 'framework'){
+    v.setStyle({}, { stick:{ radius:.12 }, sphere:{ scale:.16 } });
+  } else if (view === 'metal'){
+    v.setStyle({}, { sphere:{ scale:.42 } });
+  } else {
+    v.setStyle({}, { stick:{ radius:.14 }, sphere:{ scale:.25 } });
+  }
+  v.setStyle({ resn:['HOH','WAT','DOD'] }, {});   // crystal waters are noise here
+}
+const fit = v => { v.zoomTo(); v.zoom(innerWidth < 760 ? 0.62 : 0.84); };
+
+/* ---------- filmstrip ---------- */
+const strip = $('#strip');
+ITEMS.forEach((it, i) => {
+  const b = document.createElement('button');
+  b.className = 'item'; b.id = 'i-' + it.id;
+  b.innerHTML = `<div class="t" id="t-${it.id}"><span class="ph">…</span></div>
+                 <div class="n">${it.name}</div><div class="d">${it.val}</div>`;
+  b.onclick = () => show(i);
+  strip.appendChild(b);
+});
+
+async function thumb(it){
+  const key = `th:${CACHE_V}:${it.id}`;
+  try { const hit = localStorage.getItem(key); if (hit) return hit; } catch(e){}
+  const box = document.createElement('div');
+  box.style.cssText = 'position:fixed;left:-9999px;top:0;width:280px;height:200px';
+  document.body.appendChild(box);
+  try {
+    const { data, fmt } = await fetchStructure(it);
+    const v = $3Dmol.createViewer(box, { backgroundColor:'#0E1013', antialias:true });
+    v.addModel(data, fmt);
+    dress(v, it.view);
+    fit(v); v.rotate(16, 'x'); v.rotate(22, 'y'); v.render();
+    await new Promise(r => setTimeout(r, 80));
+    const uri = v.pngURI();
+    try { localStorage.setItem(key, uri); } catch(e){}
+    return uri;
+  } finally { box.remove(); }
+}
+
+/* ---------- active viewer ---------- */
+let big = null, spinning = true, alt = false, cur = null;
+
+async function show(i){
+  const it = cur = ITEMS[i];
+  document.querySelectorAll('.item').forEach((e, n) => e.classList.toggle('on', n === i));
+  document.getElementById('i-' + it.id)
+    .scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+
+  $('#info').innerHTML =
+    `<h2>${it.name}</h2>
+     <p class="why">${it.why}</p>
+     <p class="biz">${it.biz}</p>
+     <div class="facts">
+       <span class="chip v">${it.val}</span>
+       <span class="chip">${it.cls}</span>
+       <span class="chip">${it.atoms} atoms</span>
+       <span class="chip">${it.year}</span>
+     </div>`;
+
+  const stage = $('#stage');
+  if (big){ big.spin(false); big = null; }
+  stage.innerHTML = '';
+  let s;
+  try { s = await fetchStructure(it); }
+  catch(e){ stage.innerHTML = `<div style="padding:40px;color:#F2777A">Could not load ${it.name} (${e.message})</div>`; return; }
+  if (cur !== it) return;
+
+  alt = false;
+  document.querySelector('[data-act=style]').classList.remove('on');
+  big = $3Dmol.createViewer(stage, { backgroundColor:'#0B0C0E', antialias:true });
+  big.addModel(s.data, s.fmt);
+  dress(big, it.view, false);
+  fit(big); big.render();
+  if (spinning) big.spin('y', 0.5);
+}
+
+$('#tools').onclick = e => {
+  const b = e.target.closest('button'); if (!b || !big) return;
+  if (b.dataset.act === 'spin'){
+    spinning = !spinning;
+    big.spin(spinning ? 'y' : false, 0.5);
+    b.classList.toggle('on', spinning);
+  } else if (b.dataset.act === 'style'){
+    alt = !alt; b.classList.toggle('on', alt);
+    dress(big, cur.view, alt); big.render();
+  } else { fit(big); big.render(); }
+};
+
+addEventListener('keydown', e => {
+  const i = ITEMS.findIndex(x => x === cur);
+  if (e.key === 'ArrowRight') show((i + 1) % ITEMS.length);
+  if (e.key === 'ArrowLeft')  show((i - 1 + ITEMS.length) % ITEMS.length);
+});
+addEventListener('resize', () => { if (!big) return; big.resize(); fit(big); big.render(); });
+
+show(0);
+(async () => {
+  for (const it of ITEMS){
+    const cell = document.getElementById('t-' + it.id);
+    try { cell.innerHTML = `<img alt="${it.name}" src="${await thumb(it)}">`; }
+    catch(e){ cell.innerHTML = `<span class="ph">${e.message}</span>`; }
+  }
+})();
+</script>
+</body>
+</html>
