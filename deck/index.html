@@ -15,38 +15,34 @@
   *{box-sizing:border-box}
   html,body{height:100%; margin:0; background:#fff; color:var(--ink); font-family:var(--font-text); -webkit-font-smoothing:antialiased}
   section{height:100dvh; overflow:hidden; display:flex; flex-direction:column; padding:clamp(48px,7vh,80px) var(--inset) clamp(36px,5vh,56px)}
-  .eyebrow{font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:16px}
-  h1{font-family:var(--font-display); font-weight:700; font-size:clamp(32px,4.8vw,58px); line-height:1.04; letter-spacing:-.028em; margin:0; max-width:24ch}
-  .no{position:absolute; right:var(--inset); top:clamp(48px,7vh,80px); font-size:13px; color:var(--muted)}
-  .row{flex:1; min-height:0; display:flex; align-items:flex-end; justify-content:space-between; gap:clamp(20px,2.6vw,40px); padding-top:clamp(12px,2vh,24px)}
-  .tier{display:flex; flex-direction:column; align-items:center; gap:6px; flex:none}
-  .wrap{position:relative}
+  h1{font-family:var(--font-display); font-weight:700; font-size:clamp(34px,5vw,62px); line-height:1.04; letter-spacing:-.03em; margin:0; max-width:22ch}
+  .row{position:relative; flex:1; min-height:0; display:flex; align-items:flex-end; justify-content:space-between; gap:clamp(20px,2.6vw,40px); padding-top:clamp(12px,2vh,24px)}
+  .row::after{content:''; position:absolute; left:0; right:0; bottom:26px; height:1px; background:#d9d6cf}
+  .tier{display:flex; flex-direction:column; align-items:center; gap:4px; flex:none}
+  .wrap{position:relative; margin-bottom:10px}
   .viz{position:relative; width:var(--s); height:var(--s); cursor:grab}
   .viz canvas{display:block}
   .dim{position:absolute; left:calc(100% + 6px); bottom:10%; font-size:12.5px; color:var(--muted); white-space:nowrap}
-  .tier .n{font-family:var(--font-display); font-weight:600; letter-spacing:-.025em; font-size:clamp(22px,2.2vw,30px); line-height:1.1; white-space:nowrap}
-  .tier .i{font-size:clamp(12.5px,1.05vw,14.5px); color:var(--ink-2); text-align:center; line-height:1.35; max-width:26ch}
-  .tier .d{font-family:var(--font-display); font-weight:600; letter-spacing:-.025em; font-size:clamp(22px,2.2vw,30px); color:var(--accent); line-height:1.1; margin-top:2px}
-  .tier .y{font-size:12.5px; color:var(--muted); white-space:nowrap}
-  .next{position:absolute; right:var(--inset); bottom:clamp(36px,5vh,56px); font-size:13px; color:var(--accent); text-decoration:none}
-  @media (max-width:900px){ section{height:auto; overflow:visible} .row{flex-wrap:wrap; justify-content:center} }
+  .tier .n{font-family:var(--font-display); font-weight:600; letter-spacing:-.025em; font-size:clamp(20px,1.9vw,26px); line-height:1.15; white-space:nowrap}
+  .tier .d{font-family:var(--font-display); font-weight:700; letter-spacing:-.03em; font-size:clamp(34px,3.4vw,48px); color:var(--accent); line-height:1}
+  .tier .i{font-size:clamp(12.5px,1.05vw,14px); color:var(--muted); text-align:center; white-space:nowrap; margin-top:4px}
+  .tier .yr{position:relative; z-index:1; margin-top:14px; height:34px; display:flex; flex-direction:column; align-items:center; gap:6px; font-size:13px; color:var(--muted)}
+  .tier .yr i{width:9px; height:9px; border-radius:50%; background:var(--ink); margin-top:4px; box-shadow:0 0 0 4px #fff}
+  @media (max-width:900px){ section{height:auto; overflow:visible} .row{flex-wrap:wrap; justify-content:center} .row::after{display:none} }
 </style>
 </head>
 <body>
 <section>
-  <div class="no">01</div>
-  <div class="eyebrow">Scale</div>
-  <h1>The box AI can learn doubles every two years</h1>
+  <h1>AI will design $6T of industry in the next 5 years</h1>
   <div class="row" id="row"></div>
-  <a class="next" href="../deck.html">Next →</a>
 </section>
 
 <script>
 const TIERS = [
-  { n:'~100 atoms', dim:'12 Å',  ind:'Chips, alloys, agrochemicals, aerospace',                 usd:'$3T',   year:'2018 · ANI' },
-  { n:'1k',         dim:'32 Å',  ind:'Batteries, polymers, catalysts, carbon capture',          usd:'$1T',   year:'2022 · MACE, Allegro' },
-  { n:'10k',        dim:'64 Å',  ind:'Drug design, enzymes, food, agriculture',                 usd:'$1.2T', year:'2024 · MACE-MP-0, MatterSim' },
-  { n:'100k',       dim:'130 Å', ind:'Antibodies, vaccines, cell and gene therapy, diagnostics', usd:'$0.6T', year:'2026 · UMA-1.2, Orb-v3' }
+  { n:'100 atoms', dim:'12 Å',  usd:'$3T', ind:'Chips · Alloys · Crop science',   year:'2018' },
+  { n:'1k',        dim:'32 Å',  usd:'$4T', ind:'Batteries · Plastics · Catalysts', year:'2022' },
+  { n:'10k',       dim:'64 Å',  usd:'$5T', ind:'Drugs · Enzymes · Food',           year:'2024' },
+  { n:'100k',      dim:'130 Å', usd:'$6T', ind:'Antibodies · Vaccines · Gene therapy', year:'2026' }
 ];
 const base = Math.min(innerHeight * 0.15, innerWidth * 0.09);
 const sizes = TIERS.map((_, i) => Math.round(base * Math.pow(1.45, i)));
@@ -54,7 +50,7 @@ const row = document.getElementById('row');
 TIERS.forEach((t, i) => {
   const d = document.createElement('div'); d.className = 'tier';
   d.innerHTML = `<div class="wrap"><div class="viz" id="v${i}" style="--s:${sizes[i]}px"></div><div class="dim">${t.dim}</div></div>
-    <div class="n">${t.n}</div><div class="i">${t.ind}</div><div class="d">${t.usd}</div><div class="y">${t.year}</div>`;
+    <div class="n">${t.n}</div><div class="d">${t.usd}</div><div class="i">${t.ind}</div><div class="yr"><i></i>${t.year}</div>`;
   row.appendChild(d);
 });
 
