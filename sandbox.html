@@ -147,6 +147,7 @@ function applyState(s){
     Object.entries(s.engines).forEach(([k, l]) => $('#engine').add(new Option(l, k)));
     compEl.value = s.comp.map(([e, n]) => (n === null ? '' : n + ' ') + e).join(' + ');
   }
+  [...$('#engine').options].forEach(o => o.text = s.engines[o.value] || o.text);
   $('#engine').value = s.engine;
   $('#note').textContent = s.note || '';
   $('#boxSub').textContent = `4×4×4 fcc lattice, ${s.n_atoms} atoms in ${s.sites} sites, hard walls`;
