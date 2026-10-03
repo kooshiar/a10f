@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Small world · proteins</title>
+<script src="https://unpkg.com/3dmol/build/3Dmol-min.js"></script>
+<script src="config.js"></script>
+<style>
+  :root{
+    --bg:#0B0C0E; --panel:rgba(20,22,25,.82); --line:rgba(255,255,255,.09);
+    --line-strong:rgba(255,255,255,.18); --fg:#EAEBEE; --fg-2:#9A9EA7; --fg-3:#63676F;
+    --accent:#6EA8FE; --danger:#F2777A; --a:#6EA8FE; --b:#F0997B;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%; overflow:hidden}
+  body{margin:0; background:var(--bg); color:var(--fg); font-size:13px;
+    font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,sans-serif; -webkit-font-smoothing:antialiased}
+  #viewer{position:fixed; inset:0}
+  #viewer canvas{display:block}
+
+  .tabs{position:fixed; left:50%; top:16px; transform:translateX(-50%); z-index:20; display:flex; gap:3px; padding:4px;
+    background:var(--panel); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--line); border-radius:11px}
+  .tabs a{padding:6px 13px; border-radius:8px; color:var(--fg-2); text-decoration:none; white-space:nowrap}
+  .tabs a:hover{color:var(--fg)}
+  .tabs a.on{background:rgba(110,168,254,.16); color:var(--accent)}
+
+  .box{position:fixed; z-index:10; width:250px; padding:12px; background:var(--panel);
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--line); border-radius:12px;
+    display:flex; flex-direction:column; gap:8px; cursor:grab; user-select:none; touch-action:none}
+  .box.drag{cursor:grabbing; border-color:var(--line-strong)}
+  .box select,.box button,.box input[type=range]{cursor:pointer}
+  #bInfo{right:16px; top:16px; width:auto; max-width:260px; padding:9px 12px}
+  #bCtl{left:16px; top:16px}
+  #bRep{left:16px; bottom:16px}
+  .sub{color:var(--fg-3); font-size:12px; line-height:1.45}
+  .dot{display:inline-block; width:8px; height:8px; border-radius:50%; margin:0 5px 0 1px}
+  .row{display:flex; gap:6px; align-items:center}
+  .btn{flex:1; height:30px; border-radius:8px; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--fg-2); font:inherit}
+  .btn:hover{color:var(--fg); border-color:var(--line-strong)}
+  .btn.on{background:rgba(110,168,254,.16); color:var(--accent); border-color:rgba(110,168,254,.35)}
+  input[type=range]{flex:1; accent-color:var(--accent); margin:0}
+  #tval{width:56px; text-align:right; font-weight:600; font-variant-numeric:tabular-nums}
+  #err{color:var(--danger); font-size:12px; display:none} #err.show{display:block}
+  .stats{display:grid; grid-template-columns:1fr 1fr; gap:4px 12px}
+  .stat b{font-size:16px; font-weight:600; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+  .stat span{color:var(--fg-3); font-size:11.5px; margin-left:4px}
+  #trace{width:100%; height:44px; display:block}
+</style>
+</head>
+<body>
+<div id="viewer"></div>
+
+<nav class="tabs"><a href="sandbox.html">Alloy · 15 Å</a><a class="on" href="bind.html">Proteins · 70 Å</a></nav>
+
+<div class="box" id="bInfo"><div class="sub"><span class="dot" style="background:var(--a)"></span>Barnase <span class="dot" style="background:var(--b);margin-left:8px"></span>Barstar · <span id="nat">3,177</span> atoms</div></div>
+
+<div class="box" id="bCtl">
+  <div class="row"><input type="range" id="temp" min="250" max="600" step="10" value="300"><b id="tval">300 K</b></div>
+  <div class="row"><button class="btn" id="run">Run</button><button class="btn" id="reset">Reset</button></div>
+  <div id="err"></div>
+</div>
+
+<div class="box" id="bRep">
+  <div class="stats">
+    <div class="stat"><b id="sT">–</b><span>K</span></div>
+    <div class="stat"><b id="sC">–</b><span>contacts</span></div>
+    <div class="stat"><b id="st">–</b><span>ps</span></div>
+    <div class="stat"><b id="sG">–</b><span>Å apart</span></div>
+  </div>
+  <svg id="trace" viewBox="0 0 226 44" preserveAspectRatio="none"><polyline id="traceLine" fill="none" stroke="#6EA8FE" stroke-width="1.5"/></svg>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const API = window.API_BASE || '';
+const api = (op, body = {}) => fetch(API + '/api/bind/cmd', { method:'POST', headers:{ 'Content-Type':'application/json' },
+  body: JSON.stringify({ op, ...body }) }).then(r => r.json());
+
+const viewer = $3Dmol.createViewer($('#viewer'), { backgroundColor:'#0B0C0E', antialias:true });
+let tmpl = null, state = null, firstFrame = true, boxDrawn = false, contacts0 = null;
+const hist = [];
+
+async function loadTopology(){
+  for (let i = 0; i < 30 && !tmpl; i++){
+    try { const j = await fetch(API + '/api/bind/topology').then(r => r.json()); if (j.pdb) tmpl = j.pdb.split('\n'); } catch(e){}
+    if (!tmpl) await new Promise(r => setTimeout(r, 1000));
+  }
+}
+
+function draw(s){
+  if (!tmpl || !s.xyz) return;
+  const v = viewer.getView(), x = s.xyz;
+  const pdb = tmpl.map((l, i) => l.slice(0, 30) + x[3*i].toFixed(3).padStart(8) + x[3*i+1].toFixed(3).padStart(8) + x[3*i+2].toFixed(3).padStart(8) + l.slice(54)).join('\n');
+  viewer.removeAllModels();
+  const m = viewer.addModel(pdb, 'pdb');
+  m.setStyle({ chain:'A' }, { cartoon:{ color:'#6EA8FE', thickness:.6 } });
+  m.setStyle({ chain:'D' }, { cartoon:{ color:'#F0997B', thickness:.6 } });
+  if (!boxDrawn){
+    const n = x.length / 3, c = [0, 1, 2].map(k => { let s = 0; for (let i = 0; i < n; i++) s += x[3*i+k]; return s / n; });
+    const L = 70, o = c.map(v => v - L / 2), P = i => ({ x:o[0] + ((i & 1) ? L : 0), y:o[1] + ((i & 2) ? L : 0), z:o[2] + ((i & 4) ? L : 0) });
+    for (let i = 0; i < 8; i++) for (const b of [1, 2, 4]) if (!(i & b)) viewer.addLine({ start:P(i), end:P(i | b), color:'#5a5e66', linewidth:1 });
+    boxDrawn = true;
+  }
+  if (firstFrame){ viewer.zoomTo(); viewer.zoom(0.85); viewer.rotate(15, 'x'); firstFrame = false; } else viewer.setView(v);
+  viewer.render();
+}
+
+const setText = (sel, v) => { const el = $(sel); if (el.textContent !== v) el.textContent = v; };
+let tempBusy = false, pending = null, queued = false;
+function apply(s){
+  if (state && s.gen !== undefined && s.gen < state.gen) return;
+  if (state && s.gen !== state.gen){ hist.length = 0; }
+  state = s;
+  setText('#run', s.running ? 'Pause' : 'Run'); $('#run').classList.toggle('on', !!s.running);
+  if (!tempBusy && +$('#temp').value !== s.target_T){ $('#temp').value = s.target_T; setText('#tval', Math.round(s.target_T) + ' K'); }
+  if (s.n_atoms) setText('#nat', s.n_atoms.toLocaleString());
+  setText('#sT', s.T !== undefined ? s.T.toFixed(0) : '–');
+  setText('#sC', s.contacts !== undefined ? String(s.contacts) : '–');
+  setText('#st', s.t_ps !== undefined ? s.t_ps.toFixed(0) : '–');
+  setText('#sG', s.gap !== undefined ? s.gap.toFixed(1) : '–');
+  setText('#err', s.ready === false && !s.error ? 'Loading the GPU model…' : (s.error || ''));
+  $('#err').classList.toggle('show', !!$('#err').textContent);
+  if (s.contacts !== undefined && (!hist.length || hist[hist.length - 1][0] !== s.t_ps)){
+    hist.push([s.t_ps, s.contacts]); if (hist.length > 300) hist.shift();
+    const top = Math.max(80, ...hist.map(h => h[1]));
+    $('#traceLine').setAttribute('points', hist.map((h, i) => (i / Math.max(1, hist.length - 1) * 226).toFixed(1) + ',' + (42 - h[1] / top * 40).toFixed(1)).join(' '));
+  }
+  pending = s;
+  if (!queued){ queued = true; requestAnimationFrame(() => { queued = false; if (pending && !document.hidden) draw(pending); pending = null; }); }
+}
+
+function subscribe(){
+  const ws = new WebSocket((API || location.origin).replace(/^http/, 'ws') + '/api/bind/ws');
+  ws.onmessage = e => apply(JSON.parse(e.data));
+  ws.onclose = () => setTimeout(subscribe, 1500);
+  ws.onerror = () => ws.close();
+}
+loadTopology().then(subscribe);
+
+$('#run').onclick = () => { const want = !(state && state.running); setText('#run', want ? 'Pause' : 'Run'); $('#run').classList.toggle('on', want); api('toggle').then(apply); };
+$('#reset').onclick = () => api('reset').then(s => { firstFrame = true; apply(s); });
+let tTimer;
+$('#temp').addEventListener('pointerdown', () => tempBusy = true);
+$('#temp').addEventListener('pointerup', () => setTimeout(() => tempBusy = false, 400));
+$('#temp').oninput = e => { setText('#tval', e.target.value + ' K'); clearTimeout(tTimer); tTimer = setTimeout(() => api('set_T', { T:+e.target.value }).then(apply), 120); };
+
+/* movable boxes, positions remembered */
+document.querySelectorAll('.box').forEach(box => {
+  try { const p = JSON.parse(localStorage.getItem('bind:' + box.id)); if (p){ box.style.left = p.x + 'px'; box.style.top = p.y + 'px'; box.style.right = box.style.bottom = 'auto'; } } catch(e){}
+  let sx, sy, ox, oy;
+  box.addEventListener('pointerdown', e => {
+    if (e.target.closest('input,select,button,a')) return;
+    const r = box.getBoundingClientRect(); sx = e.clientX; sy = e.clientY; ox = r.left; oy = r.top;
+    box.style.left = ox + 'px'; box.style.top = oy + 'px'; box.style.right = box.style.bottom = 'auto';
+    box.classList.add('drag'); box.setPointerCapture(e.pointerId);
+  });
+  box.addEventListener('pointermove', e => { if (!box.classList.contains('drag')) return;
+    box.style.left = Math.max(0, ox + e.clientX - sx) + 'px'; box.style.top = Math.max(0, oy + e.clientY - sy) + 'px'; });
+  box.addEventListener('pointerup', () => { if (!box.classList.contains('drag')) return; box.classList.remove('drag');
+    try { localStorage.setItem('bind:' + box.id, JSON.stringify({ x:parseInt(box.style.left), y:parseInt(box.style.top) })); } catch(e){} });
+});
+addEventListener('resize', () => viewer.resize());
+</script>
+</body>
+</html>
