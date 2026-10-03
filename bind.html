@@ -51,7 +51,7 @@
 <body>
 <div id="viewer"></div>
 
-<nav class="tabs"><a href="sandbox.html">Alloy · 15 Å</a><a class="on" href="bind.html">Proteins · 70 Å</a></nav>
+<nav class="tabs"><a href="sandbox.html">Alloy · 15 Å</a><a class="on" href="bind.html">Proteins · 80 Å</a></nav>
 
 <div class="box" id="bInfo"><div class="sub"><span class="dot" style="background:var(--a)"></span>Barnase <span class="dot" style="background:var(--b);margin-left:8px"></span>Barstar · <span id="nat">3,177</span> atoms</div></div>
 
@@ -62,6 +62,7 @@
 </div>
 
 <div class="box" id="bRep">
+  <div id="phase" class="sub" style="color:var(--fg-2)">–</div>
   <div class="stats">
     <div class="stat"><b id="sT">–</b><span>K</span></div>
     <div class="stat"><b id="sC">–</b><span>contacts</span></div>
@@ -98,7 +99,7 @@ function draw(s){
   m.setStyle({ chain:'D' }, { cartoon:{ color:'#F0997B', thickness:.6 } });
   if (!boxDrawn){
     const n = x.length / 3, c = [0, 1, 2].map(k => { let s = 0; for (let i = 0; i < n; i++) s += x[3*i+k]; return s / n; });
-    const L = 70, o = c.map(v => v - L / 2), P = i => ({ x:o[0] + ((i & 1) ? L : 0), y:o[1] + ((i & 2) ? L : 0), z:o[2] + ((i & 4) ? L : 0) });
+    const L = 80, o = c.map(v => v - L / 2), P = i => ({ x:o[0] + ((i & 1) ? L : 0), y:o[1] + ((i & 2) ? L : 0), z:o[2] + ((i & 4) ? L : 0) });
     for (let i = 0; i < 8; i++) for (const b of [1, 2, 4]) if (!(i & b)) viewer.addLine({ start:P(i), end:P(i | b), color:'#5a5e66', linewidth:1 });
     boxDrawn = true;
   }
@@ -119,6 +120,7 @@ function apply(s){
   setText('#sC', s.contacts !== undefined ? String(s.contacts) : '–');
   setText('#st', s.t_ps !== undefined ? s.t_ps.toFixed(0) : '–');
   setText('#sG', s.gap !== undefined ? s.gap.toFixed(1) : '–');
+  setText('#phase', ({ approaching:'Approaching', docking:'Docking', bound:'Bound' })[s.phase] || '–');
   setText('#err', s.ready === false && !s.error ? 'Loading the GPU model…' : (s.error || ''));
   $('#err').classList.toggle('show', !!$('#err').textContent);
   if (s.contacts !== undefined && (!hist.length || hist[hist.length - 1][0] !== s.t_ps)){
@@ -139,7 +141,7 @@ function subscribe(){
 loadTopology().then(subscribe);
 
 $('#run').onclick = () => { const want = !(state && state.running); setText('#run', want ? 'Pause' : 'Run'); $('#run').classList.toggle('on', want); api('toggle').then(apply); };
-$('#reset').onclick = () => api('reset').then(s => { firstFrame = true; apply(s); });
+$('#reset').onclick = () => api('reset').then(s => { firstFrame = true; boxDrawn = false; viewer.removeAllShapes(); hist.length = 0; apply(s); });
 let tTimer;
 $('#temp').addEventListener('pointerdown', () => tempBusy = true);
 $('#temp').addEventListener('pointerup', () => setTimeout(() => tempBusy = false, 400));
