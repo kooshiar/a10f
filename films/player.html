@@ -11,72 +11,74 @@
     --font:"SF Pro Text",-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,sans-serif;
     --display:"SF Pro Display",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
     --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
-    --blue:#2a78d6; --orange:#eb6834; --green:#1baf7a; --amber:#eda100; --pink:#e87ba4;
+    --bg:#0b0c0e; --ink:#eaebee; --ink2:#a6aab2; --mute:#6b7078; --line:rgba(255,255,255,.12); --panel:rgba(255,255,255,.035); --lit:#6ea8fe;
   }
-  .a{ --bg:#f6f5f1; --ink:#0b0b0b; --ink2:#52514e; --mute:#898781; --line:rgba(0,0,0,.14); --panel:rgba(246,245,241,.86); --grid:rgba(0,0,0,.035); --lit:var(--blue) }
-  .b{ --bg:#0b0c0e; --ink:#eaebee; --ink2:#a6aab2; --mute:#6b7078; --line:rgba(255,255,255,.14); --panel:rgba(16,18,21,.78); --grid:transparent; --lit:#6ea8fe }
   *{box-sizing:border-box}
   html,body{margin:0; height:100%; overflow:hidden; background:var(--bg); color:var(--ink); font-family:var(--font); -webkit-font-smoothing:antialiased}
-  #stage{position:fixed; inset:0; background-color:var(--bg);
-    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px); background-size:40px 40px}
+  #stage{position:fixed; inset:0; background:var(--bg)}
   #mol{position:absolute; inset:0}
-  .b #mol{inset:0} .a #mol{right:340px}
   #mol canvas{display:block}
   svg#ov{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
-  .box{position:absolute; border:1px solid var(--line); background:var(--panel); padding:14px 16px; border-radius:2px}
-  .b .box{border-radius:10px; backdrop-filter:blur(14px)}
-  .k{font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--mute); margin-bottom:8px}
-  .mono{font-family:var(--mono)}
-  #title{position:absolute; left:48px; top:40px}
-  #title h1{margin:0; font-family:var(--display); font-weight:600; font-size:34px; letter-spacing:-.02em}
-  #title .id{font-family:var(--mono); font-size:12px; color:var(--mute); letter-spacing:.08em; margin-top:6px}
-  #clock{position:absolute; left:48px; bottom:40px; font-family:var(--mono); font-size:13px; color:var(--ink2)}
-  #clock b{font-size:22px; color:var(--ink); font-weight:500; margin-right:10px}
-  .a .col{position:absolute; right:0; top:0; bottom:0; width:340px; border-left:1px solid var(--line); padding:40px 28px; display:flex; flex-direction:column; gap:22px}
-  .a .col .box{position:relative; background:transparent; border:none; border-top:1px solid var(--line); padding:14px 0 0}
-  #speed .big{font-family:var(--mono); font-size:26px; letter-spacing:-.02em}
-  #speed .x{font-family:var(--mono); font-size:13px; color:var(--ink2); margin-top:4px}
+  .tag{font-family:var(--mono); font-size:13px; fill:var(--ink); paint-order:stroke; stroke:var(--bg); stroke-width:5px; stroke-linejoin:round}
+
+  .box{position:absolute; width:300px; padding:16px 18px; border:1px solid var(--line); border-radius:8px; background:var(--panel)}
+  .k{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--mute); margin-bottom:10px}
+  .mono{font-family:var(--mono); font-variant-numeric:tabular-nums}
+  hr{border:0; border-top:1px solid var(--line); margin:14px 0}
+
+  #ctxBox{left:40px; top:40px; width:auto; min-width:340px}
+  #h1{margin:0; font-family:var(--display); font-weight:600; font-size:38px; letter-spacing:-.02em; line-height:1.05; white-space:nowrap}
+  #c1{font-size:14px; color:var(--ink2); margin-top:8px}
+  #scaleRow{display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:13px; color:var(--ink)}
+  #scaleRow svg{flex:none; overflow:visible}
+  #scaleRow .n{margin-left:auto; color:var(--ink2)}
+  #tclock{font-size:24px; letter-spacing:-.01em}
+  #sbig{font-size:13px; color:var(--ink); margin-top:6px}
+  #sx{font-size:12px; color:var(--ink2); margin-top:2px}
   #parts{display:flex; gap:4px; margin-top:12px}
   #parts div{height:3px; background:var(--line); position:relative; overflow:hidden}
   #parts div i{position:absolute; left:0; top:0; bottom:0; background:var(--ink)}
-  #pname{font-size:13px; color:var(--ink2); margin-top:8px}
-  #ctx .l1{font-size:16px; font-weight:500} #ctx .l2{font-size:13.5px; color:var(--ink2); margin-top:4px; line-height:1.4}
-  #tools .t{display:flex; align-items:center; gap:10px; padding:5px 0; color:var(--mute); transition:color .25s}
+  #pname{font-size:12.5px; color:var(--ink2); margin-top:8px}
+
+  #toolBox{right:40px; top:40px; width:270px}
+  #tools .t{display:flex; align-items:center; gap:10px; padding:4px 0; color:var(--mute); transition:color .25s}
   #tools .t i{width:7px; height:7px; border-radius:50%; border:1px solid var(--mute); flex:none; transition:all .25s}
-  #tools .t b{font-weight:500; font-size:14px} #tools .t span{font-family:var(--mono); font-size:11px; margin-left:auto}
+  #tools .t b{font-weight:500; font-size:13.5px} #tools .t span{font-family:var(--mono); font-size:10.5px; margin-left:auto}
   #tools .t.on{color:var(--ink)} #tools .t.on i{background:var(--lit); border-color:var(--lit); box-shadow:0 0 0 4px color-mix(in srgb, var(--lit) 22%, transparent)}
   #tools .t.on span{color:var(--ink2)}
   #tools .t.pulse b{color:var(--lit)} #tools .t.pulse i{box-shadow:0 0 0 7px color-mix(in srgb, var(--lit) 30%, transparent)}
-  #scaleTxt{font-family:var(--mono); font-size:13px; fill:var(--ink)}
-  .tag{font-family:var(--mono); font-size:13px; fill:var(--ink); paint-order:stroke; stroke:var(--bg); stroke-width:5px; stroke-linejoin:round}
+
+  #numBox{right:40px; bottom:40px; width:270px}
+  #nums .r{display:flex; align-items:baseline; padding:4px 0; font-size:13px; color:var(--ink2)}
+  #nums .r b{margin-left:auto; font-family:var(--mono); font-variant-numeric:tabular-nums; font-weight:500; font-size:16px; color:var(--ink)}
+  #nums .r u{text-decoration:none; font-family:var(--mono); font-size:11px; color:var(--mute); width:58px; text-align:left; padding-left:6px}
+  #nums hr{margin:8px 0}
   .capture *{transition:none !important}
-  /* version b: corner panels */
-  .b #ctxBox{left:48px; top:120px; width:300px} .b #toolBox{right:40px; top:40px; width:280px}
-  .b #speedBox{right:40px; bottom:40px; width:280px} .b #scaleBox{display:none}
 </style>
 </head>
-<body class="a">
+<body>
 <div id="stage">
   <div id="mol"></div>
-  <svg id="ov"><line id="lead" stroke-width="1"/><circle id="leadDot" r="4" fill="none" stroke-width="1.5"/><text id="leadTxt" class="tag"></text>
-    <g id="scale"><line id="sbar" stroke-width="2"/><line id="st0" stroke-width="1"/><line id="st1" stroke-width="1"/><text id="scaleTxt"></text></g>
-    <g id="tags"></g></svg>
-  <div id="title"><h1 id="h1"></h1><div class="id" id="idl"></div></div>
-  <div id="clock"><b id="tclock">0 ps</b><span id="tsize"></span></div>
-  <div class="col" id="col">
-    <div class="box" id="speedBox"><div class="k">Playback</div><div id="speed"><div class="big" id="sbig"></div><div class="x" id="sx"></div><div id="parts"></div><div id="pname"></div></div></div>
-    <div class="box" id="ctxBox"><div class="k">Context</div><div id="ctx"><div class="l1" id="c1"></div><div class="l2" id="c2"></div></div></div>
-    <div class="box" id="toolBox"><div class="k">Models · compute</div><div id="tools"></div></div>
+  <svg id="ov"><g id="tags"></g></svg>
+  <div class="box" id="ctxBox">
+    <h1 id="h1"></h1><div id="c1"></div>
+    <hr>
+    <div id="scaleRow"><svg id="sbar" height="12"><line id="sl" y1="6" y2="6" stroke-width="2"/><line id="s0" y1="0" y2="12"/><line id="s1" y1="0" y2="12"/></svg><span id="slab"></span><span class="n" id="natoms"></span></div>
+    <hr>
+    <div class="mono" id="tclock"></div>
+    <div class="mono" id="sbig"></div><div class="mono" id="sx"></div>
+    <div id="parts"></div><div id="pname"></div>
   </div>
+  <div class="box" id="toolBox"><div class="k">Models used</div><div id="tools"></div></div>
+  <div class="box" id="numBox"><div class="k">Readings</div><div id="nums"></div></div>
 </div>
 <script>
-const Q = new URLSearchParams(location.search), ID = Q.get('id') || 'sn2', V = Q.get('v') || 'a', DUR = 20;
-document.body.className = V + (Q.get('capture') ? ' capture' : '');
+const Q = new URLSearchParams(location.search), ID = Q.get('id') || 'sn2', DUR = 20;
+if (Q.get('capture')) document.body.className = 'capture';
 const $ = s => document.getElementById(s);
-const SC = window.SCENES[ID], SUP = '⁰¹²³⁴⁵⁶⁷⁸⁹';
-if (V === 'b'){ const st = $('stage'); ['ctxBox','toolBox','speedBox'].forEach(i => st.appendChild($(i))); $('col').remove(); }
+const SC = window.SCENES[ID], SUP = '⁰¹²³⁴⁵⁶⁷⁸⁹', FILL = SC.fill || [.7, .6];   // the film's footprint takes ~70% of height, at most 60% of width
 
-let meta, atoms, P, tags, nA, nF, T, partT = [], viewer, baseView, tmpl;
+let meta, atoms, P, tags, nA, nF, T, partT = [], viewer, baseView, tmpl, S;
 const css = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 
 async function load(){
@@ -115,7 +117,8 @@ function positions(t){
   return [out, f < .5 ? a : b];
 }
 const fmtT = ps => ps >= 1 ? (ps >= 100 ? ps.toFixed(0) : ps.toFixed(ps >= 10 ? 1 : 2)) + ' ps' : (ps * 1000 >= 10 ? (ps * 1000).toFixed(0) : (ps * 1000).toFixed(1)) + ' fs';
-const pow = x => { const e = Math.floor(Math.log10(x)), m = x / 10 ** e; return (m >= 9.95 ? '1' : m.toFixed(m < 10 ? 0 : 0)) + '·10' + String(m >= 9.95 ? e + 1 : e).split('').map(c => SUP[+c] || c).join(''); };
+const pow = x => { const e = Math.floor(Math.log10(x)), m = x / 10 ** e; return (m >= 9.95 ? '1' : m.toFixed(0)) + '·10' + String(m >= 9.95 ? e + 1 : e).split('').map(c => SUP[+c] || c).join(''); };
+const fmtWall = s => s < 90 ? [s.toFixed(0), 's'] : s < 5400 ? [(s / 60).toFixed(1), 'min'] : [(s / 3600).toFixed(1), 'h'];
 
 function videoTimeOf(t){                          // inverse of simTime: first video second showing sim time t
   for (const [a, b, p] of partT) if (t <= p.t1 + 1e-9) return a + (b - a) * Math.max(0, (t - p.t0) / ((p.t1 - p.t0) || 1));
@@ -123,8 +126,8 @@ function videoTimeOf(t){                          // inverse of simTime: first v
 }
 
 /* ---------- drawing ---------- */
-function colorOf(el){ const d = V === 'b' && SC.darkColors && SC.darkColors[el]; return d || (SC.colors || {})[el] || '#999'; }
-function tagColor(tag){ for (const [min, c] of (V === 'b' && SC.darkTagColors) || SC.tagColors) if (tag >= min) return c; return '#999'; }
+const colorOf = el => (SC.colors || {})[el] || '#999';
+function tagColor(tag){ for (const [min, c] of SC.tagColors) if (tag >= min) return c; return '#999'; }
 function build(pos, fi){
   viewer.removeAllModels();
   if (SC.style === 'cartoon'){
@@ -145,16 +148,16 @@ function build(pos, fi){
     const groups = {}; for (let i = 0; i < nA; i++){ const lost = tags[i] - tags[fi * nA + i], c = tagColor(12 - Math.max(0, lost)); (groups[c] = groups[c] || []).push(i); }
     for (const [c, idx] of Object.entries(groups)) m.setStyle({ index:idx }, { sphere:{ scale:.42, color:c } });
   } else if (SC.style === 'salt'){
-    // ions solid; water only near the ions: first shell clear, second shell faint, the rest hidden
-    const ion = [], shell1 = [], shell2 = [];
+    // ions solid; water only in the first shell around the ions
+    const ion = [], shell1 = [];
     for (let i = 0; i < nA; i++) if (els[i] === 'Na' || els[i] === 'Cl') ion.push(i);
     for (let o = 0; o < nA; o++){
       if (els[o] !== 'O') continue;
       let dmin = 1e9; for (const j of ion){ const d = (pos[3*o]-pos[3*j])**2 + (pos[3*o+1]-pos[3*j+1])**2 + (pos[3*o+2]-pos[3*j+2])**2; if (d < dmin) dmin = d; }
-      dmin = Math.sqrt(dmin); if (dmin < 3.6) shell1.push(o, o + 1, o + 2); else if (dmin < 5.8) shell2.push(o, o + 1, o + 2);
+      if (Math.sqrt(dmin) < 3.6) shell1.push(o, o + 1, o + 2);
     }
     m.setStyle({}, {});
-    const wc = V === 'b' ? '#7d8590' : '#9aa3b2';
+    const wc = '#7d8590';
     if (shell1.length){ m.setStyle({ index:shell1 }, { stick:{ radius:.11, color:wc } });
       m.setStyle({ index:shell1.filter((_, k) => k % 3 === 0) }, { stick:{ radius:.11, color:wc }, sphere:{ scale:.2, color:wc } }); }
     m.setStyle({ elem:'Na' }, { sphere:{ scale:.55, color:colorOf('Na') } }); m.setStyle({ elem:'Cl' }, { sphere:{ scale:.66, color:colorOf('Cl') } });
@@ -169,96 +172,94 @@ function pxPerA(c){
   return Math.hypot(sx[0] - s0[0], sy[0] - s0[0], sz[0] - s0[0]);
 }
 function centroid(pos, idx){ let x = 0, y = 0, z = 0; for (const i of idx){ x += pos[3*i]; y += pos[3*i+1]; z += pos[3*i+2]; } return [x / idx.length, y / idx.length, z / idx.length]; }
-function leaderAtoms(pos, fi){
-  const L = SC.leader; if (!L) return null;
-  if (Array.isArray(L.atoms)) return L.atoms;
-  if (L.atoms === 'center'){ let best = 0, bd = 1e9; const c = centroid(pos, [...Array(nA).keys()]);
-    for (let i = 0; i < nA; i++){ const d = (pos[3*i]-c[0])**2 + (pos[3*i+1]-c[1])**2 + (pos[3*i+2]-c[2])**2; if (d < bd){ bd = d; best = i; } } return [best]; }
-  if (L.atoms === 'free_ion' && meta.free_ion !== undefined) return [meta.free_ion];
-  if (L.atoms === 'crack_tip'){
-    if (!window._slab){ let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
-      for (let i = 0; i < nA; i++){ x0 = Math.min(x0, P[3*i]); x1 = Math.max(x1, P[3*i]); y0 = Math.min(y0, P[3*i+1]); y1 = Math.max(y1, P[3*i+1]); }
-      window._slab = { x0, x1, ym:(y0 + y1) / 2 }; }
-    const S = window._slab; let best = null, bx = -1e9;     // furthest broken bond along the crack line, away from the free edges
-    for (let i = 0; i < nA; i++){ const x = pos[3*i], y = pos[3*i+1];
-      if (tags[i] - tags[fi * nA + i] >= 2 && x > S.x0 + 3 && x < S.x1 - 4 && Math.abs(y - S.ym) < 6 && x > bx){ bx = x; best = i; } }
-    return best === null ? null : [best];
-  }
-  if (L.atoms === 'interface'){
-    if (!window._iface){                          // barnase backbone atoms within 8 A of barstar in the last frame
-      const last = (nF - 1) * nA * 3, ch = tmpl.map(l => l[21]), A = [], D = [];
-      ch.forEach((c, i) => (c === 'A' ? A : D).push(i));
-      window._iface = A.filter(i => D.some(j => (P[last+3*i]-P[last+3*j])**2 + (P[last+3*i+1]-P[last+3*j+1])**2 + (P[last+3*i+2]-P[last+3*j+2])**2 < 64));
-    }
-    return window._iface.length ? window._iface : null;
-  }
-  return null;
-}
-function line(id, x1, y1, x2, y2, col){ const l = $(id); l.setAttribute('x1', x1); l.setAttribute('y1', y1); l.setAttribute('x2', x2); l.setAttribute('y2', y2); l.setAttribute('stroke', col); }
+function setLine(id, x1, y1, x2, y2){ const l = $(id); l.setAttribute('x1', x1); l.setAttribute('x2', x2); if (y1 !== null){ l.setAttribute('y1', y1); l.setAttribute('y2', y2); } l.setAttribute('stroke', css('--ink')); }
+
+let scaleL = null;
 function overlay(pos, fi, t, part, f, v){
-  const ink = css('--ink'), lit = css('--lit'), mute = css('--mute');
-  // scale bar, bottom left, length = meta.scale_A at the molecule's depth
-  const all = [...Array(nA).keys()], c = centroid(pos, all), k = pxPerA(c), L = meta.scale_A * k;
-  const x0 = 48, y0 = innerHeight - 92;
-  line('sbar', x0, y0, x0 + L, y0, ink); line('st0', x0, y0 - 6, x0, y0 + 6, ink); line('st1', x0 + L, y0 - 6, x0 + L, y0 + 6, ink);
-  const st = $('scaleTxt'); st.setAttribute('x', x0 + L + 12); st.setAttribute('y', y0 + 4); st.textContent = meta.scale_A + ' Å';
-  // clock
-  $('tclock').textContent = 't = ' + fmtT(t); $('tsize').textContent = '';
-  // playback
-  const rate = (part.t1 - part.t0) / part.video_s; $('sbig').textContent = '1 s = ' + fmtT(rate);
+  // scale bar: a round length near 110 px at the molecule's depth, chosen once so it never jumps
+  const k = pxPerA(centroid(pos, [...Array(nA).keys()]));
+  if (scaleL === null) scaleL = [1, 2, 5, 10, 20, 50, 100].reduce((b, L) => Math.abs(L * k - 110) < Math.abs(b * k - 110) ? L : b, 1);
+  const L = scaleL * k; $('sbar').setAttribute('width', L + 1);
+  setLine('sl', .5, null, L + .5); setLine('s0', .5, null, .5); setLine('s1', L + .5, null, L + .5);
+  $('slab').textContent = scaleL + ' Å';
+  // time and speed
+  $('tclock').textContent = 't = ' + fmtT(t);
+  const rate = (part.t1 - part.t0) / part.video_s; $('sbig').textContent = '1 s of video = ' + fmtT(rate);
   $('sx').textContent = pow(1 / (rate * 1e-12)) + ' × slower than real';
-  const segs = $('parts').children; partT.forEach(([a, b, p], i) => { const fill = DUR * 0 + (p === part ? f : (partT.indexOf(partT.find(q => q[2] === part)) > i ? 1 : 0)); segs[i].firstChild.style.width = (Math.max(0, Math.min(1, fill)) * 100) + '%'; });
+  const cur = partT.findIndex(q => q[2] === part), segs = $('parts').children;
+  partT.forEach((_, i) => segs[i].firstChild.style.width = (i < cur ? 100 : i > cur ? 0 : Math.max(0, Math.min(1, f)) * 100) + '%');
   $('pname').textContent = part.name;
-  // tools
-  meta.tools.forEach((tl, k) => {
+  // models: boot in sequence, light while running, pulse when they switch on
+  meta.tools.forEach((tl, j) => {
     const fires = (meta.fire || []).filter(r => r.tool === tl.id);
-    const on = v >= .3 + .35 * k && fires.some(r => t >= r.t0 - 1e-9 && t <= r.t1 + 1e-9);
+    const on = v >= .3 + .35 * j && fires.some(r => t >= r.t0 - 1e-9 && t <= r.t1 + 1e-9);
     const el = $('tool_' + tl.id); el.classList.toggle('on', on);
-    // when did it last switch on, in video seconds?
     let since = 1e9;
-    if (on){ const r = fires.find(r => t >= r.t0 - 1e-9 && t <= r.t1 + 1e-9), vOn = Math.max(.3 + .35 * k, videoTimeOf(r.t0)); since = v - vOn; }
+    if (on){ const r = fires.find(r => t >= r.t0 - 1e-9 && t <= r.t1 + 1e-9); since = v - Math.max(.3 + .35 * j, videoTimeOf(r.t0)); }
     el.classList.toggle('pulse', on && since >= 0 && since < .6);
   });
-  // leader from the thing to the context box
-  const la = leaderAtoms(pos, fi), box = $('ctxBox').getBoundingClientRect();
-  if (la){ const [sx, sy] = screenOf(centroid(pos, la)), tx = box.left - 1, ty = box.top + 30;
-    line('lead', sx, sy, tx, ty, mute); const d = $('leadDot'); d.setAttribute('cx', sx); d.setAttribute('cy', sy); d.setAttribute('stroke', lit);
-    const lt = $('leadTxt'); lt.textContent = SC.leader.text; lt.setAttribute('x', sx + 10); lt.setAttribute('y', sy - 10); lt.style.display = ''; $('lead').style.display = ''; d.style.display = ''; }
-  else { $('lead').style.display = $('leadDot').style.display = $('leadTxt').style.display = 'none'; }
-  // per-scene labels
+  // readings
+  S.pos = pos; S.fi = fi; S.t = t;
+  const rows = SC.nums(S), c = meta.compute, tEnd = T[nF - 1];
+  rows.push(null, [SC.stepLabel || 'MD steps', Math.round(t * 1000 / c.dt_fs).toLocaleString(), '']);
+  if (c.wall_s) rows.push([SC.hw + ' time', ...fmtWall(c.wall_s * t / tEnd)]);
+  $('nums').innerHTML = rows.map(r => r ? `<div class="r">${r[0]}<b>${r[1]}</b><u>${r[2]}</u></div>` : '<hr>').join('');
+  // per-scene atom labels
   const g = $('tags'); g.innerHTML = '';
   for (const lab of SC.labels || []){ const [sx, sy] = screenOf(centroid(pos, lab.atoms));
-    g.insertAdjacentHTML('beforeend', `<text class="tag" text-anchor="middle" x="${sx + (lab.dx || 0)}" y="${sy + (lab.dy ?? 18)}">${lab.text}</text>`); }
+    g.insertAdjacentHTML('beforeend', `<text class="tag" text-anchor="middle" x="${sx + (lab.dx || 0)}" y="${sy - k * (lab.r || .6) - 14}">${lab.text}</text>`); }
 }
 
 /* ---------- frame ---------- */
 async function renderAt(v){
   const [t, part, f] = simTime(v), [pos, fi] = positions(t);
   build(pos, fi);
-  viewer.setView(baseView); viewer.rotate(SC.view.drift * (v / DUR - .5), 'y');
+  viewer.setView(baseView); viewer.rotate((SC.view.drift || 0) * (v / DUR - .5), 'y');
   viewer.render();
   overlay(pos, fi, t, part, f, v);
   await new Promise(r => { let done = false; requestAnimationFrame(() => { done = true; r(); }); setTimeout(() => { if (!done) r(); }, 60); });
 }
 
+function solve3(G, B){                            // G X = B for 3x3, by Cramer's rule column by column
+  const det = m => m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1]) - m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0]) + m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+  const D = det(G), X = [[0,0,0],[0,0,0],[0,0,0]];
+  for (let c = 0; c < 3; c++) for (let r = 0; r < 3; r++){ const M = G.map((row, i) => row.map((x, j) => j === r ? B[i][c] : x)); X[r][c] = det(M) / D; }
+  return X;
+}
+
 (async () => {
   await load();
-  $('h1').textContent = meta.title; $('idl').textContent = `A10 · ${String(SC.order).padStart(2, '0')} · ${SC.size} · ${meta.atoms.toLocaleString()} atoms`;
-  $('c1').textContent = meta.context[0]; $('c2').textContent = meta.context[1] || '';
+  S = { P, T, nA, nF, tags, tmpl, meta, els:atoms.elements,
+        lerp: arr => { const [a, b, f] = frameAt(S.t); return arr[a] + (arr[b] - arr[a]) * f; },
+        positionsAt: t => positions(t)[0], solve3,
+        center: p => { const c = centroid(p, [...Array(nA).keys()]), o = new Float64Array(nA * 3); for (let i = 0; i < nA; i++) for (let d = 0; d < 3; d++) o[3*i+d] = p[3*i+d] - c[d]; return o; } };
+  if (SC.prep) SC.prep(S);
+  $('h1').textContent = meta.title; $('c1').textContent = meta.context[0];
+  $('natoms').textContent = meta.atoms.toLocaleString() + ' atoms';
   $('tools').innerHTML = meta.tools.map(t => `<div class="t" id="tool_${t.id}"><i></i><b>${t.label}</b><span>${t.sub || ''}</span></div>`).join('');
   $('parts').innerHTML = meta.parts.map(p => `<div style="flex:${p.video_s}"><i></i></div>`).join('');
   viewer = $3Dmol.createViewer($('mol'), { backgroundColor:css('--bg'), antialias:true });
   viewer.setBackgroundColor(css('--bg'), 0);
-  viewer.setViewStyle({ style:'outline', color:V === 'b' ? '#000000' : '#1a1a1a', width:.03 });
+  viewer.setViewStyle({ style:'outline', color:'#000000', width:.03 });
   if (SC.view.ortho){ try { viewer.setProjection('orthographic'); } catch(e){} }
-  // frame the whole film: zoom to every position the selected atoms take over 24 sampled moments
+  // frame the whole film: every position the selected atoms take over 24 sampled moments
   const els = atoms.elements, pick = SC.view.frameElems ? [...Array(nA).keys()].filter(i => SC.view.frameElems.includes(els[i])) : [...Array(nA).keys()];
   const pts = [];
-  for (let k = 0; k <= 24; k++){ const [pk] = positions(simTime(k / 24 * DUR * .999)[0]); for (const i of pick) pts.push(`C ${pk[3*i].toFixed(2)} ${pk[3*i+1].toFixed(2)} ${pk[3*i+2].toFixed(2)}`); }
-  const hull = viewer.addModel(pts.length + '\n\n' + pts.join('\n'), 'xyz'); hull.setStyle({}, { sphere:{ scale:.01, opacity:0 } });
+  for (let k = 0; k <= 24; k++){ const [pk] = positions(simTime(k / 24 * DUR * .999)[0]); for (const i of pick) pts.push([pk[3*i], pk[3*i+1], pk[3*i+2]]); }
+  const hull = viewer.addModel(pts.length + '\n\n' + pts.map(p => `C ${p[0].toFixed(2)} ${p[1].toFixed(2)} ${p[2].toFixed(2)}`).join('\n'), 'xyz');
+  hull.setStyle({}, { sphere:{ scale:.01, opacity:0 } });
   viewer.zoomTo({ model:hull }); viewer.removeModel(hull);
   const [p0, f0] = positions(simTime(0)[0]); build(p0, f0);
-  viewer.rotate(SC.view.rx, 'x'); viewer.rotate(SC.view.ry, 'y'); viewer.zoom(SC.view.zoom); viewer.render();
+  viewer.rotate(SC.view.rx, 'x'); viewer.rotate(SC.view.ry, 'y'); viewer.render();
+  // then zoom until the film's footprint fills FILL of the frame
+  const step = Math.max(1, Math.floor(pts.length / 3000)), pad = 1.6;   // pad ~ atom radius in Å
+  for (let it = 0; it < 3; it++){
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    for (let i = 0; i < pts.length; i += step){ const [sx, sy] = screenOf(pts[i]); x0 = Math.min(x0, sx); x1 = Math.max(x1, sx); y0 = Math.min(y0, sy); y1 = Math.max(y1, sy); }
+    const k = pxPerA(pts[0]) * pad * 2, z = Math.min(FILL[0] * innerHeight / (y1 - y0 + k), FILL[1] * innerWidth / (x1 - x0 + k));
+    viewer.zoom(z); viewer.render();
+  }
+  if (SC.view.zoom) { viewer.zoom(SC.view.zoom); viewer.render(); }
   baseView = viewer.getView();
   window.renderAt = renderAt; window.READY = true;
   if (!Q.get('capture')){ const t0 = performance.now(); const loop = async () => { await renderAt(((performance.now() - t0) / 1000) % DUR); requestAnimationFrame(loop); }; loop(); }
