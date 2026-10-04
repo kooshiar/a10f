@@ -24,13 +24,12 @@ window.SCENES = {
     size:'10 Å', style:'salt', hw:'GPU',
     colors:{ Na:'#2a78d6', Cl:'#1baf7a', O:'#eb6834', H:'#6a6e76' },
     view:{ rx:-15, ry:25, drift:14, frameElems:['Na','Cl'] },
-    prep(S){ S.ions = S.els.map((e, i) => e === 'Na' || e === 'Cl' ? i : -1).filter(i => i >= 0); S.ox = S.els.map((e, i) => e === 'O' ? i : -1).filter(i => i >= 0); },
+    prep(S){ S.ions = S.els.map((e, i) => e === 'Na' || e === 'Cl' ? i : -1).filter(i => i >= 0); S.p0 = S.positionsAt(0); },
     nums(S){
       const p = S.pos, ion = S.meta.free_ion, opp = S.els[ion] === 'Cl' ? 'Na' : 'Cl';
       let near = 1e9; for (const j of S.ions) if (S.els[j] === opp) near = Math.min(near, dist(p, ion, j));
-      const shell = S.els[ion] === 'Cl' ? 3.8 : 3.2, wat = S.ox.filter(o => dist(p, ion, o) < shell).length;
-      const inXtal = S.ions.filter(i => S.ions.some(j => S.els[j] !== S.els[i] && dist(p, i, j) < 3.4)).length;
-      return [['Ion to nearest Na⁺', near.toFixed(1), 'Å'], ['Water on the ion', wat, ''], ['Ions in crystal', inXtal + ' / ' + S.ions.length, '']];
+      const moved = Math.hypot(p[3*ion] - S.p0[3*ion], p[3*ion+1] - S.p0[3*ion+1], p[3*ion+2] - S.p0[3*ion+2]);
+      return [['Cl⁻ to nearest Na⁺', near.toFixed(1), 'Å'], ['Cl⁻ travel', moved.toFixed(1), 'Å']];
     }
   },
   niti: {
