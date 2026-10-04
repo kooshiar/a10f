@@ -1,0 +1,71 @@
+{
+ "id": "salt",
+ "title": "Salt dissolving",
+ "scale_A": 5,
+ "atoms": 1262,
+ "context": [
+  "NaCl crystal in water \u00b7 350 K",
+  "Water pulls the lattice apart, ion by ion"
+ ],
+ "tools": [
+  {
+   "id": "amber",
+   "label": "AMBER14 \u00b7 TIP3P",
+   "sub": "force field"
+  },
+  {
+   "id": "openmm",
+   "label": "OpenMM \u00b7 2 fs",
+   "sub": "explicit water"
+  },
+  {
+   "id": "gpu",
+   "label": "RTX 4090",
+   "sub": "RunPod"
+  }
+ ],
+ "fire": [
+  {
+   "tool": "amber",
+   "t0": 0,
+   "t1": 87.4
+  },
+  {
+   "tool": "openmm",
+   "t0": 0,
+   "t1": 87.4
+  },
+  {
+   "tool": "gpu",
+   "t0": 0,
+   "t1": 87.4
+  }
+ ],
+ "parts": [
+  {
+   "name": "water around the crystal",
+   "t0": 0.0,
+   "t1": 52.400000000000006,
+   "video_s": 5
+  },
+  {
+   "name": "ion pulled off",
+   "t0": 52.400000000000006,
+   "t1": 70.4,
+   "video_s": 10
+  },
+  {
+   "name": "ion drifts away, water in tow",
+   "t0": 70.4,
+   "t1": 87.4,
+   "video_s": 5
+  }
+ ],
+ "free_ion": 2,
+ "compute": {
+  "model": "AMBER14 + TIP3P + Joung-Cheatham",
+  "steps": 58650,
+  "dt_fs": 2.0
+ },
+ "written": "2026-10-04 06:08:04"
+}

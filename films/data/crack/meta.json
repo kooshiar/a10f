@@ -1,0 +1,72 @@
+{
+ "id": "crack",
+ "title": "Crack in copper",
+ "scale_A": 20,
+ "atoms": 1316,
+ "context": [
+  "Copper crystal pulled apart",
+  "Where a part fails, atom by atom"
+ ],
+ "tools": [
+  {
+   "id": "emt",
+   "label": "EMT potential",
+   "sub": "ASAP3"
+  },
+  {
+   "id": "md",
+   "label": "MD \u00b7 2 fs",
+   "sub": "ASE"
+  },
+  {
+   "id": "cpu",
+   "label": "1 CPU core",
+   "sub": "RunPod"
+  }
+ ],
+ "fire": [
+  {
+   "tool": "emt",
+   "t0": 0,
+   "t1": 15.99200000000201
+  },
+  {
+   "tool": "md",
+   "t0": 0,
+   "t1": 15.99200000000201
+  },
+  {
+   "tool": "cpu",
+   "t0": 0,
+   "t1": 15.99200000000201
+  }
+ ],
+ "parts": [
+  {
+   "name": "crystal stretched",
+   "t0": 0,
+   "t1": 5.0,
+   "video_s": 5
+  },
+  {
+   "name": "crack runs",
+   "t0": 5.0,
+   "t1": 11.0,
+   "video_s": 10
+  },
+  {
+   "name": "halves ring",
+   "t0": 11.0,
+   "t1": 15.99200000000201,
+   "video_s": 5
+  }
+ ],
+ "tags_meaning": "coordination number, 12 = perfect crystal",
+ "compute": {
+  "model": "EMT (Cu), ASAP3",
+  "steps": 8000,
+  "dt_fs": 2.0,
+  "wall_s": 478
+ },
+ "written": "2026-10-04 06:21:42"
+}

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A10 films</title>
+<style>
+  :root{ --mono:"SF Mono",ui-monospace,Menlo,monospace; --font:"SF Pro Text",-apple-system,BlinkMacSystemFont,system-ui,sans-serif }
+  body{margin:0; background:#f6f5f1; color:#0b0b0b; font-family:var(--font); -webkit-font-smoothing:antialiased}
+  main{max-width:1500px; margin:0 auto; padding:56px 40px 80px}
+  h1{font-family:"SF Pro Display",var(--font); font-weight:600; font-size:40px; letter-spacing:-.025em; margin:0 0 48px}
+  .row{display:grid; grid-template-columns:120px 1fr 1fr; gap:20px; align-items:center; padding:20px 0; border-top:1px solid rgba(0,0,0,.12)}
+  .row .s{font-family:var(--mono); font-size:13px; color:#52514e; line-height:1.6}
+  .row .s b{display:block; font-size:22px; color:#0b0b0b; font-weight:500}
+  video{width:100%; display:block; border:1px solid rgba(0,0,0,.1); background:#000}
+  .pending{aspect-ratio:16/9; border:1px dashed rgba(0,0,0,.2); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:12px; color:#898781}
+</style>
+</head>
+<body>
+<main>
+  <h1>Five scales, twenty seconds each</h1>
+  <div id="list"></div>
+</main>
+<script>
+const ROWS = [['sn2','5 Å','SN2 reaction'], ['salt','10 Å','Salt dissolving'], ['niti','20 Å','Nitinol'], ['crack','40 Å','Crack in copper'], ['bind','80 Å','Proteins binding']];
+document.getElementById('list').innerHTML = ROWS.map(([id, size, name]) => `<div class="row"><div class="s"><b>${size}</b>${name}</div>` +
+  ['a','b'].map(v => `<div data-src="videos/${id}_${v}.mp4" class="pending">rendering</div>`).join('') + '</div>').join('');
+document.querySelectorAll('[data-src]').forEach(async el => {
+  const src = el.dataset.src;
+  const ok = await fetch(src, { method:'HEAD' }).then(r => r.ok).catch(() => false);
+  if (ok) el.outerHTML = `<video src="${src}" autoplay muted loop playsinline></video>`;
+});
+</script>
+</body>
+</html>

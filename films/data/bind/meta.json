@@ -1,0 +1,91 @@
+{
+ "id": "bind",
+ "title": "Two proteins binding",
+ "scale_A": 20,
+ "atoms": 3177,
+ "context": [
+  "Barnase + barstar",
+  "How antibodies and drugs lock onto targets"
+ ],
+ "tools": [
+  {
+   "id": "boltz",
+   "label": "Boltz-2",
+   "sub": "structure \u00b7 Rowan"
+  },
+  {
+   "id": "amber",
+   "label": "AMBER ff14SB",
+   "sub": "force field"
+  },
+  {
+   "id": "openmm",
+   "label": "OpenMM \u00b7 2 fs",
+   "sub": "implicit water"
+  },
+  {
+   "id": "gpu",
+   "label": "RTX 4090",
+   "sub": "RunPod"
+  }
+ ],
+ "fire": [
+  {
+   "tool": "boltz",
+   "t0": 0,
+   "t1": 12.0
+  },
+  {
+   "tool": "amber",
+   "t0": 0,
+   "t1": 1029.9999999999982
+  },
+  {
+   "tool": "openmm",
+   "t0": 0,
+   "t1": 1029.9999999999982
+  },
+  {
+   "tool": "gpu",
+   "t0": 0,
+   "t1": 1029.9999999999982
+  }
+ ],
+ "parts": [
+  {
+   "name": "approach \u00b7 guided",
+   "t0": 0,
+   "t1": 120.0,
+   "video_s": 7
+  },
+  {
+   "name": "fit into each other",
+   "t0": 120.0,
+   "t1": 180.0,
+   "video_s": 6
+  },
+  {
+   "name": "bound \u00b7 moving freely",
+   "t0": 180.0,
+   "t1": 1029.9999999999982,
+   "video_s": 7
+  }
+ ],
+ "focus": {
+  "chains": [
+   "A",
+   "D"
+  ],
+  "labels": [
+   "barnase",
+   "barstar"
+  ]
+ },
+ "compute": {
+  "model": "AMBER ff14SB + GBn2",
+  "steps": 514999,
+  "dt_fs": 2.0,
+  "wall_s": 419
+ },
+ "written": "2026-10-04 06:01:07"
+}
