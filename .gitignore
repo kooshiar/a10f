@@ -2,3 +2,9 @@
 .vercel/
 .vercel
 .env*
+
+# video renders live in ../videos, not in git
+*.mp4
+*.mov
+*.webm
+*.mkv

@@ -12,8 +12,9 @@
   .row{display:grid; grid-template-columns:120px 1fr 1fr; gap:20px; align-items:center; padding:20px 0; border-top:1px solid rgba(0,0,0,.12)}
   .row .s{font-family:var(--mono); font-size:13px; color:#52514e; line-height:1.6}
   .row .s b{display:block; font-size:22px; color:#0b0b0b; font-weight:500}
-  video{width:100%; display:block; border:1px solid rgba(0,0,0,.1); background:#000}
-  .pending{aspect-ratio:16/9; border:1px dashed rgba(0,0,0,.2); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:12px; color:#898781}
+  .f{position:relative; aspect-ratio:16/9; overflow:hidden; border:1px solid rgba(0,0,0,.1); background:#ebeae5}
+  .f iframe{position:absolute; left:0; top:0; width:1920px; height:1080px; border:0; transform-origin:0 0; pointer-events:none}
+  .f a{position:absolute; inset:0}
 </style>
 </head>
 <body>
@@ -24,12 +25,16 @@
 <script>
 const ROWS = [['sn2','5 Å','SN2 reaction'], ['salt','10 Å','Salt dissolving'], ['niti','20 Å','Nitinol'], ['crack','40 Å','Crack in copper'], ['bind','80 Å','Proteins binding']];
 document.getElementById('list').innerHTML = ROWS.map(([id, size, name]) => `<div class="row"><div class="s"><b>${size}</b>${name}</div>` +
-  ['a','b'].map(v => `<div data-src="videos/${id}_${v}.mp4" class="pending">rendering</div>`).join('') + '</div>').join('');
-document.querySelectorAll('[data-src]').forEach(async el => {
-  const src = el.dataset.src;
-  const ok = await fetch(src, { method:'HEAD' }).then(r => r.ok).catch(() => false);
-  if (ok) el.outerHTML = `<video src="${src}" autoplay muted loop playsinline></video>`;
-});
+  ['a','b'].map(v => `<div class="f" data-src="player.html?id=${id}&v=${v}"><a href="player.html?id=${id}&v=${v}" target="_blank"></a></div>`).join('') + '</div>').join('');
+// live player per tile, scaled from 1920x1080; loaded only while on screen
+const fit = () => document.querySelectorAll('.f iframe').forEach(f => f.style.transform = `scale(${f.parentNode.clientWidth / 1920})`);
+const io = new IntersectionObserver(es => es.forEach(e => {
+  const el = e.target, f = el.querySelector('iframe');
+  if (e.isIntersecting && !f){ const n = document.createElement('iframe'); n.src = el.dataset.src; el.prepend(n); fit(); }
+  if (!e.isIntersecting && f) f.remove();
+}), { rootMargin:'200px' });
+document.querySelectorAll('.f').forEach(el => io.observe(el));
+addEventListener('resize', fit);
 </script>
 </body>
 </html>

@@ -14,7 +14,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 HERE = Path(__file__).resolve().parent
-OUT = HERE / "videos"
+OUT = HERE.parent.parent / "videos"
 BASE = "http://localhost:8791/films/player.html"
 FPS, DUR, W, H = 30, 20, 1920, 1080
 SCENES = ["sn2", "salt", "niti", "crack", "bind"]
