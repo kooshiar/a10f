@@ -1,0 +1,79 @@
+{
+ "id": "sn2",
+ "title": "SN2 reaction",
+ "scale_A": 5,
+ "atoms": 6,
+ "context": [
+  "Cl\u207b + CH\u2083Br \u2192 ClCH\u2083 + Br\u207b",
+  "The bond swap behind most drug synthesis"
+ ],
+ "collision_eV": 0.8,
+ "reacted": true,
+ "tools": [
+  {
+   "id": "dft",
+   "label": "DFT \u00b7 B3LYP",
+   "sub": "PySCF"
+  },
+  {
+   "id": "md",
+   "label": "MD \u00b7 0.5 fs",
+   "sub": "ASE"
+  },
+  {
+   "id": "cpu",
+   "label": "48 CPU cores",
+   "sub": "RunPod"
+  }
+ ],
+ "fire": [
+  {
+   "tool": "dft",
+   "t0": 0,
+   "t1": 0.2675
+  },
+  {
+   "tool": "md",
+   "t0": 0,
+   "t1": 0.2675
+  },
+  {
+   "tool": "cpu",
+   "t0": 0,
+   "t1": 0.2675
+  }
+ ],
+ "parts": [
+  {
+   "name": "Cl\u207b approaches",
+   "t0": 0,
+   "t1": 0.0245,
+   "video_s": 6
+  },
+  {
+   "name": "molecule turns inside out",
+   "t0": 0.0245,
+   "t1": 0.1125,
+   "video_s": 8
+  },
+  {
+   "name": "Br\u207b leaves",
+   "t0": 0.1125,
+   "t1": 0.2675,
+   "video_s": 6
+  }
+ ],
+ "focus": {
+  "atoms": [
+   0
+  ],
+  "label": "carbon"
+ },
+ "compute": {
+  "model": "B3LYP/def2-SVP",
+  "steps": 536,
+  "dt_fs": 0.5,
+  "wall_s": 2489
+ },
+ "written": "2026-10-04 07:00:08"
+}

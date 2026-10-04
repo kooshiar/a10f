@@ -4,7 +4,7 @@ window.SCENES = {
     order:1, size:'5 Å', style:'ballstick',
     colors:{ C:'#3a3a3a', H:'#d6d2c8', Cl:'#1baf7a', Br:'#e87ba4' },
     darkColors:{ C:'#c9ccd1', H:'#6a6e76' },
-    view:{ rx:-12, ry:18, drift:10, zoom:0.95 }, labels:[{ atoms:[5], text:'Cl⁻' }, { atoms:[1], text:'Br' }],
+    view:{ rx:-12, ry:18, drift:10, zoom:1.55 }, labels:[{ atoms:[5], text:'Cl', dy:-34 }, { atoms:[1], text:'Br', dy:-34 }],
     leader:{ atoms:[0], text:'carbon' }
   },
   salt: {
@@ -15,7 +15,7 @@ window.SCENES = {
   niti: {
     order:3, size:'20 Å', style:'spheres',
     colors:{ Ni:'#2a78d6', Ti:'#eb6834' },
-    view:{ rx:-8, ry:12, drift:8, zoom:0.95 }, leader:{ atoms:'center', text:'unit cell' }
+    view:{ rx:-90, ry:0, drift:0, zoom:1.45, ortho:true }, smooth:12, sphere:.36, leader:{ atoms:'center', text:'lattice' }
   },
   crack: {
     order:4, size:'40 Å', style:'tagged',

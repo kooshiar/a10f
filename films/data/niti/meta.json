@@ -1,0 +1,94 @@
+{
+ "id": "niti",
+ "title": "Nitinol shape memory",
+ "scale_A": 10,
+ "atoms": 250,
+ "context": [
+  "NiTi alloy \u00b7 stents, actuators",
+  "Cooled, the crystal shears into a new lattice"
+ ],
+ "tools": [
+  {
+   "id": "mace",
+   "label": "MACE-MP-0",
+   "sub": "ML potential"
+  },
+  {
+   "id": "md",
+   "label": "NPT MD \u00b7 3 fs",
+   "sub": "ASE"
+  },
+  {
+   "id": "gpu",
+   "label": "RTX 4090",
+   "sub": "RunPod"
+  }
+ ],
+ "fire": [
+  {
+   "tool": "mace",
+   "t0": 0,
+   "t1": 34.99800000000121
+  },
+  {
+   "tool": "md",
+   "t0": 0,
+   "t1": 34.99800000000121
+  },
+  {
+   "tool": "gpu",
+   "t0": 0,
+   "t1": 34.99800000000121
+  }
+ ],
+ "parts": [
+  {
+   "name": "hot crystal \u00b7 450 K",
+   "t0": 0,
+   "t1": 3.0,
+   "video_s": 4
+  },
+  {
+   "name": "cooled \u00b7 lattice shears",
+   "t0": 3.0,
+   "t1": 23.0,
+   "video_s": 10
+  },
+  {
+   "name": "reheated \u00b7 1000 K",
+   "t0": 23.0,
+   "t1": 34.99800000000121,
+   "video_s": 6
+  }
+ ],
+ "temps": [
+  {
+   "t0": 0,
+   "t1": 3.0,
+   "K": 450
+  },
+  {
+   "t0": 3.0,
+   "t1": 23.0,
+   "K": 40
+  },
+  {
+   "t0": 23.0,
+   "t1": 34.99800000000121,
+   "K": 1000
+  }
+ ],
+ "focus": {
+  "atoms": [
+   125
+  ],
+  "label": "Ti"
+ },
+ "compute": {
+  "model": "MACE-MP-0 small",
+  "steps": 11666,
+  "dt_fs": 3.0,
+  "wall_s": 3790
+ },
+ "written": "2026-10-04 07:07:39"
+}

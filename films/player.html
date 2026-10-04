@@ -102,8 +102,16 @@ function frameAt(t){
   return [lo, hi, (t - T[lo]) / (T[hi] - T[lo] || 1)];
 }
 function positions(t){
-  const [a, b, f] = frameAt(t), out = new Float32Array(nA * 3), oa = a * nA * 3, ob = b * nA * 3;
-  for (let i = 0; i < nA * 3; i++) out[i] = P[oa + i] + (P[ob + i] - P[oa + i]) * f;
+  const [a, b, f] = frameAt(t), out = new Float32Array(nA * 3);
+  const k = SC.smooth || 0;                          // optional time average over +-k frames: hides thermal jitter, keeps the lattice
+  if (k){
+    const lo = Math.max(0, a - k), hi = Math.min(nF - 1, b + k), n = hi - lo + 1;
+    for (let fr = lo; fr <= hi; fr++){ const o = fr * nA * 3; for (let i = 0; i < nA * 3; i++) out[i] += P[o + i]; }
+    for (let i = 0; i < nA * 3; i++) out[i] /= n;
+  } else {
+    const oa = a * nA * 3, ob = b * nA * 3;
+    for (let i = 0; i < nA * 3; i++) out[i] = P[oa + i] + (P[ob + i] - P[oa + i]) * f;
+  }
   return [out, f < .5 ? a : b];
 }
 const fmtT = ps => ps >= 1 ? (ps >= 100 ? ps.toFixed(0) : ps.toFixed(ps >= 10 ? 1 : 2)) + ' ps' : (ps * 1000 >= 10 ? (ps * 1000).toFixed(0) : (ps * 1000).toFixed(1)) + ' fs';
@@ -131,7 +139,7 @@ function build(pos, fi){
   if (SC.style === 'ballstick'){
     for (const el of new Set(els)) m.setStyle({ elem:el }, { sphere:{ scale:el === 'H' ? .22 : .32, color:colorOf(el) }, stick:{ radius:.12, color:colorOf(el) } });
   } else if (SC.style === 'spheres'){
-    for (const el of new Set(els)) m.setStyle({ elem:el }, { sphere:{ scale:.42, color:colorOf(el) } });
+    for (const el of new Set(els)) m.setStyle({ elem:el }, { sphere:{ scale:SC.sphere || .42, color:colorOf(el) } });
   } else if (SC.style === 'tagged'){
     // colour by bonds lost since the first frame: the crack lights up, the original edges stay neutral
     const groups = {}; for (let i = 0; i < nA; i++){ const lost = tags[i] - tags[fi * nA + i], c = tagColor(12 - Math.max(0, lost)); (groups[c] = groups[c] || []).push(i); }
@@ -220,7 +228,7 @@ function overlay(pos, fi, t, part, f, v){
   // per-scene labels
   const g = $('tags'); g.innerHTML = '';
   for (const lab of SC.labels || []){ const [sx, sy] = screenOf(centroid(pos, lab.atoms));
-    g.insertAdjacentHTML('beforeend', `<text class="tag" x="${sx + 10}" y="${sy + 18}">${lab.text}</text>`); }
+    g.insertAdjacentHTML('beforeend', `<text class="tag" text-anchor="middle" x="${sx + (lab.dx || 0)}" y="${sy + (lab.dy ?? 18)}">${lab.text}</text>`); }
 }
 
 /* ---------- frame ---------- */
@@ -242,6 +250,7 @@ async function renderAt(v){
   viewer = $3Dmol.createViewer($('mol'), { backgroundColor:css('--bg'), antialias:true });
   viewer.setBackgroundColor(css('--bg'), 0);
   viewer.setViewStyle({ style:'outline', color:V === 'b' ? '#000000' : '#1a1a1a', width:.03 });
+  if (SC.view.ortho){ try { viewer.setProjection('orthographic'); } catch(e){} }
   // frame the whole film: zoom to every position the selected atoms take over 24 sampled moments
   const els = atoms.elements, pick = SC.view.frameElems ? [...Array(nA).keys()].filter(i => SC.view.frameElems.includes(els[i])) : [...Array(nA).keys()];
   const pts = [];
