@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A10 stage</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/3dmol/build/3Dmol-min.js"></script>
+<script src="stage-scenes.js"></script>
+<style>
+  :root{ --ink:#0E0F12; --ink2:#5A5F69; --line:#E4E6EA; --blue:#2F5BFF; --orange:#FF6B1A; --font:"Inter Tight",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace }
+  html,body{margin:0; height:100%; overflow:hidden; background:#fff; font-family:var(--font); -webkit-font-smoothing:antialiased}
+  #mol{position:fixed; inset:0}
+  svg#ov{position:fixed; inset:0; width:100%; height:100%; pointer-events:none}
+  #cap{position:fixed; left:56px; bottom:48px; display:flex; flex-direction:column; gap:12px}
+  #steps{display:flex; gap:6px; width:360px}
+  #steps div{flex:1; height:4px; background:var(--line); position:relative; overflow:hidden; border-radius:2px}
+  #steps div i{position:absolute; inset:0 auto 0 0; background:var(--ink)}
+  #txt{font-size:30px; font-weight:600; letter-spacing:-.02em; color:var(--ink)}
+  #txt b{font-family:var(--mono); font-weight:500; font-size:20px; color:var(--blue); margin-right:14px; vertical-align:3px}
+  .clean #cap,.clean #clock,.clean #ov{display:none}
+  #clock{position:fixed; right:56px; bottom:52px; font-family:var(--mono); font-size:20px; color:var(--ink2); text-align:right}
+</style>
+</head>
+<body>
+<div id="mol"></div>
+<svg id="ov"><g id="glyph"></g><g id="trails"></g></svg>
+<div id="cap"><div id="steps"></div><div id="txt"></div></div>
+<div id="clock"></div>
+<script>
+const Q = new URLSearchParams(location.search), ID = Q.get('id') || 'atp', DUR = 20;
+const SC = STAGE[ID], PAL = STAGE_PALETTE, $ = s => document.getElementById(s);
+let meta, atoms, P, nA, nF, T, partT = [], viewer, baseView, tmpl, S = {};
+
+async function load(){
+  const base = SC.src || `machines/${ID}/`;
+  [meta, atoms] = await Promise.all([fetch(base + 'meta.json').then(r => r.json()), fetch(base + 'atoms.json').then(r => r.json())]);
+  P = new Float32Array(await fetch(base + 'pos.f32').then(r => r.arrayBuffer()));
+  nA = atoms.n_atoms; nF = atoms.n_frames; T = atoms.times_ps; tmpl = atoms.template ? atoms.template.split('\n') : null;
+  if (SC.parts) meta.parts = meta.parts.map((p, i) => ({ ...p, ...(SC.parts[i] || {}) }));
+  let acc = 0; for (const p of meta.parts){ partT.push([acc, acc + p.video_s, p]); acc += p.video_s; }
+  if (!atoms.parts) atoms.parts = SC.partsFrom(atoms);
+}
+function simTime(v){
+  for (const [a, b, p] of partT) if (v < b || b === DUR){ const f = Math.min(1, Math.max(0, (v - a) / (b - a))); return [p.t0 + (p.t1 - p.t0) * f, p, f]; }
+  const [, , p] = partT[partT.length - 1]; return [p.t1, p, 1];
+}
+function frameAt(t){
+  let lo = 0, hi = nF - 1; if (t <= T[0]) return [0, 0, 0]; if (t >= T[hi]) return [hi, hi, 0];
+  while (hi - lo > 1){ const m = (lo + hi) >> 1; if (T[m] <= t) lo = m; else hi = m; }
+  return [lo, hi, (t - T[lo]) / (T[hi] - T[lo] || 1)];
+}
+function positions(t){
+  const [a, b, f] = frameAt(t), out = new Float32Array(nA * 3), k = SC.smooth || 0;
+  if (k){ const lo = Math.max(0, a - k), hi = Math.min(nF - 1, b + k), n = hi - lo + 1;
+    for (let fr = lo; fr <= hi; fr++){ const o = fr * nA * 3; for (let i = 0; i < nA * 3; i++) out[i] += P[o + i]; }
+    for (let i = 0; i < nA * 3; i++) out[i] /= n;
+  } else { const oa = a * nA * 3, ob = b * nA * 3; for (let i = 0; i < nA * 3; i++) out[i] = P[oa + i] + (P[ob + i] - P[oa + i]) * f; }
+  return out;
+}
+const lerpArr = (arr, t) => { const [a, b, f] = frameAt(t); return arr[a] + (arr[b] - arr[a]) * f; };
+const fmtT = ps => ps >= 1000 ? (ps / 1000).toFixed(ps >= 1e4 ? 0 : 1) + ' ns' : ps >= 1 ? ps.toFixed(ps >= 100 ? 0 : ps >= 10 ? 1 : 2) + ' ps' : (ps * 1000).toFixed(0) + ' fs';
+
+/* ---------- model ---------- */
+function build(pos, t){
+  viewer.removeAllModels();
+  const els = atoms.elements, parts = atoms.parts, col = i => SC.color ? SC.color(i, t, S) : PAL[SC.roles[parts[i]]];
+  if (SC.style === 'ca'){
+    const pdb = tmpl.map((l, i) => l.slice(0, 30) + pos[3*i].toFixed(3).padStart(8) + pos[3*i+1].toFixed(3).padStart(8) + pos[3*i+2].toFixed(3).padStart(8) + l.slice(54)).join('\n');
+    const m = viewer.addModel(pdb, 'pdb'); const by = {};
+    for (let i = 0; i < nA; i++){ const c = col(i); (by[c] = by[c] || []).push(i + 1); }
+    for (const [c, idx] of Object.entries(by)) m.setStyle({ serial:idx }, { sphere:{ radius:SC.radius || 3.1, color:c } });
+    return m;
+  }
+  const bl = atoms.bonds ? Array.from({ length:nA }, () => [[], []]) : null;
+  if (bl) for (const [a, b, o] of atoms.bonds){ bl[a][0].push(b); bl[a][1].push(o); bl[b][0].push(a); bl[b][1].push(o); }
+  const list = [];
+  for (let i = 0; i < nA; i++) list.push({ elem:els[i] === 'X' ? 'C' : els[i], x:pos[3*i], y:pos[3*i+1], z:pos[3*i+2], serial:i, bonds:bl ? bl[i][0] : [], bondOrder:bl ? bl[i][1] : [] });
+  const m = viewer.addModel(); m.addAtoms(list);
+  const groups = new Map();
+  for (let i = 0; i < nA; i++){ const s = SC.atomStyle(i, col(i), els[i], parts[i]); const k = JSON.stringify(s); if (!groups.has(k)) groups.set(k, [s, []]); groups.get(k)[1].push(i); }
+  for (const [, [s, idx]] of groups) m.setStyle({ serial:idx }, s);
+  if (SC.extra) SC.extra(viewer, pos, t, S);
+  return m;
+}
+
+/* ---------- overlay ---------- */
+function screenOf(p){ const s = viewer.modelToScreen({ x:p[0], y:p[1], z:p[2] }); return [s.x, s.y]; }
+function cen(pos, idx){ let x = 0, y = 0, z = 0; for (const i of idx){ x += pos[3*i]; y += pos[3*i+1]; z += pos[3*i+2]; } return [x / idx.length, y / idx.length, z / idx.length]; }
+function overlay(pos, t, part, f, v){
+  const cur = partT.findIndex(q => q[2] === part), segs = $('steps').children;
+  partT.forEach((_, i) => segs[i].firstChild.style.width = (i < cur ? 100 : i > cur ? 0 : f * 100) + '%');
+  $('txt').innerHTML = `<b>${String(cur + 1).padStart(2, '0')}</b>${part.name}`;
+  $('clock').textContent = SC.clock === false ? '' : (SC.clock ? SC.clock(t, S) : 't = ' + fmtT(t));
+  const g = $('glyph'); g.innerHTML = '';
+  for (const inp of meta.inputs || []){
+    const on = t >= inp.t0 - 1e-9 && t <= inp.t1 + 1e-9;
+    if (on && SC.glyph) g.insertAdjacentHTML('beforeend', SC.glyph(inp, pos, t, S, { screenOf, cen, v, PAL }));
+  }
+  const tr = $('trails'); tr.innerHTML = SC.trails ? SC.trails(t, S, { screenOf, positionsAt:positions, PAL }) : '';
+}
+
+async function renderAt(v){
+  const [t, part, f] = simTime(v), pos = positions(t);
+  build(pos, t);
+  viewer.setView(baseView); viewer.rotate((SC.drift ?? 12) * (v / DUR - .5), 'y'); viewer.render();
+  overlay(pos, t, part, f, v);
+  await new Promise(r => { let done = false; requestAnimationFrame(() => { done = true; r(); }); setTimeout(() => { if (!done) r(); }, 60); });
+}
+
+(async () => {
+  await load();
+  Object.assign(S, { meta, atoms, P, nA, nF, T, frameAt, lerp:lerpArr, positions });
+  if (SC.prep){ const r = SC.prep(S); if (r){ P = r.P || P; nA = r.nA || nA; atoms = r.atoms || atoms; Object.assign(S, { P, nA, atoms }); } }
+  $('steps').innerHTML = meta.parts.map(p => `<div><i></i></div>`).join('');
+  viewer = $3Dmol.createViewer($('mol'), { backgroundColor:'white', antialias:true, disableFog:true });
+  viewer.setBackgroundColor('#ffffff', 1);
+  viewer.setViewStyle({ style:"outline", color:"#0B0F33", width:.02 });
+  if (SC.ortho) try { viewer.setProjection('orthographic'); } catch(e){}
+  // frame the whole film: positions at 24 moments, then zoom until the footprint fills the frame
+  const pick = SC.frameAtoms ? SC.frameAtoms(S) : [...Array(nA).keys()], pts = [];
+  for (let k = 0; k <= 24; k++){ const pk = positions(simTime(k / 24 * DUR * .999)[0]); for (const i of pick) pts.push([pk[3*i], pk[3*i+1], pk[3*i+2]]); }
+  const step = Math.max(1, Math.floor(pts.length / 4000));
+  const hull = viewer.addModel(Math.ceil(pts.length / step) + '\n\n' + pts.filter((_, i) => i % step === 0).map(p => `C ${p[0].toFixed(2)} ${p[1].toFixed(2)} ${p[2].toFixed(2)}`).join('\n'), 'xyz');
+  hull.setStyle({}, {}); viewer.zoomTo({ model:hull }); viewer.removeModel(hull);
+  build(positions(simTime(0)[0]), 0);
+  viewer.rotate(SC.view.rx || 0, 'x'); viewer.rotate(SC.view.ry || 0, 'y'); viewer.rotate(SC.view.rz || 0, 'z'); if (SC.tilt) viewer.rotate(SC.tilt, 'x'); viewer.render();
+  const FILL = SC.fill || [.70, .74];
+  for (let it = 0; it < 3; it++){
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    for (let i = 0; i < pts.length; i += step){ const [sx, sy] = screenOf(pts[i]); x0 = Math.min(x0, sx); x1 = Math.max(x1, sx); y0 = Math.min(y0, sy); y1 = Math.max(y1, sy); }
+    const z = Math.min(FILL[0] * innerHeight / (y1 - y0 + 30), FILL[1] * innerWidth / (x1 - x0 + 30));
+    viewer.zoom(z); viewer.render();
+    // keep the footprint centred a little above the caption
+    const [cx, cy] = [(x0 + x1) / 2, (y0 + y1) / 2];
+  }
+  if (SC.view.zoom) viewer.zoom(SC.view.zoom);
+  viewer.render(); baseView = viewer.getView();
+  window.renderAt = renderAt; window.READY = true;
+  if (!Q.get('capture')){ const t0 = performance.now(); const loop = async () => { await renderAt(((performance.now() - t0) / 1000) % DUR); requestAnimationFrame(loop); }; loop(); }
+})();
+</script>
+</body>
+</html>

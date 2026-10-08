@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>thumb</title>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
+<style>html,body{margin:0; background:transparent} #gl{position:fixed; inset:0}</style></head>
+<body><div id="gl"></div>
+<script type="module">
+import { Stage } from './live.js';
+import { FILMS } from './films.js';
+const Q = new URLSearchParams(location.search), f = FILMS.find(x => x.id === Q.get('id'));
+const s = new Stage(document.getElementById('gl'), null, { capture:true });
+s.vCapture = +(Q.get('t') || 14);
+await s.load({ ...f, view:{ ...f.view, fill:.84 } });
+s.frame(true); s.frame(true); window.READY = true;
+</script></body></html>

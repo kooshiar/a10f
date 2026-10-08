@@ -3,24 +3,92 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>A10 site options</title>
+<title>A10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
 <style>
-  body{margin:0; background:#fff; color:#0e0f12; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif; -webkit-font-smoothing:antialiased}
-  main{max-width:1400px; margin:0 auto; padding:56px 40px 80px}
-  h1{font-size:40px; letter-spacing:-.03em; font-weight:650; margin:0 0 48px}
-  .g{display:grid; grid-template-columns:repeat(2, 1fr); gap:48px 36px}
-  a{color:inherit; text-decoration:none} a img{width:100%; display:block; border:1px solid #e3e5e9; border-radius:6px; transition:transform .3s, box-shadow .3s}
-  a:hover img{transform:translateY(-4px); box-shadow:0 18px 40px rgba(0,0,0,.12)}
-  .l{display:flex; gap:14px; align-items:baseline; margin-top:14px; font-size:19px; font-weight:600} .l span{font-size:14px; font-weight:400; color:#5e636d}
-  @media (max-width:760px){ main{padding:32px 16px} .g{grid-template-columns:1fr} }
+  :root{ --bg:#12151D; --txt:#F2F3F7; --txt2:#C9CDD8; --dim:#8A90A2; --line:rgba(230,232,239,.14); --blue:#3B74D6; --sky:#8DB3F0; --orange:#FF6B1A;
+         --font:"Space Grotesk",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace }
+  *{box-sizing:border-box} html,body{margin:0; background:var(--bg); color:var(--txt); font-family:var(--font); -webkit-font-smoothing:antialiased}
+  nav{height:68px; display:flex; align-items:center; justify-content:space-between; padding:0 48px}
+  .logo{font-weight:600; font-size:21px; letter-spacing:-.02em} .logo i{font-style:normal; color:var(--sky)}
+  nav a{font-family:var(--mono); font-size:12.5px; letter-spacing:.08em; color:var(--txt2); text-decoration:none; text-transform:uppercase}
+  header{padding:6px 48px 0}
+  h1{margin:0; font-weight:500; font-size:clamp(40px, 4.6vw, 72px); line-height:1; letter-spacing:-.035em}
+  h1 span{color:var(--sky)}
+  .hero{display:grid; grid-template-columns:176px 1fr; gap:28px; padding:28px 48px 36px; height:calc(100svh - 68px - 86px); min-height:600px}
+  .thumbs{display:flex; flex-direction:column; gap:8px; overflow:auto; scrollbar-width:none}
+  .thumbs button{all:unset; cursor:pointer; position:relative; display:grid; grid-template-columns:64px 1fr; gap:12px; align-items:center; padding:8px 10px 8px 12px; border-radius:10px; opacity:.55; transition:opacity .25s, background .25s}
+  .thumbs button:hover{opacity:.85}
+  .thumbs button.on{opacity:1; background:rgba(255,255,255,.04)}
+  .thumbs button::before{content:""; position:absolute; left:0; top:12px; bottom:12px; width:2px; border-radius:2px; background:transparent}
+  .thumbs button.on::before{background:var(--line)}
+  .thumbs .bar{position:absolute; left:0; top:12px; width:2px; height:0; background:var(--sky); border-radius:2px}
+  .thumbs img{width:64px; height:64px; object-fit:contain; display:block}
+  .thumbs b{display:block; font-weight:500; font-size:14px; line-height:1.2}
+  .thumbs small{font-family:var(--mono); font-size:11px; color:var(--dim)}
+  .stage{position:relative; border-radius:18px; overflow:hidden; background:radial-gradient(ellipse 52% 60% at 58% 52%, #252F49 0%, #1A2030 52%, #151922 100%)}
+  #gl{position:absolute; inset:0; cursor:grab} #gl:active{cursor:grabbing} #gl canvas{display:block; width:100%; height:100%}
+  svg#ov{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
+  .lab{font-family:var(--mono); font-size:11.5px; letter-spacing:.07em; fill:#E6E8EF; text-transform:uppercase}
+  .lab.sub{text-transform:none; fill:#8A90A2; letter-spacing:.03em}
+  .info{position:absolute; left:36px; top:32px; width:min(380px, 34%); pointer-events:none}
+  .info h2{margin:0; font-weight:500; font-size:30px; letter-spacing:-.02em; display:flex; align-items:baseline; gap:12px}
+  .info h2 small{font-family:var(--mono); font-size:12px; font-weight:400; color:var(--dim); letter-spacing:.06em}
+  .info p{margin:12px 0 0; font-size:15.5px; line-height:1.5; color:var(--txt2)}
+  .steps{position:absolute; left:36px; bottom:34px; display:flex; flex-direction:column; gap:11px; font-size:15px; pointer-events:none}
+  .steps div{display:flex; gap:12px; align-items:baseline; color:var(--dim)}
+  .steps div.on{color:var(--txt)} .steps i{font-style:normal; font-size:12px} .steps div.on i{color:var(--orange)}
+  .read{position:absolute; right:32px; bottom:32px; font-family:var(--mono); font-size:11.5px; letter-spacing:.06em; line-height:1.8; color:var(--dim); text-align:right; pointer-events:none}
+  @media (max-width:900px){
+    nav,header{padding-left:16px; padding-right:16px} .hero{grid-template-columns:1fr; grid-template-rows:auto 72vh; padding:20px 16px 24px; height:auto}
+    .thumbs{flex-direction:row; overflow-x:auto} .thumbs button{grid-template-columns:44px; padding:6px} .thumbs button b,.thumbs button small{display:none} .thumbs img{width:44px; height:44px}
+    .info{left:18px; top:18px; width:calc(100% - 36px)} .info h2{font-size:22px} .info p{font-size:13.5px} .steps{left:18px; bottom:18px; font-size:13px} .read{display:none}
+  }
 </style>
 </head>
-<body><main>
-  <h1>Four directions</h1>
-  <div class="g">
-    <a href="a.html"><img src="shots/a.jpg" alt=""><div class="l">A · Rail<span>live hero, picker row</span></div></a>
-    <a href="b.html"><img src="shots/b.jpg" alt=""><div class="l">B · Scale ruler<span>all seven by size</span></div></a>
-    <a href="c.html"><img src="shots/c.jpg" alt=""><div class="l">C · Bento<span>engineering grid</span></div></a>
-    <a href="d.html"><img src="shots/d.jpg" alt=""><div class="l">D · Poster<span>primary colours, collage</span></div></a>
-  </div>
-</main></body></html>
+<body>
+<nav><div class="logo">A<i>10</i></div><a href="#">Contact</a></nav>
+<header><h1>Machines, designed <span>atom by atom.</span></h1></header>
+<div class="hero">
+  <aside class="thumbs" id="thumbs"></aside>
+  <section class="stage" id="stage">
+    <div id="gl"></div>
+    <svg id="ov"></svg>
+    <div class="info"><h2 id="name"></h2><p id="lede"></p></div>
+    <div class="steps" id="steps"></div>
+    <div class="read" id="read"></div>
+  </section>
+</div>
+<script type="module">
+import { Stage } from './live.js';
+import { FILMS } from './films.js';
+const $ = s => document.getElementById(s);
+const stage = new Stage($('gl'), null, { labelInset:250 });
+let cur = 0, loadedAt = 0;
+$('thumbs').innerHTML = FILMS.map((f, i) => `<button data-i="${i}"><div class="bar"></div><img src="thumbs/${f.id}.png" alt=""><span><b>${f.name}</b><small>${f.size}</small></span></button>`).join('');
+async function pick(i){
+  cur = i; const f = FILMS[i];
+  document.querySelectorAll('.thumbs button').forEach((b, k) => b.classList.toggle('on', k === i));
+  $('name').innerHTML = `${f.name}<small>${f.size}</small>`; $('lede').textContent = f.lede;
+  stage.ready = false;
+  await stage.load(f);
+  const sc = stage.sc;
+  $('steps').innerHTML = sc.story.parts.map(p => `<div><i>✦</i><span>${p}</span></div>`).join('');
+  stage.ov = { svg:$('ov'), steps:[...$('steps').children], read:$('read') };
+  loadedAt = performance.now(); stage.touched = 0;
+}
+// advance to the next machine after one full film, unless someone is turning this one
+stage.onFrame = (v) => {
+  const b = document.querySelector('.thumbs button.on .bar'), el = (performance.now() - loadedAt) / 1000;
+  if (b) b.style.height = `calc((100% - 24px) * ${Math.min(1, el / 20)})`;
+  if (el > 20 && performance.now() - (stage.touched || 0) > 25000 && !pending){ pending = true; pick((cur + 1) % FILMS.length).then(() => pending = false); }
+};
+let pending = false;
+$('thumbs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) pick(+b.dataset.i); });
+pick(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A10 film overlay</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg0:#252F49; --bg1:#12151D; --txt:#F2F3F7; --dim:#8A90A2; --line:rgba(242,243,247,.55); --orange:#FF6B1A; --blue:#5B8DEF;
+         --font:"Space Grotesk",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace }
+  html,body{margin:0; width:1600px; height:1100px; overflow:hidden; background:var(--bg1); color:var(--txt); font-family:var(--font); -webkit-font-smoothing:antialiased}
+  #bg{position:fixed; inset:0; background:radial-gradient(ellipse 46% 58% at 62% 50%, var(--bg0) 0%, #1A2030 48%, var(--bg1) 100%)}
+  #mol{position:fixed; inset:0; width:1600px; height:1100px}
+  svg{position:fixed; inset:0; width:1600px; height:1100px}
+  h1{position:fixed; left:96px; top:150px; margin:0; font-weight:500; font-size:88px; letter-spacing:-.025em; line-height:1}
+  #lede{position:fixed; left:98px; top:268px; width:520px; font-size:21px; line-height:1.45; color:#D5D8E2}
+  #steps{position:fixed; left:98px; bottom:150px; display:flex; flex-direction:column; gap:16px; font-size:20px}
+  #steps div{display:flex; gap:16px; align-items:baseline; color:var(--dim); transition:none}
+  #steps div.on{color:var(--txt)}
+  #steps i{font-style:normal; font-size:15px; width:14px}
+  #steps div.on i{color:var(--orange)}
+  .lab{font-family:var(--mono); font-size:13px; letter-spacing:.06em; fill:#E6E8EF; text-transform:uppercase}
+  .lab.sub{text-transform:none; fill:#8A90A2; letter-spacing:.03em}
+  #meta{position:fixed; right:72px; bottom:56px; font-family:var(--mono); font-size:13px; letter-spacing:.06em; color:var(--dim); text-align:right; line-height:1.7}
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<img id="mol" alt="">
+<svg id="ov"></svg>
+<h1 id="title"></h1>
+<div id="lede"></div>
+<div id="steps"></div>
+<div id="meta"></div>
+<script>
+const Q = new URLSearchParams(location.search), ID = Q.get('id') || 'atp';
+const FILM = {
+  atp: {
+    title:'ATP synthase',
+    lede:'The rotary motor in every living cell. Protons flowing through the membrane turn its rotor; each third of a turn makes one ATP.',
+    steps:['At rest', 'Proton flow turns the rotor', 'One full turn · 3 ATP'],
+    labels:[ { at:'head', text:['Stator head', 'α₃β₃ · makes ATP'], dy:-40 },
+             { at:'stalk', text:['Central stalk', 'γε · turns inside the head'], dy:10 },
+             { at:'ring', text:['Rotor ring', 'c₁₀ · in the membrane'], dy:60 } ],
+    meta:f => [`Rotor ${Math.round(Math.abs(S.rotor_deg[f]))}°`, 'Coarse-grained MD · 4,849 residues', 'E. coli · PDB 6OQR'].map(x => x.toUpperCase()),
+    flowLabel:'Proton flow',
+  },
+  rotor: {
+    title:'Light-driven rotor',
+    lede:'A molecule that turns when light hits it. Light loosens its central double bond; the top half swings round and locks in a new position.',
+    steps:['Resting · stable shape', 'Light absorbed · central bond twists', 'Settles turned · new shape'],
+    labels:[ { at:'rotor', text:['Rotor half', 'turns on the axle'] },
+             { at:'axle', text:['Central C=C bond', 'the axle'] },
+             { at:'stator', text:['Stator half', 'held still'] } ], stack:true,
+    meta:f => [`TWIST ${Math.round(S.twist[f])}°`, `t = ${Math.round(S.t_ps[f] * 1000)} fs`, 'xTB MOLECULAR DYNAMICS · 48 ATOMS'],
+    burst:'axle', burstLabel:'Light', dx:-120, X:1330,
+  },
+};
+const C = FILM[ID];
+let S, A;
+async function init(){
+  [S, A] = await Promise.all([fetch(`render/${ID}/story.json`).then(r => r.json()), fetch(`render/${ID}/frames/anchors.json`).then(r => r.json())]);
+  document.getElementById('title').textContent = C.title;
+  document.getElementById('lede').textContent = C.lede;
+  document.getElementById('steps').innerHTML = C.steps.map(s => `<div><i>✦</i><span>${s}</span></div>`).join('');
+  window.READY = true;
+}
+async function show(f){
+  const img = document.getElementById('mol');
+  img.src = `render/${ID}/frames/${String(f).padStart(4, '0')}.png`;
+  await img.decode().catch(() => {});
+  const k = S.part[f];
+  document.querySelectorAll('#steps div').forEach((d, i) => d.classList.toggle('on', i === k));
+  document.getElementById('meta').innerHTML = C.meta(f).join('<br>');
+  const dx = C.dx || 0, X = C.X || 1268;                     // optional shift of the molecule layer; labels in one column to its right
+  const an = Object.fromEntries(Object.entries(A[String(f)]).map(([k, [x, y]]) => [k, [x + dx, y]]));
+  img.style.transform = `translateX(${dx}px)`;
+  let svg = '';
+  // label rows follow their parts; keep at least 76 px between rows so they never collide or cross
+  const rows = C.labels.map(L => ({ L, y:L.y ?? an[L.at][1] + (L.dy || 0) })).sort((a, b) => a.y - b.y);
+  if (C.stack) for (let i = 1; i < rows.length; i++) rows[i].y = Math.max(rows[i].y, rows[i - 1].y + 76);
+  for (const { L, y } of rows){
+    const [ax, ay] = an[L.at], ly = y;
+    svg += `<circle cx="${ax}" cy="${ay}" r="3" fill="#E6E8EF"/>` +
+      `<polyline points="${ax},${ay} ${X - 26},${ly} ${X - 6},${ly}" fill="none" stroke="rgba(230,232,239,.6)" stroke-width="1"/>` +
+      `<text class="lab" x="${X}" y="${ly - 4}">${L.text[0]}</text><text class="lab sub" x="${X}" y="${ly + 15}">${L.text[1]}</text>`;
+  }
+  if (C.burst && S.light[f]){                                 // light: orange rings spreading from the axle
+    const [bx, by] = an[C.burst], age = Math.max(0, S.light_age[f]);
+    for (const o of [0, .33, .66]){ const k = (age * 1.6 + o) % 1;
+      svg += `<circle cx="${bx}" cy="${by}" r="${40 + 230 * k}" fill="none" stroke="#FF6B1A" stroke-width="${4 * (1 - k) + .5}" opacity="${(1 - k) * .9}"/>`; }
+    svg += `<text class="lab" x="${bx + 150}" y="${by - 196}" style="fill:#FF6B1A">${C.burstLabel}</text>`;
+  }
+  if (S.torque_on && S.torque_on[f]){
+    const [rx, ry] = an.ring;
+    svg += `<text class="lab" x="${rx - 250}" y="${ry + 128}" style="fill:#FF6B1A">${C.flowLabel}</text>`;
+  }
+  document.getElementById('ov').innerHTML = svg;
+}
+window.show = show;
+init();
+</script>
+</body>
+</html>
