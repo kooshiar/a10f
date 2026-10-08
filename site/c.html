@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A10 · Option C</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/3dmol/build/3Dmol-min.js"></script>
+<script src="machines.js"></script><script src="palettes.js"></script><script src="site.js"></script>
+<style>
+  :root{ --ink:#15171B; --ink2:#666B75; --line:#DDE0E5; --red:#FF2D55; --font:"Geist",system-ui,sans-serif; --mono:"Geist Mono",ui-monospace,monospace }
+  *{box-sizing:border-box} html,body{margin:0; color:var(--ink); font-family:var(--font); -webkit-font-smoothing:antialiased}
+  body{background:#fff; background-image:linear-gradient(#F3F4F6 1px, transparent 1px), linear-gradient(90deg, #F3F4F6 1px, transparent 1px); background-size:24px 24px}
+  .wrap{max-width:1560px; margin:0 auto; padding:0 32px}
+  nav{display:flex; justify-content:space-between; align-items:center; height:76px; font-family:var(--mono); font-size:13px}
+  .logo{font-family:var(--font); font-weight:700; font-size:20px; display:flex; align-items:center; gap:10px}
+  .logo i{width:12px; height:12px; background:var(--red); display:inline-block}
+  nav a{color:var(--ink); text-decoration:none; font-weight:500}
+  .bento{height:calc(100svh - 76px - 32px); min-height:660px; display:grid; grid-template-columns:repeat(5, 1fr); grid-template-rows:repeat(3, 1fr);
+    border:1px solid var(--ink); background:var(--ink); gap:1px}
+  .cell{background:#fff; position:relative; overflow:hidden}
+  .cell img{position:absolute; inset:34px 18px 30px; width:calc(100% - 36px); height:calc(100% - 64px); object-fit:contain; transition:transform .5s}
+  .cell:hover img{transform:scale(1.04)}
+  .lab{position:absolute; left:14px; top:12px; font-family:var(--mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; z-index:2}
+  .lab b{color:var(--red); font-weight:500; margin-right:8px}
+  .sz{position:absolute; right:14px; bottom:10px; font-family:var(--mono); font-size:13px; font-weight:500; z-index:2}
+  .title{grid-area:1 / 1 / 3 / 3; padding:40px; display:flex; flex-direction:column; justify-content:flex-end}
+  h1{margin:0; font-size:clamp(40px, 4.4vw, 76px); line-height:1; letter-spacing:-.045em; font-weight:600}
+  h1 span{color:var(--red)}
+  #live{position:absolute; inset:28px 0 26px; z-index:0}
+  .lab,.sz{z-index:5}
+  section{padding:96px 0 120px}
+  .list{display:grid; grid-template-columns:repeat(2, 1fr); border:1px solid var(--ink); background:var(--ink); gap:1px}
+  .row{background:#fff; display:grid; grid-template-columns:1fr 1fr; min-height:340px}
+  .row .v{position:relative; border-right:1px solid var(--line)}
+  .row:last-child:nth-child(odd){grid-column:1 / span 2; grid-template-columns:1fr 1fr 2fr}
+  .row .t{padding:24px 26px; display:flex; flex-direction:column}
+  .row .t .lab{position:static}
+  .row h3{font-size:30px; letter-spacing:-.03em; font-weight:600; margin:14px 0 auto; line-height:1.05}
+  .row dl{display:grid; grid-template-columns:auto 1fr; gap:6px 14px; margin:24px 0 0; font-size:14px}
+  .row dt{font-family:var(--mono); font-size:11.5px; color:var(--ink2); text-transform:uppercase; letter-spacing:.06em; padding-top:2px} .row dd{margin:0}
+  @media (max-width:900px){
+    .wrap{padding:0 16px} .bento{grid-template-columns:1fr 1fr; grid-template-rows:auto; height:auto}
+    .title{grid-area:auto; grid-column:1 / span 2; padding:28px 20px} .big{grid-column:1 / span 2; height:420px}
+    .cell:not(.title):not(.big){height:220px}
+    .list{grid-template-columns:1fr} .row{grid-template-columns:1fr} .row .v{height:300px; border-right:0; border-bottom:1px solid var(--line)}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav><div class="logo"><i></i>A10</div><a href="#">CONTACT</a></nav>
+<div class="bento" id="bento">
+  <div class="cell title"><h1>Atomic-scale AI for molecules, materials and <span>machines</span></h1></div>
+</div>
+<section><div class="list" id="list"></div></section>
+</div>
+<script>
+const PAL = PALETTES.signal, L = Machines.LIST, idx = id => L.findIndex(m => m.id === id);
+// layout: title 2x2, ATP synthase tall and live, the rest as stills
+const cells = [['atp','1 / 3 / 4 / 4'], ['dna','1 / 4 / 2 / 6'], ['mof','2 / 4 / 3 / 5'], ['rotor','2 / 5 / 3 / 6'], ['niti','3 / 1 / 4 / 2'], ['electrolyte','3 / 2 / 4 / 3'], ['lce','3 / 4 / 4 / 6']];
+const bento = document.getElementById('bento');
+const mobile = matchMedia('(max-width:900px)').matches;
+for (const [id, area] of cells){
+  const m = L[idx(id)], el = document.createElement('div');
+  el.className = 'cell' + (id === 'atp' ? ' big' : ''); if (!mobile) el.style.gridArea = area;
+  el.innerHTML = `<div class="lab"><b>${pad2(idx(id))}</b>${m.name}</div><div class="sz">${m.size} Å</div>` + (id === 'atp' ? '<div id="live"></div>' : `<img src="img/signal/${id}.png" alt="">`);
+  bento.appendChild(el);
+}
+Machines.mount(document.getElementById('live'), 'atp', PAL('atp'), { spin:.3, zoom:.78 });
+document.getElementById('list').innerHTML = L.map((m, i) => `<div class="row"><div class="v" data-id="${m.id}"></div><div class="t">
+  <div class="lab"><b>${pad2(i)}</b>${m.kind}</div><h3>${m.name}</h3>
+  <dl><dt>Scale</dt><dd>${m.size} Å</dd><dt>Motion</dt><dd>${m.input}</dd><dt>Industry</dt><dd>${m.industry}</dd></dl></div></div>`).join('');
+liveCards('.row .v', PAL);
+</script>
+</body>
+</html>

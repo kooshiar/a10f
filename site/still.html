@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Still</title>
+<script src="https://unpkg.com/3dmol/build/3Dmol-min.js"></script>
+<script src="machines.js"></script><script src="palettes.js"></script>
+<style>html,body{margin:0; background:transparent} #v{position:fixed; inset:0}</style></head>
+<body><div id="v"></div>
+<script>
+const Q = new URLSearchParams(location.search);
+(async () => {
+  const h = Machines.create(document.getElementById('v'), { still:true, zoom:+(Q.get('zoom') || 1.0) });
+  await h.show(Q.get('id'), PALETTES[Q.get('p')](Q.get('id')));
+  h.viewer.render(); setTimeout(() => window.READY = true, 300);
+})();
+</script></body></html>

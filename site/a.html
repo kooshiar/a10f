@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A10 · Option A</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/3dmol/build/3Dmol-min.js"></script>
+<script src="machines.js"></script><script src="palettes.js"></script><script src="site.js"></script>
+<style>
+  :root{ --ink:#0E0F12; --ink2:#5A5F69; --line:#E4E6EA; --blue:#2B4CFF; --orange:#FF4D1F; --font:"Inter Tight",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace }
+  *{box-sizing:border-box} html,body{margin:0; background:#fff; color:var(--ink); font-family:var(--font); -webkit-font-smoothing:antialiased}
+  nav{display:flex; align-items:center; justify-content:space-between; padding:28px 48px}
+  .logo{font-weight:700; font-size:22px; letter-spacing:-.03em} .logo i{font-style:normal; color:var(--blue)}
+  nav a{font-size:15px; font-weight:500; color:var(--ink); text-decoration:none; border:1.5px solid var(--ink); padding:9px 18px; border-radius:999px}
+  .hero{height:calc(100svh - 92px); min-height:640px; display:grid; grid-template-columns:44% 56%; grid-template-rows:1fr auto; padding:0 48px 36px}
+  h1{grid-column:1; align-self:center; margin:0; font-size:clamp(44px, 5.6vw, 88px); line-height:.98; letter-spacing:-.045em; font-weight:700}
+  h1 em{font-style:normal; color:var(--blue)}
+  #stage{grid-column:2; grid-row:1; position:relative}
+  #hero{position:absolute; inset:0}
+  #tag{position:absolute; right:0; bottom:8px; font-family:var(--mono); font-size:13px; color:var(--ink2); text-align:right}
+  #tag b{display:block; font-family:var(--font); font-size:18px; font-weight:600; color:var(--ink); letter-spacing:-.01em}
+  .rail{grid-column:1 / span 2; display:grid; grid-template-columns:repeat(7, 1fr); border-top:1px solid var(--line)}
+  .rail button{all:unset; cursor:pointer; padding:14px 10px 0; position:relative; text-align:left}
+  .rail button img{width:100%; aspect-ratio:1; object-fit:contain; display:block; opacity:.55; transition:opacity .3s, transform .3s}
+  .rail button.on img, .rail button:hover img{opacity:1; transform:translateY(-3px)}
+  .rail button::before{content:""; position:absolute; left:10px; right:10px; top:-1px; height:3px; background:transparent; transition:background .3s}
+  .rail button.on::before{background:var(--blue)}
+  .rail span{display:block; font-size:13px; font-weight:600; margin-top:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .rail small{font-family:var(--mono); font-size:11.5px; color:var(--ink2)}
+  section{padding:120px 48px 140px}
+  h2{font-size:44px; letter-spacing:-.035em; font-weight:700; margin:0 0 56px}
+  .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:28px}
+  .card{border:1px solid var(--line); border-radius:4px; overflow:hidden}
+  .card .v{aspect-ratio:1; position:relative; background:#fff}
+  .card .t{display:grid; grid-template-columns:auto 1fr auto; gap:4px 14px; padding:18px 20px 20px; border-top:1px solid var(--line)}
+  .card .n{font-family:var(--mono); font-size:12px; color:var(--blue); padding-top:4px}
+  .card b{font-size:20px; font-weight:600; letter-spacing:-.02em}
+  .card .s{font-family:var(--mono); font-size:13px; padding-top:4px}
+  .card .m{grid-column:2 / span 2; font-size:14px; color:var(--ink2)}
+  @media (max-width:860px){
+    nav{padding:20px 16px} .hero{grid-template-columns:1fr; grid-template-rows:auto 1fr auto; padding:0 16px 24px; height:auto}
+    h1{grid-column:1; padding:12px 0 8px} #stage{grid-column:1; grid-row:2; height:58vw; min-height:300px}
+    .rail{grid-column:1; grid-template-columns:repeat(7, 34%); overflow-x:auto} section{padding:72px 16px} .grid{grid-template-columns:1fr} h2{font-size:32px}
+  }
+</style>
+</head>
+<body>
+<nav><div class="logo">A<i>10</i></div><a href="#">Contact</a></nav>
+<div class="hero">
+  <h1>AI that understands and designs matter, <em>atom by atom</em></h1>
+  <div id="stage"><div id="hero"></div><div id="tag"></div></div>
+  <div class="rail" id="rail"></div>
+</div>
+<section>
+  <h2>Seven machines, 10 Å to 220 Å</h2>
+  <div class="grid" id="grid"></div>
+</section>
+<script>
+const PAL = PALETTES.blue, L = Machines.LIST;
+const rail = document.getElementById('rail');
+rail.innerHTML = L.map((m, i) => `<button data-i="${i}"><img src="img/blue/${m.id}.png" alt=""><span>${m.name}</span><small>${m.size} Å</small></button>`).join('');
+const hero = Machines.create(document.getElementById('hero'), { spin:.35, zoom:1.0 });
+let cur = L.length - 1, timer;
+function pick(i){
+  cur = i; rail.querySelectorAll('button').forEach((b, k) => b.classList.toggle('on', k === i));
+  hero.show(L[i].id, PAL(L[i].id));
+  document.getElementById('tag').innerHTML = `<b>${L[i].name}</b>${L[i].size} Å · ${L[i].kind}`;
+  clearTimeout(timer); timer = setTimeout(() => pick((cur + 1) % L.length), 7000);
+}
+rail.addEventListener('click', e => { const b = e.target.closest('button'); if (b) pick(+b.dataset.i); });
+pick(cur);
+addEventListener('resize', () => hero.resize());
+document.getElementById('grid').innerHTML = L.map((m, i) => `<div class="card"><div class="v" data-id="${m.id}"></div>
+  <div class="t"><span class="n">${pad2(i)}</span><b>${m.name}</b><span class="s">${m.size} Å</span><span class="m">${m.industry} · ${m.input}</span></div></div>`).join('');
+liveCards('.card .v', PAL);
+</script>
+</body>
+</html>

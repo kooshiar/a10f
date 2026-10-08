@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A10 · Option B</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/3dmol/build/3Dmol-min.js"></script>
+<script src="machines.js"></script><script src="palettes.js"></script><script src="site.js"></script>
+<style>
+  :root{ --ink:#0E0F12; --ink2:#5E636D; --line:#E3E5E9; --font:"Space Grotesk",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace }
+  *{box-sizing:border-box} html,body{margin:0; background:#fff; color:var(--ink); font-family:var(--font); -webkit-font-smoothing:antialiased; overflow-x:hidden}
+  nav{display:flex; justify-content:space-between; align-items:center; padding:26px 48px; font-family:var(--mono); font-size:13px}
+  .logo{font-family:var(--font); font-weight:700; font-size:22px; letter-spacing:-.02em}
+  nav a{color:var(--ink); text-decoration:none}
+  .hero{min-height:calc(100svh - 80px); display:flex; flex-direction:column; padding:0 48px 40px}
+  h1{margin:4vh auto 0; max-width:1100px; text-align:center; font-size:clamp(40px, 5.2vw, 84px); line-height:1; letter-spacing:-.04em; font-weight:600}
+  .row{flex:1; position:relative; margin-top:3vh; min-height:300px}
+  .m{position:absolute; bottom:0}
+  .m img{display:block; width:100%; height:100%; animation:bob 6s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(-6px)}}
+  .ruler{height:1px; background:var(--ink); position:relative; margin-top:18px}
+  .ticks{position:relative; height:64px}
+  .ticks div{position:absolute; top:0; transform:translateX(-50%); text-align:center; padding-top:16px}
+  .ticks div::before{content:""; position:absolute; left:50%; top:-1px; width:1.5px; height:10px; background:var(--ink)}
+  .ticks b{display:block; font-family:var(--mono); font-weight:500; font-size:15px}
+  .ticks span{display:block; font-size:13px; color:var(--ink2); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .ticks i{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:1px}
+  section{padding:80px 48px 120px}
+  .item{display:grid; grid-template-columns:1.1fr 1fr; align-items:center; gap:64px; padding:56px 0; border-top:1px solid var(--line)}
+  .item:nth-child(even) .v{order:2}
+  .item .v{aspect-ratio:4/3; position:relative}
+  .item .num{font-family:var(--mono); font-size:14px; font-weight:500}
+  .item h3{font-size:clamp(34px, 3.6vw, 56px); letter-spacing:-.035em; font-weight:600; margin:10px 0 28px; line-height:1}
+  .item dl{display:grid; grid-template-columns:110px 1fr; gap:10px 16px; margin:0; font-size:16px}
+  .item dt{font-family:var(--mono); font-size:13px; color:var(--ink2); padding-top:2px} .item dd{margin:0}
+  .item .bar{height:6px; width:72px; margin-top:28px}
+  @media (max-width:860px){
+    nav{padding:18px 16px} .hero{padding:0 16px 24px; min-height:auto} h1{text-align:left; margin-top:12px}
+    .row,.ticks{width:1250px} .scroll{overflow-x:auto; margin:24px -16px 0; padding:0 16px; flex:none !important} .row{height:340px; flex:none; margin-top:0}
+    section{padding:48px 16px} .item{grid-template-columns:1fr; gap:20px} .item:nth-child(even) .v{order:0}
+  }
+</style>
+</head>
+<body>
+<nav><div class="logo">A10</div><a href="#">Contact →</a></nav>
+<div class="hero">
+  <h1>Design molecular machines from the atom up</h1>
+  <div class="scroll" style="flex:1; display:flex; flex-direction:column">
+    <div class="row" id="row"></div>
+    <div class="ruler"></div>
+    <div class="ticks" id="ticks"></div>
+  </div>
+</div>
+<section id="list"></section>
+<script>
+const PAL = PALETTES.spectrum, L = Machines.LIST;
+// image height grows with log(size): 10 Å -> 22% of the row, 220 Å -> 100%
+const lo = Math.log(10), hi = Math.log(220), hFrac = s => .22 + .78 * (Math.log(s) - lo) / (hi - lo);
+const row = document.getElementById('row'), ticks = document.getElementById('ticks');
+row.innerHTML = L.map((m, i) => `<div class="m"><img src="img/spectrum/${m.id}.png" style="animation-delay:${-i * .8}s" alt=""></div>`).join('');
+ticks.innerHTML = L.map(m => `<div><b>${m.size} Å</b><span><i style="background:${PAL(m.id).accent}"></i>${m.name}</span></div>`).join('');
+const imgs = [...row.querySelectorAll('img')];
+function layout(){
+  const W = row.clientWidth, H = row.clientHeight, gap = W * .018;
+  const asp = imgs.map(im => im.naturalWidth / im.naturalHeight || 1);
+  let w = L.map((m, i) => hFrac(m.size) * H * asp[i]);
+  const MIN = 150, slot = () => w.map(x => Math.max(x, MIN));     // small machines still get room for their label
+  const k = Math.min(1, (W - gap * (L.length - 1) - MIN * 2) / (w.reduce((a, b) => a + b)));
+  w = w.map(x => x * k);
+  const sl = slot(), free = W - sl.reduce((a, b) => a + b) - gap * (L.length - 1);
+  let x = Math.max(0, free / 2);
+  row.querySelectorAll('.m').forEach((el, i) => { const c = x + sl[i] / 2; el.style.left = c - w[i] / 2 + 'px'; el.style.width = w[i] + 'px'; el.style.height = w[i] / asp[i] + 'px';
+    ticks.children[i].style.left = c + 'px'; x += sl[i] + gap; });
+}
+Promise.all(imgs.map(im => im.decode().catch(() => {}))).then(layout); addEventListener('resize', layout);
+document.getElementById('list').innerHTML = L.map((m, i) => `<div class="item"><div class="v" data-id="${m.id}"></div><div>
+  <div class="num" style="color:${PAL(m.id).accent}">${pad2(i)} / 07</div><h3>${m.name}</h3>
+  <dl><dt>Scale</dt><dd>${m.size} Å</dd><dt>Material</dt><dd>${m.kind}</dd><dt>Motion</dt><dd>${m.input}</dd><dt>Industry</dt><dd>${m.industry}</dd></dl>
+  <div class="bar" style="background:${PAL(m.id).accent}"></div></div></div>`).join('');
+liveCards('.item .v', PAL, { zoom:1.05 });
+</script>
+</body>
+</html>
