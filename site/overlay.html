@@ -89,8 +89,8 @@ const FILM = {
     title:'DNA tweezers',
     lede:'A machine built from DNA. A fuel strand grabs both arms and zips itself into a double helix, pulling the tweezers shut.',
     steps:S0 => S0, labels:[ { at:'fuel', text:['Fuel strand', 'the input'] }, { at:'arm2', text:['Arm 2', 'pulled shut'] }, { at:'arm1', text:['Arm 1', 'held still'] }, { at:'hinge', text:['Hinge', '4 unpaired bases'] } ],
-    stack:true, X:1330,
-    meta:f => [`FUEL BASE PAIRS ${S.bp[f]} / 16`, `ARM GAP ${S.gap[f].toFixed(1)} nm`, `t = ${S.t_ns[f] >= 1000 ? (S.t_ns[f] / 1000).toFixed(2) + ' µs' : Math.round(S.t_ns[f]) + ' ns'} · oxDNA · 140 NUCLEOTIDES`],
+    stack:true, X:1330, dx:-90,
+    meta:f => [`FUEL BASE PAIRS ${S.bp[f]} / 16`, S.guided[f] ? 'SPRINGS ON · FIRST CONTACT GUIDED' : `ARM GAP ${S.gap[f].toFixed(1)} nm · UNGUIDED`, `t = ${S.t_ns[f] >= 1000 ? (S.t_ns[f] / 1000).toFixed(2) + ' µs' : Math.round(S.t_ns[f]) + ' ns'} · oxDNA · 140 NUCLEOTIDES`],
   },
 };
 const C = FILM[ID];
