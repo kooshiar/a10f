@@ -64,7 +64,9 @@
 </div>
 <script type="module">
 import { Stage } from './live.js';
-import { FILMS } from './films.js';
+import { FILMS as ALL } from './films.js';
+// only machines whose data is published
+const FILMS = (await Promise.all(ALL.map(f => fetch(`live/${f.id}/scene.json`, { method:'HEAD' }).then(r => r.ok ? f : null).catch(() => null)))).filter(Boolean);
 const $ = s => document.getElementById(s);
 const stage = new Stage($('gl'), null, { labelInset:250 });
 let cur = 0, loadedAt = 0;

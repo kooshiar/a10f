@@ -54,6 +54,44 @@ const FILM = {
     meta:f => [`TWIST ${Math.round(S.twist[f])}°`, `t = ${Math.round(S.t_ps[f] * 1000)} fs`, 'xTB MOLECULAR DYNAMICS · 48 ATOMS'],
     burst:'axle', burstLabel:'Light', dx:-120, X:1330,
   },
+  niti: {
+    title:'Shape-memory alloy',
+    lede:'Nickel-titanium remembers its shape. Cooled, the crystal shears into a new lattice; heated, it snaps back. Stents and actuators run on this.',
+    steps:['Hot · square lattice', 'Cooled · lattice shears into a new shape', 'Heated · snaps back to square'],
+    labels:[ { at:'ni', text:['Nickel', 'atoms'] }, { at:'ti', text:['Titanium', 'atoms'] } ], stack:true, X:1330,
+    meta:f => [`LATTICE ANGLE ${S.angle[f].toFixed(1)}°`, `${S.temp[f]} K · t = ${S.t_ps[f].toFixed(1)} ps`, 'MACE ML POTENTIAL · 250 ATOMS'],
+    box:true,
+  },
+  electrolyte: {
+    title:'Solid electrolyte',
+    lede:'The core of a solid-state battery. Lithium ions hop through a fixed sulfide frame; with a voltage on, they all drift one way: a current.',
+    steps:S0 => S0, labels:[ { at:'li', text:['Lithium ions', 'carry the charge'] }, { at:'ps4', text:['PS₄ cages', 'the fixed frame'] }, { at:'anion', text:['Cl⁻ and S²⁻', 'between the cages'] } ],
+    stack:true, X:1330,
+    meta:f => [`LI⁺ DRIFT ${S.drift[f] >= 0 ? '+' : ''}${S.drift[f].toFixed(1)} Å`, `${S.field[f] ? 'VOLTAGE ON' : S.temp[f] + ' K'} · t = ${S.t_ps[f].toFixed(1)} ps`, 'MACE ML POTENTIAL · 416 ATOMS'],
+    arrowLabel:'Voltage',
+  },
+  mof: {
+    title:'CO₂-capture MOF',
+    lede:'A crystal full of channels. Flue gas meets it; CO₂ slips into the pores and stays, while N₂ is pushed back out.',
+    steps:S0 => S0, labels:[ { at:'frame', text:['MIL-53 framework', 'Cr and terephthalate'] }, { at:'co2', text:['CO₂', 'trapped in a pore'] }, { at:'n2', text:['N₂', 'stays in the gas'] } ],
+    stack:true, X:1330,
+    meta:f => [`CO₂ INSIDE ${S.co2_in[f]} / ${S.n_co2}`, `N₂ INSIDE ${S.n2_in[f]} / ${S.n_n2}`, `t = ${(S.t_ps[f] / 1000).toFixed(2)} ns · CLASSICAL MD`],
+  },
+  polymer: {
+    title:'Stress-sensing polymer',
+    lede:'A plastic that shows where it is about to fail. Pull the chain hard enough and one bond in the ring snaps; the ring opens and turns coloured.',
+    steps:S0 => S0, labels:[ { at:'ring', text:['Spiropyran ring', 'the sensor'] }, { at:'co', text:['Spiro C–O bond', 'the weak link'] }, { at:'chain', text:['Polymer chain', 'carries the load'] } ],
+    stack:true, X:1330,
+    meta:f => [`C–O BOND ${S.co[f].toFixed(2)} Å`, S.pulling[f] ? `FORCE ${S.force[f].toFixed(1)} nN` : 'FORCE OFF', `t = ${Math.round(S.t_ps[f] * 1000)} fs · xTB · 126 ATOMS`],
+    pull:true,
+  },
+  dna: {
+    title:'DNA tweezers',
+    lede:'A machine built from DNA. A fuel strand grabs both arms and zips itself into a double helix, pulling the tweezers shut.',
+    steps:S0 => S0, labels:[ { at:'fuel', text:['Fuel strand', 'the input'] }, { at:'arm2', text:['Arm 2', 'pulled shut'] }, { at:'arm1', text:['Arm 1', 'held still'] }, { at:'hinge', text:['Hinge', '4 unpaired bases'] } ],
+    stack:true, X:1330,
+    meta:f => [`FUEL BASE PAIRS ${S.bp[f]} / 16`, `ARM GAP ${S.gap[f].toFixed(1)} nm`, `t = ${S.t_ns[f] >= 1000 ? (S.t_ns[f] / 1000).toFixed(2) + ' µs' : Math.round(S.t_ns[f]) + ' ns'} · oxDNA · 140 NUCLEOTIDES`],
+  },
 };
 const C = FILM[ID];
 let S, A;
@@ -61,7 +99,8 @@ async function init(){
   [S, A] = await Promise.all([fetch(`render/${ID}/story.json`).then(r => r.json()), fetch(`render/${ID}/frames/anchors.json`).then(r => r.json())]);
   document.getElementById('title').textContent = C.title;
   document.getElementById('lede').textContent = C.lede;
-  document.getElementById('steps').innerHTML = C.steps.map(s => `<div><i>✦</i><span>${s}</span></div>`).join('');
+  const steps = typeof C.steps === 'function' ? S.parts : C.steps;
+  document.getElementById('steps').innerHTML = steps.map(s => `<div><i>✦</i><span>${s}</span></div>`).join('');
   window.READY = true;
 }
 async function show(f){
@@ -72,7 +111,7 @@ async function show(f){
   document.querySelectorAll('#steps div').forEach((d, i) => d.classList.toggle('on', i === k));
   document.getElementById('meta').innerHTML = C.meta(f).join('<br>');
   const dx = C.dx || 0, X = C.X || 1268;                     // optional shift of the molecule layer; labels in one column to its right
-  const an = Object.fromEntries(Object.entries(A[String(f)]).map(([k, [x, y]]) => [k, [x + dx, y]]));
+  const an = Object.fromEntries(Object.entries(A[String(f)]).map(([k, v]) => [k, typeof v[0] === 'number' ? [v[0] + dx, v[1]] : v]));
   img.style.transform = `translateX(${dx}px)`;
   let svg = '';
   // label rows follow their parts; keep at least 76 px between rows so they never collide or cross
@@ -89,6 +128,21 @@ async function show(f){
     for (const o of [0, .33, .66]){ const k = (age * 1.6 + o) % 1;
       svg += `<circle cx="${bx}" cy="${by}" r="${40 + 230 * k}" fill="none" stroke="#FF6B1A" stroke-width="${4 * (1 - k) + .5}" opacity="${(1 - k) * .9}"/>`; }
     svg += `<text class="lab" x="${bx + 150}" y="${by - 196}" style="fill:#FF6B1A">${C.burstLabel}</text>`;
+  }
+  if (C.box && an.box){                                       // shear: the outline of the crystal, from an affine fit
+    svg += `<polygon points="${an.box.map(([x, y]) => `${x + dx},${y}`).join(' ')}" fill="none" stroke="rgba(230,232,239,.5)" stroke-width="1.2" stroke-dasharray="6 6"/>`;
+  }
+  if (C.arrowLabel && S.field && S.field[f] && an.axis){        // voltage: flat orange arrow along +x under the crystal
+    const [[x1, y1], [x2, y2]] = an.axis.map(([x, y]) => [x + dx, y]), a = Math.atan2(y2 - y1, x2 - x1), h = 16;
+    svg += `<line x1="${x1}" y1="${y1}" x2="${x2 - Math.cos(a) * 12}" y2="${y2 - Math.sin(a) * 12}" stroke="#FF6B1A" stroke-width="4" stroke-linecap="round"/>` +
+      `<path d="M${x2},${y2} L${x2 - h * Math.cos(a - .45)},${y2 - h * Math.sin(a - .45)} L${x2 - h * Math.cos(a + .45)},${y2 - h * Math.sin(a + .45)} Z" fill="#FF6B1A"/>` +
+      `<text class="lab" x="${x2 + 14}" y="${y2 + 5}" style="fill:#FF6B1A">${C.arrowLabel}</text>`;
+  }
+  if (C.pull && S.pulling[f]){                               // pull: orange arrows on the chain ends, pointing outward
+    const [ax, ay] = an.end_a, [bx, by] = an.end_b, L = Math.hypot(bx - ax, by - ay) || 1, ux = (bx - ax) / L, uy = (by - ay) / L;
+    const arrow = (x, y, dx, dy) => { const x2 = x + dx * 90, y2 = y + dy * 90, a = Math.atan2(dy, dx), h = 14;
+      return `<line x1="${x + dx * 16}" y1="${y + dy * 16}" x2="${x2 - dx * 10}" y2="${y2 - dy * 10}" stroke="#FF6B1A" stroke-width="4" stroke-linecap="round"/><path d="M${x2},${y2} L${x2 - h * Math.cos(a - .45)},${y2 - h * Math.sin(a - .45)} L${x2 - h * Math.cos(a + .45)},${y2 - h * Math.sin(a + .45)} Z" fill="#FF6B1A"/>`; };
+    svg += arrow(ax, ay, -ux, -uy) + arrow(bx, by, ux, uy) + `<text class="lab" x="${bx + ux * 100 + 10}" y="${by + uy * 100 - 14}" style="fill:#FF6B1A">Pull</text>`;
   }
   if (S.torque_on && S.torque_on[f]){
     const [rx, ry] = an.ring;
