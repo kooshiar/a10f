@@ -8,3 +8,8 @@
 *.mov
 *.webm
 *.mkv
+
+# machine trajectories live in ../data/machines, renders in ../videos
+site/machines
+site/videos
+site/render

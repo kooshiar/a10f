@@ -219,7 +219,7 @@ export class Stage {
     if (!this.ov) return;
     const f = this.film, s = this.sc.story, k = this.k, W = this.host.clientWidth, X = W - (this.opts.labelInset || 230);
     let svg = '';
-    const rows = (W < 640 ? [] : f.labels).map(L => ({ L, a:this.anchor(L.at) })).filter(r => r.a).map(r => ({ ...r, y:r.a[1] })).sort((a, b) => a.y - b.y);
+    const rows = (W < 640 || this.opts.minimal ? [] : f.labels).map(L => ({ L, a:this.anchor(L.at) })).filter(r => r.a).map(r => ({ ...r, y:r.a[1] })).sort((a, b) => a.y - b.y);
     for (let i = 1; i < rows.length; i++) rows[i].y = Math.max(rows[i].y, rows[i - 1].y + 62);
     for (const { L, a, y } of rows){
       svg += `<circle cx="${a[0]}" cy="${a[1]}" r="3" fill="#E6E8EF"/><polyline points="${a[0]},${a[1]} ${X - 22},${y} ${X - 6},${y}" fill="none" stroke="rgba(230,232,239,.55)" stroke-width="1"/>` +
@@ -227,16 +227,16 @@ export class Stage {
     }
     if (f.burst && s[f.burst.on][k]){ const a = this.anchor(f.burst.at), age = Math.max(0, s[f.burst.age][k]);
       for (const o of [0, .33, .66]){ const q = (age * 1.6 + o) % 1; svg += `<circle cx="${a[0]}" cy="${a[1]}" r="${30 + 170 * q}" fill="none" stroke="#FF6B1A" stroke-width="${3.5 * (1 - q) + .5}" opacity="${(1 - q) * .9}"/>`; }
-      svg += `<text class="lab" x="${a[0] + 110}" y="${a[1] - 150}" style="fill:#FF6B1A">${f.burst.label}</text>`; }
+      if (!this.opts.minimal) svg += `<text class="lab" x="${a[0] + 110}" y="${a[1] - 150}" style="fill:#FF6B1A">${f.burst.label}</text>`; }
     if (f.pull && s.pulling[k]){ const A = this.anchor('end_a'), B = this.anchor('end_b'), L = Math.hypot(B[0] - A[0], B[1] - A[1]) || 1, ux = (B[0] - A[0]) / L, uy = (B[1] - A[1]) / L;
       const ar = (x, y, dx, dy) => { const x2 = x + dx * 70, y2 = y + dy * 70, a = Math.atan2(dy, dx), h = 12;
         return `<line x1="${x + dx * 14}" y1="${y + dy * 14}" x2="${x2 - dx * 8}" y2="${y2 - dy * 8}" stroke="#FF6B1A" stroke-width="3.5" stroke-linecap="round"/><path d="M${x2},${y2} L${x2 - h * Math.cos(a - .45)},${y2 - h * Math.sin(a - .45)} L${x2 - h * Math.cos(a + .45)},${y2 - h * Math.sin(a + .45)} Z" fill="#FF6B1A"/>`; };
       svg += ar(A[0], A[1], -ux, -uy) + ar(B[0], B[1], ux, uy); }
-    if (f.arrow && this.arrow?.visible){ const p = this.arrow.position.clone().add(new THREE.Vector3(9, 0, 0)).project(this.camera);
+    if (f.arrow && this.arrow?.visible && !this.opts.minimal){ const p = this.arrow.position.clone().add(new THREE.Vector3(9, 0, 0)).project(this.camera);
       svg += `<text class="lab" x="${(p.x + 1) / 2 * W + 14}" y="${(1 - p.y) / 2 * this.host.clientHeight + 5}" style="fill:#FF6B1A">${f.arrow.label}</text>`; }
-    if (f.style === 'surface' && this.flow.visible){ const a = this.anchor('ring'); svg += `<text class="lab" x="${a[0] - 230}" y="${a[1] + 110}" style="fill:#FF6B1A">Proton flow</text>`; }
+    if (f.style === 'surface' && this.flow.visible && !this.opts.minimal){ const a = this.anchor('ring'); svg += `<text class="lab" x="${a[0] - 230}" y="${a[1] + 110}" style="fill:#FF6B1A">Proton flow</text>`; }
     this.ov.svg.innerHTML = svg;
-    this.ov.steps.forEach((el, i) => el.classList.toggle('on', i === s.part[k]));
-    this.ov.read.innerHTML = f.readout(s, k).join('<br>');
+    this.ov.steps?.forEach((el, i) => el.classList.toggle('on', i === s.part[k]));
+    if (this.ov.read) this.ov.read.innerHTML = f.readout(s, k).join('<br>');
   }
 }
