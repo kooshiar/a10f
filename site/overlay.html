@@ -20,6 +20,14 @@
   #steps div.on i{color:var(--orange)}
   .lab{font-family:var(--mono); font-size:13px; letter-spacing:.06em; fill:#E6E8EF; text-transform:uppercase}
   .lab.sub{text-transform:none; fill:#8A90A2; letter-spacing:.03em}
+  .min h1,.min #lede,.min #steps,.min #meta{display:none}
+  #cap{display:none; position:fixed; left:56px; bottom:52px; width:380px; padding:20px 22px 22px; border:1px solid rgba(230,232,239,.14); border-radius:16px;
+    background:rgba(18,21,29,.6); overflow:hidden}
+  .min #cap{display:block}
+  #cap h2{margin:0; font-weight:500; font-size:21px; display:flex; justify-content:space-between; align-items:baseline}
+  #cap h2 small{font-family:var(--mono); font-weight:400; font-size:14px; color:var(--dim)}
+  #cap p{margin:8px 0 0; font-size:19px; line-height:1.4; color:#C9CDD8}
+  #cap i{position:absolute; left:0; bottom:0; height:3px; background:#8DB3F0}
   #meta{position:fixed; right:72px; bottom:56px; font-family:var(--mono); font-size:13px; letter-spacing:.06em; color:var(--dim); text-align:right; line-height:1.7}
 </style>
 </head>
@@ -31,8 +39,11 @@
 <div id="lede"></div>
 <div id="steps"></div>
 <div id="meta"></div>
+<div id="cap"><h2><span id="cname"></span><small id="csize"></small></h2><p id="cstep"></p><i id="cprog"></i></div>
 <script>
-const Q = new URLSearchParams(location.search), ID = Q.get('id') || 'atp';
+const Q = new URLSearchParams(location.search), ID = Q.get('id') || 'atp', MIN = !!Q.get('min');
+if (MIN) document.body.classList.add('min');
+let SHORT = null;
 const FILM = {
   atp: {
     title:'ATP synthase',
@@ -101,6 +112,8 @@ async function init(){
   document.getElementById('lede').textContent = C.lede;
   const steps = typeof C.steps === 'function' ? S.parts : C.steps;
   document.getElementById('steps').innerHTML = steps.map(s => `<div><i>✦</i><span>${s}</span></div>`).join('');
+  if (MIN){ const F = (await import('./films.js')).FILMS.find(x => x.id === ID); SHORT = F.short;
+    document.getElementById('cname').textContent = F.name; document.getElementById('csize').textContent = F.size; }
   window.READY = true;
 }
 async function show(f){
@@ -110,12 +123,13 @@ async function show(f){
   const k = S.part[f];
   document.querySelectorAll('#steps div').forEach((d, i) => d.classList.toggle('on', i === k));
   document.getElementById('meta').innerHTML = C.meta(f).join('<br>');
-  const dx = C.dx || 0, X = C.X || 1268;                     // optional shift of the molecule layer; labels in one column to its right
+  const dx = MIN ? +(Q.get('dx') || 0) : (C.dx || 0), X = C.X || 1268;
+  if (MIN){ document.getElementById('cstep').textContent = SHORT[S.part[f]]; document.getElementById('cprog').style.width = (f / (S.n - 1) * 100) + '%'; }                     // optional shift of the molecule layer; labels in one column to its right
   const an = Object.fromEntries(Object.entries(A[String(f)]).map(([k, v]) => [k, typeof v[0] === 'number' ? [v[0] + dx, v[1]] : v]));
   img.style.transform = `translateX(${dx}px)`;
   let svg = '';
   // label rows follow their parts; keep at least 76 px between rows so they never collide or cross
-  const rows = C.labels.map(L => ({ L, y:L.y ?? an[L.at][1] + (L.dy || 0) })).sort((a, b) => a.y - b.y);
+  const rows = (MIN ? [] : C.labels).map(L => ({ L, y:L.y ?? an[L.at][1] + (L.dy || 0) })).sort((a, b) => a.y - b.y);
   if (C.stack) for (let i = 1; i < rows.length; i++) rows[i].y = Math.max(rows[i].y, rows[i - 1].y + 76);
   for (const { L, y } of rows){
     const [ax, ay] = an[L.at], ly = y;
@@ -127,7 +141,7 @@ async function show(f){
     const [bx, by] = an[C.burst], age = Math.max(0, S.light_age[f]);
     for (const o of [0, .33, .66]){ const k = (age * 1.6 + o) % 1;
       svg += `<circle cx="${bx}" cy="${by}" r="${40 + 230 * k}" fill="none" stroke="#FF6B1A" stroke-width="${4 * (1 - k) + .5}" opacity="${(1 - k) * .9}"/>`; }
-    svg += `<text class="lab" x="${bx + 150}" y="${by - 196}" style="fill:#FF6B1A">${C.burstLabel}</text>`;
+    if (!MIN) svg += `<text class="lab" x="${bx + 150}" y="${by - 196}" style="fill:#FF6B1A">${C.burstLabel}</text>`;
   }
   if (C.box && an.box){                                       // shear: the outline of the crystal, from an affine fit
     svg += `<polygon points="${an.box.map(([x, y]) => `${x + dx},${y}`).join(' ')}" fill="none" stroke="rgba(230,232,239,.5)" stroke-width="1.2" stroke-dasharray="6 6"/>`;
@@ -136,17 +150,17 @@ async function show(f){
     const [[x1, y1], [x2, y2]] = an.axis.map(([x, y]) => [x + dx, y]), a = Math.atan2(y2 - y1, x2 - x1), h = 16;
     svg += `<line x1="${x1}" y1="${y1}" x2="${x2 - Math.cos(a) * 12}" y2="${y2 - Math.sin(a) * 12}" stroke="#FF6B1A" stroke-width="4" stroke-linecap="round"/>` +
       `<path d="M${x2},${y2} L${x2 - h * Math.cos(a - .45)},${y2 - h * Math.sin(a - .45)} L${x2 - h * Math.cos(a + .45)},${y2 - h * Math.sin(a + .45)} Z" fill="#FF6B1A"/>` +
-      `<text class="lab" x="${x2 + 14}" y="${y2 + 5}" style="fill:#FF6B1A">${C.arrowLabel}</text>`;
+      (MIN ? '' : `<text class="lab" x="${x2 + 14}" y="${y2 + 5}" style="fill:#FF6B1A">${C.arrowLabel}</text>`);
   }
   if (C.pull && S.pulling[f]){                               // pull: orange arrows on the chain ends, pointing outward
     const [ax, ay] = an.end_a, [bx, by] = an.end_b, L = Math.hypot(bx - ax, by - ay) || 1, ux = (bx - ax) / L, uy = (by - ay) / L;
     const arrow = (x, y, dx, dy) => { const x2 = x + dx * 90, y2 = y + dy * 90, a = Math.atan2(dy, dx), h = 14;
       return `<line x1="${x + dx * 16}" y1="${y + dy * 16}" x2="${x2 - dx * 10}" y2="${y2 - dy * 10}" stroke="#FF6B1A" stroke-width="4" stroke-linecap="round"/><path d="M${x2},${y2} L${x2 - h * Math.cos(a - .45)},${y2 - h * Math.sin(a - .45)} L${x2 - h * Math.cos(a + .45)},${y2 - h * Math.sin(a + .45)} Z" fill="#FF6B1A"/>`; };
-    svg += arrow(ax, ay, -ux, -uy) + arrow(bx, by, ux, uy) + `<text class="lab" x="${bx + ux * 100 + 10}" y="${by + uy * 100 - 14}" style="fill:#FF6B1A">Pull</text>`;
+    svg += arrow(ax, ay, -ux, -uy) + arrow(bx, by, ux, uy) + (MIN ? '' : `<text class="lab" x="${bx + ux * 100 + 10}" y="${by + uy * 100 - 14}" style="fill:#FF6B1A">Pull</text>`);
   }
   if (S.torque_on && S.torque_on[f]){
     const [rx, ry] = an.ring;
-    svg += `<text class="lab" x="${rx - 250}" y="${ry + 128}" style="fill:#FF6B1A">${C.flowLabel}</text>`;
+    if (!MIN) svg += `<text class="lab" x="${rx - 250}" y="${ry + 128}" style="fill:#FF6B1A">${C.flowLabel}</text>`;
   }
   document.getElementById('ov').innerHTML = svg;
 }

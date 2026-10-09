@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <base href="/site/">
-<title>A10 · Machines, designed atom by atom</title>
-<meta name="description" content="A10 builds AI that simulates and designs molecules, materials and proteins that do work.">
+<title>A10 · AI that designs molecular machines</title>
+<meta name="description" content="A fully generative, end-to-end AI system that designs machines with atomic precision.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
@@ -14,18 +14,24 @@
   :root{ --bg:#12151D; --txt:#F2F3F7; --txt2:#C9CDD8; --dim:#8A90A2; --line:rgba(230,232,239,.12); --sky:#8DB3F0; --orange:#FF6B1A;
          --font:"Space Grotesk",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace }
   *{box-sizing:border-box} html,body{margin:0; background:var(--bg); color:var(--txt); font-family:var(--font); -webkit-font-smoothing:antialiased}
-  body{background:radial-gradient(ellipse 48% 60% at 68% 44%, #232C45 0%, #181D2A 50%, var(--bg) 100%) fixed}
+
   nav{height:72px; display:flex; align-items:center; justify-content:space-between; padding:0 56px}
   .logo{font-weight:600; font-size:22px; letter-spacing:-.02em} .logo i{font-style:normal; color:var(--sky)}
   nav a{font-family:var(--mono); font-size:12.5px; letter-spacing:.08em; color:var(--txt2); text-decoration:none; text-transform:uppercase}
   .hero{display:grid; grid-template-columns:minmax(380px, 38%) 1fr; height:calc(100svh - 72px - 140px); min-height:560px; padding:0 56px}
-  .left{align-self:center; padding-bottom:4vh}
+  .left{align-self:start; padding-top:11vh}
   h1{margin:0; font-weight:500; font-size:clamp(44px, 5vw, 80px); line-height:1; letter-spacing:-.035em}
   h1 span{color:var(--sky)}
-  .lead{margin:26px 0 0; max-width:440px; font-size:19px; line-height:1.5; color:var(--txt2)}
-  .beliefs{list-style:none; margin:40px 0 0; padding:0; max-width:440px}
-  .beliefs li{padding:13px 0; border-top:1px solid var(--line); font-size:15.5px; color:var(--dim); display:flex; gap:16px}
-  .beliefs li b{font-family:var(--mono); font-weight:400; font-size:11.5px; color:var(--sky); padding-top:3px}
+  .lead{margin:28px 0 0; max-width:460px; font-size:19px; line-height:1.55; color:var(--txt2)}
+  .dark{background:radial-gradient(ellipse 48% 60% at 68% 40%, #232C45 0%, #181D2A 50%, var(--bg) 100%)}
+  /* below the fold: white */
+  .white{background:#fff; color:#0E0F12; padding:120px 56px 140px}
+  .white h3{margin:0; font-weight:500; font-size:clamp(32px, 3.4vw, 52px); letter-spacing:-.03em; line-height:1.05; max-width:760px}
+  .films{display:grid; grid-template-columns:repeat(3, 1fr); gap:40px 28px; margin-top:64px}
+  .films video{width:100%; aspect-ratio:16/11; display:block; border-radius:14px; background:#12151D; object-fit:cover}
+  .films b{display:block; margin-top:16px; font-weight:500; font-size:18px; letter-spacing:-.01em}
+  .films small{font-family:var(--mono); font-size:12px; color:#5E636D}
+  footer{background:#fff; color:#5E636D; border-top:1px solid #E6E7EB; padding:28px 56px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:12px}
   .stage{position:relative; min-height:0}
   #gl{position:absolute; inset:0; cursor:grab} #gl:active{cursor:grabbing} #gl canvas{display:block; width:100%; height:100%}
   svg#ov{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
@@ -43,23 +49,20 @@
   .rail small{font-family:var(--mono); font-size:11px; color:var(--dim)}
   @media (max-width:900px){
     nav{padding:0 16px} .hero{grid-template-columns:1fr; height:auto; padding:8px 16px 0}
-    .left{padding:0} h1{font-size:44px} .lead{font-size:16px; margin-top:16px} .beliefs{margin-top:22px} .beliefs li{font-size:14px; padding:10px 0}
+    .left{padding:20px 0 0} h1{font-size:42px} .lead{font-size:16px; margin-top:16px}
+    .white{padding:72px 16px 88px} .films{grid-template-columns:1fr; gap:32px; margin-top:40px} footer{padding:24px 16px}
     .stage{height:72vw; min-height:340px; margin-top:12px} .cap{left:0; right:0; width:auto; bottom:8px}
     .rail{padding:0 16px; height:110px} .rail span{display:none} .rail button{padding:8px}
   }
 </style>
 </head>
 <body>
+<div class="dark">
 <nav><div class="logo">A<i>10</i></div><a href="#">Contact</a></nav>
 <main class="hero">
   <section class="left">
-    <h1>Machines, designed <span>atom by atom.</span></h1>
-    <p class="lead">We build AI that simulates and designs molecules, materials and proteins that do work.</p>
-    <ul class="beliefs">
-      <li><b>01</b>Everything that works is a machine made of atoms.</li>
-      <li><b>02</b>We simulate the physics before anything is built.</li>
-      <li><b>03</b>AI proposes the design; physics checks it.</li>
-    </ul>
+    <h1>AI that designs <span>molecular machines.</span></h1>
+    <p class="lead">A fully generative, end-to-end AI system that designs machines with atomic precision. One universal, multimodal model for molecules, materials and proteins, across every application.</p>
   </section>
   <section class="stage">
     <div id="gl"></div>
@@ -68,6 +71,12 @@
   </section>
 </main>
 <div class="rail" id="rail"></div>
+</div>
+<section class="white">
+  <h3>Working machines, from a 10 Å molecule to a 220 Å protein motor.</h3>
+  <div class="films" id="films"></div>
+</section>
+<footer><span>A10</span><span>© 2026</span></footer>
 <script type="module">
 import { Stage } from './live.js';
 import { FILMS as ALL } from './films.js';
@@ -92,6 +101,10 @@ stage.onFrame = (v, k) => {
   if (el > 20 && performance.now() - (stage.touched || 0) > 25000 && !pending){ pending = true; pick((cur + 1) % FILMS.length).then(() => pending = false); }
 };
 $('rail').addEventListener('click', e => { const b = e.target.closest('button'); if (b) pick(+b.dataset.i); });
+// white section: the rendered films, playing while on screen
+$('films').innerHTML = FILMS.map(f => `<div><video data-src="videos/${f.id}.mp4" poster="videos/${f.id}.jpg" muted loop playsinline preload="none"></video><b>${f.name}</b><small>${f.size} · ${f.kind}</small></div>`).join('');
+const io = new IntersectionObserver(es => es.forEach(e => { const v = e.target; if (e.isIntersecting){ if (!v.src) v.src = v.dataset.src; v.play().catch(() => {}); } else v.pause(); }), { threshold:.4 });
+document.querySelectorAll('.films video').forEach(v => io.observe(v));
 pick(0);
 </script>
 </body>

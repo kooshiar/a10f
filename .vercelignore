@@ -1,0 +1,7 @@
+.git
+.vercel
+.env*
+site/machines
+site/render
+*.py
+__pycache__
