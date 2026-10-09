@@ -227,8 +227,14 @@ export class Stage {
         `<text class="lab" x="${X}" y="${y - 3}">${L.text[0]}</text><text class="lab sub" x="${X}" y="${y + 14}">${L.text[1]}</text>`;
     }
     if (f.burst && s[f.burst.on][k]){ const a = this.anchor(f.burst.at), age = Math.max(0, s[f.burst.age][k]);
-      for (const o of [0, .33, .66]){ const q = (age * 1.6 + o) % 1; svg += `<circle cx="${a[0]}" cy="${a[1]}" r="${30 + 170 * q}" fill="none" stroke="#FF6B1A" stroke-width="${3.5 * (1 - q) + .5}" opacity="${(1 - q) * .9}"/>`; }
-      if (!this.opts.minimal) svg += `<text class="lab" x="${a[0] + 110}" y="${a[1] - 150}" style="fill:#FF6B1A">${f.burst.label}</text>`; }
+      // incoming light: a wave travelling into the axle, arrow at the molecule
+      const ux = -.76, uy = -.65, px = -uy, py = ux, L0 = 26, L1 = 190, ph = v * 9, op = Math.min(1, age * 4 + .35);
+      let pts = '';
+      for (let d = L1; d >= L0 + 10; d -= 3){ const w = 7 * Math.sin(d / 9 + ph) * Math.min(1, (L1 - d) / 30); pts += `${a[0] + ux * d + px * w},${a[1] + uy * d + py * w} `; }
+      const tx = a[0] + ux * L0, ty = a[1] + uy * L0, h = 15, ang = Math.atan2(-uy, -ux);
+      svg += `<polyline points="${pts}${tx + ux * 10},${ty + uy * 10}" fill="none" stroke="#FF6B1A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="${op}"/>` +
+        `<path d="M${tx},${ty} L${tx - h * Math.cos(ang - .45)},${ty - h * Math.sin(ang - .45)} L${tx - h * Math.cos(ang + .45)},${ty - h * Math.sin(ang + .45)} Z" fill="#FF6B1A" opacity="${op}"/>`;
+      if (!this.opts.minimal) svg += `<text class="lab" x="${a[0] + ux * L1 - 20}" y="${a[1] + uy * L1 - 12}" style="fill:#FF6B1A">${f.burst.label}</text>`; }
     if (f.pull && s.pulling[k]){ const A = this.anchor('end_a'), B = this.anchor('end_b'), L = Math.hypot(B[0] - A[0], B[1] - A[1]) || 1, ux = (B[0] - A[0]) / L, uy = (B[1] - A[1]) / L;
       const ar = (x, y, dx, dy) => { const x2 = x + dx * 70, y2 = y + dy * 70, a = Math.atan2(dy, dx), h = 12;
         return `<line x1="${x + dx * 14}" y1="${y + dy * 14}" x2="${x2 - dx * 8}" y2="${y2 - dy * 8}" stroke="#FF6B1A" stroke-width="3.5" stroke-linecap="round"/><path d="M${x2},${y2} L${x2 - h * Math.cos(a - .45)},${y2 - h * Math.sin(a - .45)} L${x2 - h * Math.cos(a + .45)},${y2 - h * Math.sin(a + .45)} Z" fill="#FF6B1A"/>`; };
