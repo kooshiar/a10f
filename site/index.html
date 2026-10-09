@@ -18,11 +18,11 @@
   nav{height:72px; display:flex; align-items:center; justify-content:space-between; padding:0 56px}
   .logo{font-weight:600; font-size:22px; letter-spacing:-.02em} .logo i{font-style:normal; color:var(--sky)}
   nav a{font-family:var(--mono); font-size:12.5px; letter-spacing:.08em; color:var(--txt2); text-decoration:none; text-transform:uppercase}
-  .hero{display:grid; grid-template-columns:minmax(380px, 38%) 1fr; height:calc(100svh - 72px - 140px); min-height:560px; padding:0 56px}
-  .left{align-self:start; padding-top:11vh}
-  h1{margin:0; font-weight:500; font-size:clamp(44px, 5vw, 80px); line-height:1; letter-spacing:-.035em}
+  .hero{display:grid; grid-template-columns:minmax(360px, 36%) 1fr; gap:24px; padding:3vh 56px 56px; align-items:start}
+  .left{padding-top:7vh}
+  h1{margin:0; font-weight:500; font-size:clamp(38px, 4.1vw, 62px); line-height:1.02; letter-spacing:-.035em}
   h1 span{color:var(--sky)}
-  .lead{margin:28px 0 0; max-width:460px; font-size:19px; line-height:1.55; color:var(--txt2)}
+  .lead{margin:22px 0 0; max-width:440px; font-size:16.5px; line-height:1.55; color:var(--txt2)}
   .dark{background:radial-gradient(ellipse 48% 60% at 68% 40%, #232C45 0%, #181D2A 50%, var(--bg) 100%)}
   /* below the fold: white */
   .white{background:#fff; color:#0E0F12; padding:120px 56px 140px}
@@ -32,27 +32,27 @@
   .films b{display:block; margin-top:16px; font-weight:500; font-size:18px; letter-spacing:-.01em}
   .films small{font-family:var(--mono); font-size:12px; color:#5E636D}
   footer{background:#fff; color:#5E636D; border-top:1px solid #E6E7EB; padding:28px 56px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:12px}
-  .stage{position:relative; min-height:0}
+  .right{display:flex; flex-direction:column; gap:18px}
+  .viz{display:grid; grid-template-columns:1fr 200px; align-items:center; gap:8px}
+  .stage{position:relative; height:min(52vh, 520px); min-height:340px}
   #gl{position:absolute; inset:0; cursor:grab} #gl:active{cursor:grabbing} #gl canvas{display:block; width:100%; height:100%}
   svg#ov{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
-  .cap{position:absolute; right:12px; bottom:22px; width:300px; padding:14px 16px 16px; border:1px solid var(--line); border-radius:12px;
-    background:rgba(18,21,29,.55); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); pointer-events:none; overflow:hidden}
-  .cap h2{margin:0; font-weight:500; font-size:15px; display:flex; justify-content:space-between; align-items:baseline}
-  .cap h2 small{font-family:var(--mono); font-weight:400; font-size:11px; color:var(--dim)}
-  .cap p{margin:6px 0 0; font-size:14px; line-height:1.4; color:var(--txt2); min-height:20px}
+  .cap{position:relative; padding:14px 16px 16px; border:1px solid var(--line); border-radius:12px; background:rgba(18,21,29,.55); overflow:hidden}
+  .cap h2{margin:0; font-weight:500; font-size:14.5px; line-height:1.25}
+  .cap small{display:block; margin-top:3px; font-family:var(--mono); font-size:11px; color:var(--dim)}
+  .cap p{margin:10px 0 0; font-size:13.5px; line-height:1.45; color:var(--txt2); min-height:40px}
   .cap i{position:absolute; left:0; bottom:0; height:2px; width:0; background:var(--sky)}
-  .rail{height:140px; display:flex; gap:10px; align-items:center; padding:0 56px; border-top:1px solid var(--line); overflow-x:auto; scrollbar-width:none}
-  .rail button{all:unset; cursor:pointer; flex:0 0 auto; display:flex; align-items:center; gap:12px; padding:10px 16px 10px 10px; border-radius:12px; opacity:.5; transition:opacity .25s, background .25s}
-  .rail button:hover{opacity:.85} .rail button.on{opacity:1; background:rgba(255,255,255,.05)}
-  .rail img{width:56px; height:56px; object-fit:contain; display:block}
-  .rail b{display:block; font-weight:500; font-size:13.5px; white-space:nowrap}
-  .rail small{font-family:var(--mono); font-size:11px; color:var(--dim)}
+  .rail{display:flex; gap:14px; justify-content:center; padding-right:208px}
+  .rail button{all:unset; cursor:pointer; width:64px; height:64px; border-radius:50%; display:grid; place-items:center; border:1px solid var(--line);
+    background:rgba(255,255,255,.03); opacity:.55; transition:opacity .2s, border-color .2s, background .2s}
+  .rail button:hover{opacity:.9} .rail button.on{opacity:1; border-color:var(--sky); background:rgba(141,179,240,.08)}
+  .rail img{width:44px; height:44px; object-fit:contain; display:block}
   @media (max-width:900px){
-    nav{padding:0 16px} .hero{grid-template-columns:1fr; height:auto; padding:8px 16px 0}
+    nav{padding:0 16px} .hero{grid-template-columns:1fr; padding:8px 16px 32px}
+    .viz{grid-template-columns:1fr} .stage{height:70vw} .rail{padding-right:0; flex-wrap:wrap} .rail button{width:52px; height:52px} .rail img{width:36px; height:36px}
     .left{padding:20px 0 0} h1{font-size:42px} .lead{font-size:16px; margin-top:16px}
     .white{padding:72px 16px 88px} .films{grid-template-columns:1fr; gap:32px; margin-top:40px} footer{padding:24px 16px}
-    .stage{height:72vw; min-height:340px; margin-top:12px} .cap{left:0; right:0; width:auto; bottom:8px}
-    .rail{padding:0 16px; height:110px} .rail span{display:none} .rail button{padding:8px}
+
   }
 </style>
 </head>
@@ -64,13 +64,14 @@
     <h1>AI that designs <span>molecular machines.</span></h1>
     <p class="lead">A fully generative, end-to-end AI system that designs machines with atomic precision. One universal, multimodal model for molecules, materials and proteins, across every application.</p>
   </section>
-  <section class="stage">
-    <div id="gl"></div>
-    <svg id="ov"></svg>
-    <div class="cap"><h2><span id="name"></span><small id="size"></small></h2><p id="step"></p><i id="prog"></i></div>
+  <section class="right">
+    <div class="viz">
+      <div class="stage"><div id="gl"></div><svg id="ov"></svg></div>
+      <aside class="cap"><h2 id="name"></h2><small id="size"></small><p id="step"></p><i id="prog"></i></aside>
+    </div>
+    <div class="rail" id="rail"></div>
   </section>
 </main>
-<div class="rail" id="rail"></div>
 </div>
 <section class="white">
   <h3>Working machines, from a 10 Å molecule to a 220 Å protein motor.</h3>
@@ -84,7 +85,7 @@ const FILMS = (await Promise.all(ALL.map(f => fetch(`live/${f.id}/scene.json`, {
 const $ = s => document.getElementById(s);
 const stage = new Stage($('gl'), null, { minimal:true });
 let cur = 0, loadedAt = 0, pending = false;
-$('rail').innerHTML = FILMS.map((f, i) => `<button data-i="${i}"><img src="thumbs/${f.id}.png" alt=""><span><b>${f.name}</b><small>${f.size}</small></span></button>`).join('');
+$('rail').innerHTML = FILMS.map((f, i) => `<button data-i="${i}" aria-label="${f.name}"><img src="thumbs/${f.id}.png" alt=""></button>`).join('');
 async function pick(i){
   cur = i; const f = FILMS[i];
   document.querySelectorAll('.rail button').forEach((b, k) => b.classList.toggle('on', k === i));
@@ -97,8 +98,6 @@ stage.onFrame = (v, k) => {
   const f = FILMS[cur], part = stage.sc.story.part[k];
   if (f.short && $('step').textContent !== f.short[part]) $('step').textContent = f.short[part];
   $('prog').style.width = (v / 20 * 100) + '%';
-  const el = (performance.now() - loadedAt) / 1000;          // next machine after one full film, unless it is being turned
-  if (el > 20 && performance.now() - (stage.touched || 0) > 25000 && !pending){ pending = true; pick((cur + 1) % FILMS.length).then(() => pending = false); }
 };
 $('rail').addEventListener('click', e => { const b = e.target.closest('button'); if (b) pick(+b.dataset.i); });
 // white section: the rendered films, playing while on screen
