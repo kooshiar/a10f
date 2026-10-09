@@ -141,7 +141,8 @@ export class Stage {
   frameCamera(reset){
     const f = this.film.view, c = this.hull.getCenter(new THREE.Vector3()), s = this.hull.getSize(new THREE.Vector3());
     const ext = Math.max(s.x, s.y, s.z), vfov = THREE.MathUtils.degToRad(this.camera.fov), asp = this.camera.aspect;
-    const d = Math.max(ext / f.fill / 2 / Math.tan(vfov / 2), ext / f.fill / 2 / Math.tan(vfov / 2) / Math.min(1, asp));
+    const fill = this.opts.fill ? this.opts.fill(f.fill) : f.fill;
+    const d = Math.max(ext / fill / 2 / Math.tan(vfov / 2), ext / fill / 2 / Math.tan(vfov / 2) / Math.min(1, asp));
     this.controls.target.copy(c);
     if (reset){ const yw = THREE.MathUtils.degToRad(f.yaw), el = THREE.MathUtils.degToRad(f.elev);
       this.camera.position.copy(c).add(new THREE.Vector3(Math.cos(el) * Math.sin(yw), Math.sin(el), Math.cos(el) * Math.cos(yw)).multiplyScalar(d)); }

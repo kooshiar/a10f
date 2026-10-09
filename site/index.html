@@ -15,49 +15,51 @@
          --font:"Space Grotesk",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace }
   *{box-sizing:border-box} html,body{margin:0; background:var(--bg); color:var(--txt); font-family:var(--font); -webkit-font-smoothing:antialiased}
 
-  nav{height:72px; display:flex; align-items:center; justify-content:space-between; padding:0 56px}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 40px} .dark{overflow-x:clip}
+  nav{height:72px; display:flex; align-items:center; justify-content:space-between}
   .logo{font-weight:600; font-size:22px; letter-spacing:-.02em} .logo i{font-style:normal; color:var(--sky)}
   nav a{font-family:var(--mono); font-size:12.5px; letter-spacing:.08em; color:var(--txt2); text-decoration:none; text-transform:uppercase}
-  .hero{display:grid; grid-template-columns:minmax(360px, 36%) 1fr; gap:24px; padding:3vh 56px 56px; align-items:start}
-  .left{padding-top:7vh}
-  h1{margin:0; font-weight:500; font-size:clamp(38px, 4.1vw, 62px); line-height:1.02; letter-spacing:-.035em}
+  .hero{display:grid; grid-template-columns:minmax(0, 480px) auto; justify-content:space-between; gap:40px; padding-top:40px; padding-bottom:96px}
+  h1{margin:0; font-weight:500; font-size:clamp(38px, 4.1vw, 60px); line-height:1.02; letter-spacing:-.035em}
   h1 span{color:var(--sky)}
   .lead{margin:22px 0 0; max-width:440px; font-size:16.5px; line-height:1.55; color:var(--txt2)}
-  .dark{background:radial-gradient(ellipse 48% 60% at 68% 40%, #232C45 0%, #181D2A 50%, var(--bg) 100%)}
+  /* right: machine + info box, thumbnails under both; total height follows the text column */
+  .right{display:flex; flex-direction:column; gap:18px}
+  .viz{flex:1; display:flex; align-items:center; gap:14px; min-height:0}
+  .stage{position:relative; align-self:stretch; width:clamp(240px, 19vw, 290px)}
+  .stage::before{content:""; position:absolute; inset:-40% -30%; background:radial-gradient(closest-side, rgba(52,66,104,.55), transparent); pointer-events:none}
+  #gl, svg#ov{position:absolute; inset:-56px -48px}
+  #gl{cursor:grab} #gl:active{cursor:grabbing} #gl canvas{display:block; width:100%; height:100%}
+  svg#ov{pointer-events:none}
+  .cap{position:relative; z-index:2; width:176px; padding:13px 15px 15px; border:1px solid var(--line); border-radius:12px; background:rgba(18,21,29,.72); overflow:hidden}
+  .cap h2{margin:0; font-weight:500; font-size:14px; line-height:1.25}
+  .cap small{display:block; margin-top:3px; font-family:var(--mono); font-size:11px; color:var(--dim)}
+  .cap p{margin:9px 0 0; font-size:13px; line-height:1.45; color:var(--txt2); min-height:38px}
+  .cap i{position:absolute; left:0; bottom:0; height:2px; width:0; background:var(--sky)}
+  .rail{position:relative; z-index:2; display:flex; justify-content:space-between; align-items:flex-end}
+  .rail button{all:unset; cursor:pointer; opacity:.38; transition:opacity .2s}
+  .rail button:hover{opacity:.8} .rail button.on{opacity:1}
+  .rail img{width:58px; height:49px; object-fit:contain; display:block}
   /* below the fold: white */
-  .white{background:#fff; color:#0E0F12; padding:120px 56px 140px}
-  .white h3{margin:0; font-weight:500; font-size:clamp(32px, 3.4vw, 52px); letter-spacing:-.03em; line-height:1.05; max-width:760px}
+  .white{background:#fff; color:#0E0F12; padding:110px 0 140px}
+  .white h3{margin:0; font-weight:500; font-size:clamp(32px, 3.4vw, 50px); letter-spacing:-.03em; line-height:1.05; max-width:760px}
   .films{display:grid; grid-template-columns:repeat(3, 1fr); gap:40px 28px; margin-top:64px}
   .films video{width:100%; aspect-ratio:16/11; display:block; border-radius:14px; background:#12151D; object-fit:cover}
   .films b{display:block; margin-top:16px; font-weight:500; font-size:18px; letter-spacing:-.01em}
   .films small{font-family:var(--mono); font-size:12px; color:#5E636D}
-  footer{background:#fff; color:#5E636D; border-top:1px solid #E6E7EB; padding:28px 56px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:12px}
-  .right{display:flex; flex-direction:column; gap:18px}
-  .viz{display:grid; grid-template-columns:1fr 200px; align-items:center; gap:8px}
-  .stage{position:relative; height:min(52vh, 520px); min-height:340px}
-  #gl{position:absolute; inset:0; cursor:grab} #gl:active{cursor:grabbing} #gl canvas{display:block; width:100%; height:100%}
-  svg#ov{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
-  .cap{position:relative; padding:14px 16px 16px; border:1px solid var(--line); border-radius:12px; background:rgba(18,21,29,.55); overflow:hidden}
-  .cap h2{margin:0; font-weight:500; font-size:14.5px; line-height:1.25}
-  .cap small{display:block; margin-top:3px; font-family:var(--mono); font-size:11px; color:var(--dim)}
-  .cap p{margin:10px 0 0; font-size:13.5px; line-height:1.45; color:var(--txt2); min-height:40px}
-  .cap i{position:absolute; left:0; bottom:0; height:2px; width:0; background:var(--sky)}
-  .rail{display:flex; gap:14px; justify-content:center; padding-right:208px}
-  .rail button{all:unset; cursor:pointer; width:64px; height:64px; border-radius:50%; display:grid; place-items:center; border:1px solid var(--line);
-    background:rgba(255,255,255,.03); opacity:.55; transition:opacity .2s, border-color .2s, background .2s}
-  .rail button:hover{opacity:.9} .rail button.on{opacity:1; border-color:var(--sky); background:rgba(141,179,240,.08)}
-  .rail img{width:44px; height:44px; object-fit:contain; display:block}
+  footer{background:#fff; color:#5E636D; border-top:1px solid #E6E7EB; font-family:var(--mono); font-size:12px}
+  footer .wrap{padding-top:28px; padding-bottom:28px; display:flex; justify-content:space-between}
   @media (max-width:900px){
-    nav{padding:0 16px} .hero{grid-template-columns:1fr; padding:8px 16px 32px}
-    .viz{grid-template-columns:1fr} .stage{height:70vw} .rail{padding-right:0; flex-wrap:wrap} .rail button{width:52px; height:52px} .rail img{width:36px; height:36px}
-    .left{padding:20px 0 0} h1{font-size:42px} .lead{font-size:16px; margin-top:16px}
-    .white{padding:72px 16px 88px} .films{grid-template-columns:1fr; gap:32px; margin-top:40px} footer{padding:24px 16px}
-
+    .wrap{padding:0 16px} .hero{grid-template-columns:1fr; padding-top:16px; padding-bottom:40px; gap:24px}
+    h1{font-size:42px} .lead{font-size:16px; margin-top:16px}
+    .viz{flex-direction:column; align-items:stretch; gap:12px} .stage{width:auto; height:72vw} #gl, svg#ov{inset:0}
+    .cap{width:auto} .rail{flex-wrap:wrap; gap:10px 0}
+    .white{padding:72px 0 88px} .films{grid-template-columns:1fr; gap:32px; margin-top:40px}
   }
 </style>
 </head>
 <body>
-<div class="dark">
+<div class="dark wrap">
 <nav><div class="logo">A<i>10</i></div><a href="#">Contact</a></nav>
 <main class="hero">
   <section class="left">
@@ -73,17 +75,17 @@
   </section>
 </main>
 </div>
-<section class="white">
+<section class="white"><div class="wrap">
   <h3>Working machines, from a 10 Å molecule to a 220 Å protein motor.</h3>
   <div class="films" id="films"></div>
-</section>
-<footer><span>A10</span><span>© 2026</span></footer>
+</div></section>
+<footer><div class="wrap"><span>A10</span><span>© 2026</span></div></footer>
 <script type="module">
 import { Stage } from './live.js';
 import { FILMS as ALL } from './films.js';
 const FILMS = (await Promise.all(ALL.map(f => fetch(`live/${f.id}/scene.json`, { method:'HEAD' }).then(r => r.ok ? f : null).catch(() => null)))).filter(Boolean);
 const $ = s => document.getElementById(s);
-const stage = new Stage($('gl'), null, { minimal:true });
+const stage = new Stage($('gl'), null, { minimal:true, fill:f => Math.min(.7, f * 1.12) });
 let cur = 0, loadedAt = 0, pending = false;
 $('rail').innerHTML = FILMS.map((f, i) => `<button data-i="${i}" aria-label="${f.name}"><img src="thumbs/${f.id}.png" alt=""></button>`).join('');
 async function pick(i){
