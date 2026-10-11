@@ -18,7 +18,8 @@ export function setup(fig){
   const ecol={}; Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).forEach((e,k)=>ecol[e]=PAL[Math.min(k,PAL.length-1)]);
   const cols=d.els.map((e,i)=>guest.has(i)?'#FF6B1A':ecol[e]);
   const rank={}; Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).forEach((e,k)=>rank[e]=k);
-  const restCol=i=>cols[i];
+  // fig.orig: the deck's own element colours (dark carbon, red oxygen, blue nitrogen ...) for light backgrounds
+  const restCol=fig.orig?(i=>COL[d.els[i]]):(i=>cols[i]), LINE=fig.orig?{bond:'#3A3F4A',cell:'#C9CFDA'}:REST;
   let R=0; d.X.forEach((p,i)=>{if(show[i])R=Math.max(R,Math.hypot(...p));});
   const st={th:.6,ph:d.ph??-.35,drag:null,auto:false,on:false};
   const lines=[];
@@ -30,7 +31,7 @@ export function setup(fig){
     ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
     const sc=Math.min(W,H)/(2*R+3)*.98*(fig.scale||SCALE), cx=W/2, cy=H/2;
     const P=d.X.map(rot), pr=p=>[cx+p[0]*sc,cy-p[1]*sc];
-    ctx.strokeStyle=REST.cell;ctx.lineWidth=1;
+    ctx.strokeStyle=LINE.cell;ctx.lineWidth=1;
     lines.forEach(([a,b])=>{const A=pr(rot(a)),B=pr(rot(b));ctx.beginPath();ctx.moveTo(...A);ctx.lineTo(...B);ctx.stroke();});
     const items=[];
     d.bonds.forEach(([i,j,o])=>{if(show[i]&&show[j])items.push({z:(P[i][2]+P[j][2])/2-.3,b:[i,j,o]});});
@@ -38,7 +39,7 @@ export function setup(fig){
     items.sort((u,v)=>u.z-v.z);
     for(const it of items){
       if(it.b){const [i,j,o]=it.b,A=pr(P[i]),B=pr(P[j]);const host=guest.size&&!guest.has(i);
-        ctx.strokeStyle=REST.bond;ctx.lineWidth=Math.max(1,sc*(host?.09:(o>1?.2:.16)));ctx.lineCap='round';
+        ctx.strokeStyle=LINE.bond;ctx.lineWidth=Math.max(1,sc*(host?.09:(o>1?.2:.16)));ctx.lineCap='round';
         ctx.beginPath();ctx.moveTo(...A);ctx.lineTo(...B);ctx.stroke();continue;}
       const i=it.a,e=d.els[i],[x,y]=pr(P[i]);const g=guest.size&&guest.has(i);
       let r=RAD[e]*sc*(d.cell||d.solid?.85:.62)*(guest.size?(g?(d.guestScale||1.35):.8):1); if(d.cell&&e==='Li')r*=.8;

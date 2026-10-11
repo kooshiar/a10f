@@ -17,12 +17,12 @@
     <div class="card"><h1>Stable natural blue food color</h1><table><tr class="g0"><th scope="rowgroup" class="grp" rowspan="3">Why</th><th scope="row">Category</th><td><span class="chip tag">Food & drink</span></td></tr><tr><th scope="row">Level</th><td><span class="chip mid">Medium</span> </td></tr><tr><th scope="row">Use</th><td>Plant-based blue that survives heat, light and acid, to replace synthetic Blue 1</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="1">What</th><th scope="row">Atoms</th><td>Dye 30–100 + metal ion + helper molecules + water. C H O Al Fe</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">How</th><td><a class="ask" href="/contact/">Contact us for the design specs and build plan &rarr;</a></td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Demo</th><td>Dye stacks with helpers and holds its blue as pH drops</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Competition</th><td>Spirulina, red-cabbage blue (UC Davis–Mars)</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="2">Business</th><th scope="row">Buyers</th><td>Mars, PepsiCo, General Mills, Sensient, Oterra</td></tr><tr><th scope="row">Revenue</th><td><span class="chip ok">High</span> License to color houses. ~$1–10M/yr</td></tr></table></div>
     <figure class="mol" data-k="blue"><canvas aria-label="Cyanidin, the core of red-cabbage colors"></canvas><figcaption>Cyanidin, the core of red-cabbage colors</figcaption></figure>
   </div>
-  <nav class="pn"><a href="/apps/off-flavor-trap-for-plant-based-milk-and-meat/">&larr; Off-flavor trap</a><a href="/apps/fat-bloom-blocker-for-chocolate/">Chocolate bloom blocker &rarr;</a></nav>
+  <nav class="pn"><a href="/apps/off-flavor-trap-for-plant-based-milk-and-meat/">&larr; Off-flavor trap</a><a href="/apps/fat-bloom-blocker-for-chocolate/">Chocolate bloom &rarr;</a></nav>
 </main>
 <footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
 <script type="module">
 import { setup } from '/site/appmols.js';
-const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, querySelector:() => f.querySelector('canvas') });
+const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, orig:true, querySelector:() => f.querySelector('canvas') });
 v.active(true); let last = performance.now();
 (function loop(t){ v.tick(t - last); last = t; requestAnimationFrame(loop); })(last);
 addEventListener('resize', () => v.draw());

@@ -17,12 +17,12 @@
     <div class="card"><h1>Sugar-like sweetener with no calories</h1><table><tr class="g0"><th scope="rowgroup" class="grp" rowspan="3">Why</th><th scope="row">Category</th><td><span class="chip tag">Food & drink</span></td></tr><tr><th scope="row">Level</th><td><span class="chip xhard">Super hard</span> </td></tr><tr><th scope="row">Use</th><td>Tastes like sugar, no aftertaste, safe and cheap to make</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="1">What</th><th scope="row">Atoms</th><td>Receptor pocket 1–3k + molecule 30–60. C H O N Cl</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">How</th><td><a class="ask" href="/contact/">Contact us for the design specs and build plan &rarr;</a></td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Demo</th><td>Candidates docked in the sweet receptor, ranked by fit</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Competition</th><td>Stevia, monk fruit, sucralose, Amai Proteins</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="2">Business</th><th scope="row">Buyers</th><td>Coca-Cola, PepsiCo, Tate &amp; Lyle, Cargill</td></tr><tr><th scope="row">Revenue</th><td><span class="chip ok">Huge</span> License to beverage makers. ~$10–50M/yr if approved, 5+ years out</td></tr></table></div>
     <figure class="mol" data-k="sweet"><canvas aria-label="Sucralose, today’s top sweetener"></canvas><figcaption>Sucralose, today’s top sweetener</figcaption></figure>
   </div>
-  <nav class="pn"><a href="/apps/fat-bloom-blocker-for-chocolate/">&larr; Chocolate bloom blocker</a><a href="/apps/ethylene-trap-that-keeps-fruit-fresh-longer/">Ethylene trap for fruit &rarr;</a></nav>
+  <nav class="pn"><a href="/apps/fat-bloom-blocker-for-chocolate/">&larr; Chocolate bloom</a><a href="/apps/ethylene-trap-that-keeps-fruit-fresh-longer/">Ethylene trap for fruit &rarr;</a></nav>
 </main>
 <footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
 <script type="module">
 import { setup } from '/site/appmols.js';
-const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, querySelector:() => f.querySelector('canvas') });
+const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, orig:true, querySelector:() => f.querySelector('canvas') });
 v.active(true); let last = performance.now();
 (function loop(t){ v.tick(t - last); last = t; requestAnimationFrame(loop); })(last);
 addEventListener('resize', () => v.draw());

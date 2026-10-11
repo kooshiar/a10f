@@ -15,14 +15,14 @@
   <a class="crumb" href="/apps/">Applications</a><span class="crumb">/</span><a class="crumb" href="/apps/energy/">Energy</a>
   <div class="grid">
     <div class="card"><h1>Rare-earth-free permanent magnet</h1><table><tr class="g0"><th scope="rowgroup" class="grp" rowspan="3">Why</th><th scope="row">Category</th><td><span class="chip tag">Energy</span></td></tr><tr><th scope="row">Level</th><td><span class="chip xhard">Super hard</span> </td></tr><tr><th scope="row">Use</th><td>Strong magnets for motors without the rare earths China controls</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="1">What</th><th scope="row">Atoms</th><td>Cell 10–100. Fe Co Ni Mn N B C</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">How</th><td><a class="ask" href="/contact/">Contact us for the design specs and build plan &rarr;</a></td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Demo</th><td>Ranked candidates with stability and predicted magnet strength</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Competition</th><td>Niron Magnetics (iron nitride), Materials Nexus</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="2">Business</th><th scope="row">Buyers</th><td>Carmakers, wind turbine makers</td></tr><tr><th scope="row">Revenue</th><td><span class="chip ok">Huge</span> Co-development or spin-out. ~$10–50M/yr if it works, 5+ years out</td></tr></table></div>
-    <figure class="mol" data-k="magnet"><canvas aria-label="Tetrataenite FeNi"></canvas><figcaption>Tetrataenite FeNi</figcaption></figure>
+    <figure class="mol" data-k="magnet"><canvas aria-label="Tetrataenite FeNi (red = Fe, green = Ni)"></canvas><figcaption>Tetrataenite FeNi (red = Fe, green = Ni)</figcaption></figure>
   </div>
   <nav class="pn"><a href="/apps/iridium-free-catalyst-for-green-hydrogen/">&larr; Iridium-free hydrogen</a><a href="/apps/lithium-picker-for-brine/">Lithium from brine &rarr;</a></nav>
 </main>
 <footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
 <script type="module">
 import { setup } from '/site/appmols.js';
-const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, querySelector:() => f.querySelector('canvas') });
+const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, orig:true, querySelector:() => f.querySelector('canvas') });
 v.active(true); let last = performance.now();
 (function loop(t){ v.tick(t - last); last = t; requestAnimationFrame(loop); })(last);
 addEventListener('resize', () => v.draw());

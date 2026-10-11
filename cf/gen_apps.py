@@ -21,7 +21,7 @@ SHORT = {
     "Cork-taint remover for wine": "Cork-taint remover",
     "Off-flavor trap for plant-based milk and meat": "Off-flavor trap",
     "Stable natural blue food color": "Natural blue color",
-    "Fat-bloom blocker for chocolate": "Chocolate bloom blocker",
+    "Fat-bloom blocker for chocolate": "Chocolate bloom",
     "Sugar-like sweetener with no calories": "Zero-calorie sweetener",
     "Ethylene trap that keeps fruit fresh longer": "Ethylene trap for fruit",
     "Pheromone dispenser that confuses crop pests": "Pest pheromone",
@@ -113,7 +113,7 @@ def main():
         fig = re.search(r'data-k="([^"]+)"[^>]*title="([^"]*)"', body)
         use = re.sub(r"<[^>]+>", "", re.search(r'<th scope="row">Use</th><td>(.*?)</td>', body, re.S).group(1)).strip()
         apps.append(dict(slug=slug(title), title=title, short=SHORT.get(title, title), cat=cat, cs=CAT_SHORT.get(cat, cat), use=html.unescape(use),
-                         k=fig.group(1) if fig else None, cap=re.sub(r"\s*\([^)]*=[^)]*\)", "", html.unescape(fig.group(2))) if fig else "", table="<table>" + "".join(rows) + "</table>"))
+                         k=fig.group(1) if fig else None, cap=html.unescape(fig.group(2)) if fig else "", table="<table>" + "".join(rows) + "</table>"))
     assert len(apps) == 51 and len({a["slug"] for a in apps}) == 51
     cats = list(dict.fromkeys(a["cat"] for a in apps))
 
@@ -128,20 +128,29 @@ def main():
     # ---- index: a treemap of categories that fits one screen. Each cell shows one row of tiles (as many as its width
     #      holds); the title and count link to the category page with the full list.
     # 8 tile slots per row; a category's cell is as wide as the tiles it shows; the title opens the full list
-    SPAN = {"Agriculture": 4, "Medicine": 4, "Food & drink": 4, "Cosmetics & home": 4, "Data centers & chips": 3,
-            "Environment": 3, "Biotech": 2, "Energy": 2, "Mining": 3, "Industry": 3}
-    ORDER = ["Agriculture", "Medicine", "Food & drink", "Cosmetics & home", "Data centers & chips", "Environment", "Biotech", "Energy", "Mining", "Industry"]
-    assert sorted(ORDER) == sorted(cats)
+    # Rows of cells; every row holds 9 tiles and runs exactly from the nav's left edge to its right edge.
+    # Tile size t per row: 100% = 9t + gaps between tiles + inner paddings (outer cells have no outside padding).
+    ROWS = [[("Agriculture", 5), ("Medicine", 4)], [("Food & drink", 5), ("Cosmetics & home", 4)],
+            [("Data centers & chips", 3), ("Environment", 3), ("Biotech", 3)], [("Energy", 3), ("Mining", 3), ("Industry", 3)]]
+    assert sorted(c for r in ROWS for c, _ in r) == sorted(cats)
+    G, PAD = 24, 22                                     # px between tiles; px between a tile and an inner line
     cslug = {c: slug(c) for c in cats}
     assert not set(cslug.values()) & {a["slug"] for a in apps}
     tile = lambda a: f'<a class="tile" href="/apps/{a["slug"]}/" data-k="{a["k"]}"><canvas></canvas><b>{html.escape(a["short"])}</b></a>'
     def head(c, tag="h2"):
         n = sum(a["cat"] == c for a in apps)
         return f'<{tag}><a href="/apps/{cslug[c]}/">{html.escape(c)}<span class="n">{n}</span></a></{tag}>'
-    def cell(c):
-        shown = [a for a in apps if a["cat"] == c][:SPAN[c]]
-        return f'  <section class="cell" style="--span:{SPAN[c]}">{head(c)}<div class="tiles">' + "".join(tile(a) for a in shown) + "</div></section>"
-    cells = "\n".join(cell(c) for c in ORDER)
+    def row(r):
+        T = sum(k for _, k in r); fixed = (T - len(r)) * G + 2 * PAD * (len(r) - 1)
+        out = []
+        for i, (c, k) in enumerate(r):
+            pl = 0 if i == 0 else PAD; pr = 0 if i == len(r) - 1 else PAD
+            w = f"calc((100% - {fixed}px) * {k} / {T} + {(k - 1) * G + pl + pr}px)"
+            shown = [a for a in apps if a["cat"] == c][:k]
+            out.append(f'<section class="cell" style="width:{w}; padding-left:{pl}px; padding-right:{pr}px; --k:{k}">{head(c)}'
+                       f'<div class="tiles">' + "".join(tile(a) for a in shown) + "</div></section>")
+        return '  <div class="row">' + "".join(out) + "</div>"
+    cells = "\n".join(row(r) for r in ROWS)
     TILE_JS = """<script type="module">
 import { setup } from '/site/appmols.js';
 const tiles = [...document.querySelectorAll('.tile')];
@@ -178,13 +187,15 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
 </body>
 </html>
 """
-    (WEB / "apps" / "index.html").write_text(page("Applications", f'<main class="wrap">\n<div class="tm">\n{cells}\n</div>\n</main>', """  main.wrap{padding-block:8px 24px}
-  .tm{display:grid; grid-template-columns:repeat(8, 1fr); overflow:hidden}
-  .cell{grid-column:span var(--span); padding:14px 22px 12px; border-left:1px solid var(--sep); border-top:1px solid var(--sep); margin:-1px 0 0 -1px}
+    (WEB / "apps" / "index.html").write_text(page("Applications", f'<main class="wrap">\n{cells}\n</main>', """  main.wrap{padding-block:8px 24px}
+  .row{display:flex}
+  .row + .row{border-top:1px solid var(--sep)}
+  .cell{flex:none; padding-top:14px; padding-bottom:12px; min-width:0}
+  .cell + .cell{border-left:1px solid var(--sep)}
   .cell h2{margin:0 0 10px; font-size:20px; font-weight:600; letter-spacing:-.025em; white-space:nowrap}
-  .tiles{display:grid; grid-template-columns:repeat(var(--span), minmax(0, 1fr)); gap:22px}
-  .tile{width:100%; max-width:84px; min-width:0} .tile canvas{width:100%; height:auto; aspect-ratio:1} .tile b{font-size:12px}
-  @media (max-width:900px){ .tm{grid-template-columns:1fr} .cell{grid-column:auto; padding-inline:4px} .tiles{overflow-x:auto} }"""))
+  .tiles{display:grid; grid-template-columns:repeat(var(--k), minmax(0, 1fr)); gap:24px}
+  .tile{min-width:0} .tile canvas{width:100%; height:auto; aspect-ratio:1} .tile b{font-size:12px}
+  @media (max-width:900px){ .row{flex-direction:column} .cell{width:auto !important; padding-inline:0 !important} .cell + .cell{border-left:0; border-top:1px solid var(--sep)} }"""))
 
     # ---- one page per category: every application in it, with its one-line use
     for c in cats:
@@ -231,7 +242,7 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
 {FOOT}
 <script type="module">
 import {{ setup }} from '/site/appmols.js';
-const f = document.querySelector('.mol'), v = setup({{ dataset:{{ k:f.dataset.k }}, scale:.95, querySelector:() => f.querySelector('canvas') }});
+const f = document.querySelector('.mol'), v = setup({{ dataset:{{ k:f.dataset.k }}, scale:.95, orig:true, querySelector:() => f.querySelector('canvas') }});
 v.active(true); let last = performance.now();
 (function loop(t){{ v.tick(t - last); last = t; requestAnimationFrame(loop); }})(last);
 addEventListener('resize', () => v.draw());

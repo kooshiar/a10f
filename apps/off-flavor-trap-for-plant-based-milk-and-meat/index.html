@@ -22,7 +22,7 @@
 <footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
 <script type="module">
 import { setup } from '/site/appmols.js';
-const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, querySelector:() => f.querySelector('canvas') });
+const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, orig:true, querySelector:() => f.querySelector('canvas') });
 v.active(true); let last = performance.now();
 (function loop(t){ v.tick(t - last); last = t; requestAnimationFrame(loop); })(last);
 addEventListener('resize', () => v.draw());
