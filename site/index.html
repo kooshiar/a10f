@@ -41,8 +41,8 @@
   .card small{display:block; margin-top:3px; font-family:var(--mono); font-size:9.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--mute)}
 
   /* 3 · technology: layered system, short band; style switch in the footer (1-4) */
-  .techbg{background:var(--bg); color:var(--txt); --line:#5A6378; --c-agent:#8DB3F0; --c-designer:#3B74D6; --c-structure:#D8CFEE; --c-physics:#FF6B1A; --c-data:#F4EBF0}
-  .techbg.white{background:#fff; color:var(--ink); border-top:1px solid var(--rule); --line:#9AA1AD; --c-agent:#3B74D6; --c-designer:#12151D; --c-structure:#3B74D6; --c-physics:#FF6B1A; --c-data:#12151D}
+  .techbg{background:var(--bg); color:var(--txt); --line:#4A5266; --c-agent:#8A90A2; --c-designer:#C9CDD8; --c-structure:#8A90A2; --c-physics:#C9CDD8; --c-data:#8A90A2}
+  .techbg.white{background:#fff; color:var(--ink); border-top:1px solid var(--rule); --line:#B4B9C2; --c-agent:#7A808C; --c-designer:#12151D; --c-structure:#7A808C; --c-physics:#12151D; --c-data:#7A808C}
   .tech{padding-block:32px 36px}
   .tech h2{margin-bottom:16px}
   .dia{position:relative; display:grid; width:max-content; max-width:100%; column-gap:36px; row-gap:10px}
@@ -52,12 +52,12 @@
   .nd b{font-weight:500; font-size:14px; letter-spacing:-.01em; line-height:1.15; white-space:nowrap}
   .nd .ic{display:flex; flex-wrap:nowrap; gap:7px; color:var(--c)}
   .nd .ic svg{flex:none; width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
-  .nd .ic .f{fill:currentColor; stroke:none} .nd .ic .o{stroke:var(--orange)} .nd .ic .fo{fill:var(--orange); stroke:none}
+  .nd .ic .f, .nd .ic .fo{fill:currentColor; stroke:none} .nd .ic .o{stroke:currentColor}
   .agent{--c:var(--c-agent); grid-area:agent} .designer{--c:var(--c-designer); grid-area:designer} .structure{--c:var(--c-structure); grid-area:structure}
   .physics{--c:var(--c-physics); grid-area:physics} .data{--c:var(--c-data); grid-area:data}
-  .techbg:not(.white) .designer{background:#1A2132} .techbg:not(.white) .physics{background:#1E1B1C}
-  .techbg.white .designer{background:#12151D; color:var(--txt)} .techbg.white .designer .ic{color:#8DB3F0}
-  .techbg.white .physics{background:#FFF4EE}
+  .techbg:not(.white) .designer, .techbg:not(.white) .physics{background:#1C2130}
+  .techbg.white .designer{background:#12151D; color:var(--txt)} .techbg.white .designer .ic{color:#C9CDD8}
+  .techbg.white .physics{background:#F3F4F6}
   /* flow: left to right, top level to base */
   .dia.flow{grid-template-columns:auto auto auto auto; grid-template-areas:"agent designer structure data" "agent designer physics data"; align-items:center}
   .dia.flow .designer .ic svg{width:24px; height:24px} .dia.flow .designer{padding:11px 14px 12px}
