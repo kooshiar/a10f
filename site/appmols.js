@@ -2,6 +2,9 @@
 
 // App tiles: dark, full site colours (trapped molecule orange), drawn small; hovering one makes it spin.
 const REST = { bond:'#5A6378', cell:'#2E3547' }, SCALE = .72;
+// deck colour -> version that reads on the dark tiles (same hue, lighter; carbon becomes light grey)
+const DARK = { '#1A1A1A':'#CDD2DC', '#E10600':'#FF5A4F', '#0057FF':'#5C93FF', '#00A651':'#34D27A',
+               '#FFC400':'#FFD24D', '#FF7A00':'#FF9440', '#8A2BE2':'#B37BFF' };
 import { DATA } from './appsdata.js';
 const COL={C:'#1A1A1A',O:'#E10600',N:'#0057FF',F:'#00A651',S:'#FFC400',P:'#FF7A00',Cl:'#00A651',Li:'#8A2BE2',Zn:'#0057FF',Si:'#FF7A00',Al:'#FF7A00',Ir:'#0057FF',Zr:'#00A651',Y:'#FFC400',Fe:'#E10600',Ni:'#00A651',Ru:'#FF7A00',Pt:'#0057FF',I:'#8A2BE2',Au:'#FF7A00',Mg:'#FF7A00',Hv:'#0057FF',Nd:'#8A2BE2',B:'#FF7A00',La:'#8A2BE2',K:'#8A2BE2',Gd:'#8A2BE2',H:null};
 const RAD={C:.62,O:.6,N:.6,F:.55,S:.95,P:.85,Cl:1.0,Li:.55,Zn:.85,Si:.85,Al:.85,Ir:.8,Zr:.8,Y:.85,Fe:.75,Ni:.75,Ru:.8,Pt:.8,I:1.1,Au:1.0,Mg:.8,Hv:.4,Nd:1.1,B:.6,La:1.1,K:1.1,Gd:1.1};
@@ -18,8 +21,11 @@ export function setup(fig){
   const ecol={}; Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).forEach((e,k)=>ecol[e]=PAL[Math.min(k,PAL.length-1)]);
   const cols=d.els.map((e,i)=>guest.has(i)?'#FF6B1A':ecol[e]);
   const rank={}; Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).forEach((e,k)=>rank[e]=k);
-  // fig.orig: the deck's own element colours (dark carbon, red oxygen, blue nitrogen ...) for light backgrounds
-  const restCol=fig.orig?(i=>COL[d.els[i]]):(i=>cols[i]), LINE=fig.orig?{bond:'#3A3F4A',cell:'#C9CFDA'}:REST;
+  // fig.look: 'light' = the deck's element colours for light backgrounds; 'dark' = the same hues lifted for dark
+  // backgrounds (carbon light grey instead of black); default = site palette (homepage cards)
+  const look=fig.look||(fig.orig?'light':null);
+  const restCol=look==='light'?(i=>COL[d.els[i]]):look==='dark'?(i=>DARK[COL[d.els[i]]]||COL[d.els[i]]):(i=>cols[i]);
+  const LINE=look==='light'?{bond:'#3A3F4A',cell:'#C9CFDA'}:look==='dark'?{bond:'#6A7286',cell:'#2E3547'}:REST;
   let R=0; d.X.forEach((p,i)=>{if(show[i])R=Math.max(R,Math.hypot(...p));});
   const st={th:.6,ph:d.ph??-.35,drag:null,auto:false,on:false};
   const lines=[];

@@ -154,7 +154,9 @@ def main():
     TILE_JS = """<script type="module">
 import { setup } from '/site/appmols.js';
 const tiles = [...document.querySelectorAll('.tile')];
-const views = tiles.map(el => setup({ dataset:{ k:el.dataset.k }, orig:true, querySelector:() => el.querySelector('canvas') }));
+const look = new URLSearchParams(location.search).get('bg') === 'light' ? 'light' : 'dark';
+document.body.classList.toggle('light', look === 'light');
+const views = tiles.map(el => setup({ dataset:{ k:el.dataset.k }, look, querySelector:() => el.querySelector('canvas') }));
 let hot = -1, last = performance.now();
 (function loop(t){ if (hot >= 0) views[hot].tick(t - last); last = t; requestAnimationFrame(loop); })(last);
 requestAnimationFrame(() => views.forEach(v => v.draw()));
@@ -164,7 +166,8 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
   h1 a, h2 a{color:inherit; text-decoration:none} h1 a:hover, h2 a:hover{color:var(--blue)}
   .n{margin-left:9px; font-family:var(--mono); font-size:15px; font-weight:500; letter-spacing:0; color:var(--ink2); vertical-align:1px}
   .tile{flex:none; color:var(--ink); text-decoration:none}
-  .tile canvas{display:block; border-radius:19px; background:#F3F4F6; transition:transform .2s}
+  .tile canvas{display:block; border-radius:19px; background:var(--bg); transition:transform .2s}
+  body.light .tile canvas{background:#F3F4F6}
   .tile:hover canvas{transform:translateY(-2px)}
   .tile b{display:block; padding:6px 1px 0; font-weight:500; line-height:1.25; letter-spacing:-.005em}"""
     page = lambda title, body, css: f"""<!doctype html>
@@ -242,7 +245,9 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
 {FOOT}
 <script type="module">
 import {{ setup }} from '/site/appmols.js';
-const f = document.querySelector('.mol'), v = setup({{ dataset:{{ k:f.dataset.k }}, scale:.95, orig:true, querySelector:() => f.querySelector('canvas') }});
+const look = new URLSearchParams(location.search).get('bg') === 'light' ? 'light' : 'dark';
+document.body.classList.toggle('light', look === 'light');
+const f = document.querySelector('.mol'), v = setup({{ dataset:{{ k:f.dataset.k }}, scale:.95, look, querySelector:() => f.querySelector('canvas') }});
 v.active(true); let last = performance.now();
 (function loop(t){{ v.tick(t - last); last = t; requestAnimationFrame(loop); }})(last);
 addEventListener('resize', () => v.draw());
