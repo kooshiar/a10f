@@ -204,6 +204,10 @@ const f = document.querySelector('.mol'), v = setup({{ dataset:{{ k:f.dataset.k 
 v.active(true); let last = performance.now();
 (function loop(t){{ v.tick(t - last); last = t; requestAnimationFrame(loop); }})(last);
 addEventListener('resize', () => v.draw());
+// left / right arrow keys step through the applications
+const pn = document.querySelectorAll('.pn a');
+addEventListener('keydown', e => {{ if (e.altKey || e.metaKey || e.ctrlKey || /input|textarea/i.test(e.target.tagName)) return;
+  if (e.key === 'ArrowLeft') location.href = pn[0].href; if (e.key === 'ArrowRight') location.href = pn[1].href; }});
 </script>
 </body>
 </html>
