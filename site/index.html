@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <base href="/site/">
-<title>A10 · AI that designs molecular machines</title>
+<title>97A · AI that designs molecular machines</title>
 <meta name="description" content="AI that designs molecular machines.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -14,11 +14,11 @@
 <style>
   /* 1 · title + one machine */
   .hero{background:var(--bg); color:var(--txt); overflow:hidden}
-  .hero .top{display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:40px; padding-bottom:4px}
+  .hero .top{display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:40px; padding-top:8px; padding-bottom:4px; position:relative; overflow:hidden}
   h1{margin:0; font-weight:500; font-size:clamp(38px, 4vw, 56px); line-height:1.02; letter-spacing:-.035em}
   h1 span{color:var(--sky)}
-  .stage{position:relative; height:240px}
-  #gl, svg#ov{position:absolute; inset:-64px -60px}
+  .stage{position:relative; height:256px}
+  #gl, svg#ov{position:absolute; inset:-36px -60px}
   #gl{cursor:grab} #gl:active{cursor:grabbing} #gl canvas{display:block; width:100%; height:100%}
   svg#ov{pointer-events:none}
   .sec h2{margin:0; font-weight:500; font-size:24px; letter-spacing:-.02em}
@@ -64,7 +64,7 @@
 </head>
 <body>
 <header class="hero">
-  <nav class="wrap"><a class="logo" href="/">A<i>10</i></a><a href="/contact">Contact</a></nav>
+  <div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><a href="/contact">Contact</a></nav></div>
   <div class="wrap top">
     <h1>AI that designs <span>molecular machines.</span></h1>
     <div class="stage"><div id="gl"></div><svg id="ov"></svg></div>
@@ -111,7 +111,7 @@
     </div>
   </section></div>
 </main>
-<footer><div class="wrap"><span>A10</span><span>© 2026</span></div></footer>
+<footer><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
 
 <script type="module">
 import { Stage } from './live.js';
@@ -120,8 +120,8 @@ import { APPS, setup } from './appmols.js';
 const $ = s => document.getElementById(s);
 
 // 1 · one machine (?m=<id> previews another)
-const f = FILMS.find(x => x.id === new URLSearchParams(location.search).get('m')) || FILMS.find(x => x.id === 'rotor');
-const stage = new Stage($('gl'), null, { minimal:true, fill:x => Math.min(.72, x * 1.15) });
+const f = FILMS.find(x => x.id === new URLSearchParams(location.search).get('m')) || FILMS.find(x => x.id === 'catcher');
+const stage = new Stage($('gl'), null, { minimal:true, fill:x => Math.min(.95, x * 1.15) });
 stage.load(f).then(() => { stage.ov = { svg:$('ov') }; });
 
 // applications: rotating molecules from the /apps deck; drag or scroll sideways

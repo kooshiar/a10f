@@ -40,7 +40,7 @@ export const FILMS = [
   { id:'tweezer', short:["A lysine on a protein drifts in", "The tweezer closes around it", "Held · the protein can't clump"], name:'Molecular tweezer', size:'15 Å', kind:'Small molecule',
     style:'balls', groups:{ machine:'blue', guest:'orange' }, stick:.14, view:{ yaw:0, elev:0, fill:.66 }, labels:[], readout:() => [] },
   { id:'catcher', short:["A C60 ball floats by", "The two bowls close around it", "Caught"], name:'Buckycatcher', size:'18 Å', kind:'Small molecule',
-    style:'balls', groups:{ machine:'blue', guest:'orange' }, stick:.14, view:{ yaw:0, elev:0, fill:.66 }, labels:[], readout:() => [] },
+    style:'balls', groups:{ machine:'blue', guest:'orange' }, stick:.14, view:{ yaw:22, elev:16, fill:.86 }, labels:[], readout:() => [] },
   { id:'arm', short:["Cargo at the arm's tip", "The switch turns · the arm swings", "Cargo moved to the other side"], name:'Molecular arm', size:'15 Å', kind:'Small molecule',
     style:'balls', groups:{ machine:'blue', guest:'orange' }, stick:.14, view:{ yaw:0, elev:0, fill:.66 }, labels:[], readout:() => [] },
   { id:'atp', short:["At rest", "Protons flow · the rotor turns", "Each third of a turn makes one ATP"], name:'ATP synthase', size:'220 Å', kind:'Protein',

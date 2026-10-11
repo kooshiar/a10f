@@ -14,7 +14,7 @@ module.exports = async function handler(req, res) {
   const r = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(to)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json', Origin: 'https://a10f.vercel.app', Referer: 'https://a10f.vercel.app/contact' },
-    body: JSON.stringify({ name, linkedin: linkedin || '-', message, _subject: `A10 contact: ${name}`, _template: 'table', _captcha: 'false' }),
+    body: JSON.stringify({ name, linkedin: linkedin || '-', message, _subject: `97A contact: ${name}`, _template: 'table', _captcha: 'false' }),
   });
   const out = await r.json().catch(() => ({}));
   return res.status(r.ok ? 200 : 502).json({ ok: r.ok && String(out.success) !== 'false' });

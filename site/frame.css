@@ -8,8 +8,8 @@ html,body{margin:0; background:#fff; color:var(--ink); font-family:var(--font); 
 nav{height:72px; display:flex; align-items:center; justify-content:space-between}
 nav a{font-family:var(--mono); font-size:12.5px; letter-spacing:.08em; color:var(--txt2); text-decoration:none; text-transform:uppercase}
 nav a:hover{color:var(--txt)}
-nav .logo{font-family:var(--font); font-weight:600; font-size:22px; letter-spacing:-.02em; text-transform:none; color:var(--txt)}
-.logo i{font-style:normal; color:var(--sky)}
+nav .logo{font-family:var(--font); font-weight:600; font-size:22px; letter-spacing:-.01em; text-transform:none; color:var(--txt)}
+.bar{border-bottom:1px solid rgba(242,243,247,.12)}
 footer{border-top:1px solid var(--rule); color:var(--mute); font-family:var(--mono); font-size:12px}
 footer .wrap{height:64px; display:flex; align-items:center; justify-content:space-between}
 @media (max-width:900px){ .wrap{padding:0 16px} }

@@ -26,7 +26,7 @@ async function contact(request, env) {
   const r = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(env.CONTACT_TO)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json', Origin: 'https://97a.io', Referer: 'https://97a.io/contact' },
-    body: JSON.stringify({ name, linkedin: linkedin || '-', message, _subject: `A10 contact: ${name}`, _template: 'table', _captcha: 'false' }),
+    body: JSON.stringify({ name, linkedin: linkedin || '-', message, _subject: `97A contact: ${name}`, _template: 'table', _captcha: 'false' }),
   });
   const out = await r.json().catch(() => ({}));
   return json({ ok: r.ok && String(out.success) !== 'false' }, r.ok ? 200 : 502);
