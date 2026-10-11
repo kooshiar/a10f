@@ -11,102 +11,143 @@
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
 <style>
-  :root{ --bg:#12151D; --txt:#F2F3F7; --txt2:#C9CDD8; --dim:#8A90A2; --line:rgba(230,232,239,.12); --sky:#8DB3F0; --orange:#FF6B1A;
+  :root{ --bg:#12151D; --txt:#F2F3F7; --txt2:#C9CDD8; --dim:#8A90A2; --line:rgba(230,232,239,.12); --sky:#8DB3F0; --blue:#3B74D6; --orange:#FF6B1A;
+         --ink:#0E0F12; --ink2:#454A55; --mute:#7A808C; --rule:#E4E6EB;
          --font:"Space Grotesk",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace }
   *{box-sizing:border-box} html,body{margin:0; background:var(--bg); color:var(--txt); font-family:var(--font); -webkit-font-smoothing:antialiased}
-
   .wrap{max-width:1120px; margin:0 auto; padding:0 40px} .dark{overflow-x:clip}
   nav{height:72px; display:flex; align-items:center; justify-content:space-between}
   .logo{font-weight:600; font-size:22px; letter-spacing:-.02em} .logo i{font-style:normal; color:var(--sky)}
   nav a{font-family:var(--mono); font-size:12.5px; letter-spacing:.08em; color:var(--txt2); text-decoration:none; text-transform:uppercase}
-  .hero{display:grid; grid-template-columns:minmax(0, 480px) auto; justify-content:space-between; gap:40px; padding-top:40px; padding-bottom:96px}
-  .left{padding-top:30px}
+
+  /* 1 · hero: title left, one machine right */
+  .hero{display:grid; grid-template-columns:minmax(0, 480px) minmax(0, 520px); justify-content:space-between; gap:40px; padding:56px 0 104px}
+  .left{align-self:center}
   h1{margin:0; font-weight:500; font-size:clamp(38px, 4.1vw, 60px); line-height:1.02; letter-spacing:-.035em}
   h1 span{color:var(--sky)}
   .lead{margin:22px 0 0; max-width:440px; font-size:16.5px; line-height:1.55; color:var(--txt2)}
-  /* right: machine + info box, thumbnails under both; total height follows the text column */
-  .right{display:flex; flex-direction:column; gap:30px}
-  .viz{flex:1; display:flex; align-items:center; gap:14px; min-height:0}
-  .stage{position:relative; align-self:stretch; width:clamp(240px, 19vw, 290px)}
-  #gl, svg#ov{position:absolute; inset:-90px -48px -22px}
+  .right{display:flex; flex-direction:column; align-items:center; gap:14px}
+  .stage{position:relative; width:100%; height:360px}
+  #gl, svg#ov{position:absolute; inset:-60px -40px}
   #gl{cursor:grab} #gl:active{cursor:grabbing} #gl canvas{display:block; width:100%; height:100%}
   svg#ov{pointer-events:none}
-  .cap{position:relative; z-index:2; width:176px; padding:13px 15px 15px; border:1px solid var(--line); border-radius:12px; background:rgba(18,21,29,.72); overflow:hidden}
-  .cap h2{margin:0; font-weight:500; font-size:14px; line-height:1.25}
-  .cap small{display:block; margin-top:3px; font-family:var(--mono); font-size:11px; color:var(--dim)}
-  .cap p{margin:9px 0 0; font-size:13px; line-height:1.45; color:var(--txt2); min-height:38px}
-  .cap i{position:absolute; left:0; bottom:0; height:2px; width:0; background:var(--sky)}
-  .rail{position:relative; z-index:2; display:flex; justify-content:space-between; align-items:flex-end}
-  .rail button{all:unset; cursor:pointer; opacity:.38; transition:opacity .2s}
-  .rail button:hover{opacity:.8} .rail button.on{opacity:1}
-  .rail img{width:58px; height:49px; object-fit:contain; display:block}
-  /* below the fold: white */
-  .white{background:#fff; color:#0E0F12; padding:110px 0 140px}
-  .white h3{margin:0; font-weight:500; font-size:clamp(32px, 3.4vw, 50px); letter-spacing:-.03em; line-height:1.05; max-width:760px}
-  .films{display:grid; grid-template-columns:repeat(3, 1fr); gap:40px 28px; margin-top:64px}
-  .films video{width:100%; aspect-ratio:16/11; display:block; border-radius:14px; background:#12151D; object-fit:cover}
-  .films b{display:block; margin-top:16px; font-weight:500; font-size:18px; letter-spacing:-.01em}
-  .films small{font-family:var(--mono); font-size:12px; color:#5E636D}
-  footer{background:#fff; color:#5E636D; border-top:1px solid #E6E7EB; font-family:var(--mono); font-size:12px}
+  .cap{position:relative; z-index:2; margin:0; font-size:13.5px; line-height:1.6; color:var(--txt2); text-align:center; min-height:44px}
+  .cap b{font-weight:500; color:var(--txt)} .cap small{font-family:var(--mono); font-size:11px; color:var(--dim); margin-left:8px}
+
+  /* white sections */
+  .white{background:#fff; color:var(--ink)}
+  .sec{padding-top:112px}
+  .sec:last-of-type{padding-bottom:128px}
+  .sec h3{margin:0; font-weight:500; font-size:clamp(30px, 3.2vw, 46px); letter-spacing:-.03em; line-height:1.05}
+
+  /* 2 · architecture: two parts */
+  .arch{display:grid; grid-template-columns:1fr 240px 1fr; align-items:center; margin-top:56px}
+  .box{border-radius:16px; padding:30px 30px 32px; min-height:280px; display:flex; flex-direction:column}
+  .box b{font-weight:500; font-size:22px; letter-spacing:-.02em}
+  .box p{margin:10px 0 0; font-size:15px; line-height:1.5}
+  .design{background:var(--bg); color:var(--txt); justify-content:center}
+  .design b{color:var(--sky)} .design p{color:var(--txt2)}
+  .phys{border:1.5px solid var(--ink)}
+  .phys ul{list-style:none; margin:18px 0 0; padding:0}
+  .phys li{display:flex; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid var(--rule); font-size:15px}
+  .phys li span{font-family:var(--mono); font-size:12px; color:var(--mute); align-self:center}
+  .flow{display:flex; flex-direction:column; gap:30px; padding:0 14px}
+  .flow div{font-family:var(--mono); font-size:11.5px; color:var(--ink2); text-align:center}
+  .flow i{display:block; height:2px; background:var(--blue); position:relative; margin-top:8px}
+  .flow i::after{content:""; position:absolute; top:-5px; border:6px solid transparent}
+  .flow .r i::after{right:-2px; border-left:9px solid var(--blue); border-right:0}
+  .flow .l i{background:var(--orange); margin:0 0 8px} .flow .l i::after{left:-2px; border-right:9px solid var(--orange); border-left:0}
+
+  /* 3 · applications */
+  .apps-head{display:flex; align-items:end; justify-content:space-between; gap:24px}
+  .more{font-family:var(--mono); font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink); text-decoration:none;
+    border:1.5px solid var(--ink); border-radius:99px; padding:11px 20px; white-space:nowrap}
+  .more:hover{background:var(--ink); color:#fff}
+  .cards{display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-top:48px}
+  .card{display:flex; flex-direction:column; justify-content:space-between; gap:28px; min-height:168px; padding:20px 20px 22px; border:1px solid var(--rule);
+    border-radius:14px; color:var(--ink); text-decoration:none; transition:border-color .2s, transform .2s}
+  .card:hover{border-color:var(--ink); transform:translateY(-2px)}
+  .card small{font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--blue)}
+  .card b{font-weight:500; font-size:18px; line-height:1.25; letter-spacing:-.015em}
+
+  footer{background:#fff; color:var(--mute); border-top:1px solid var(--rule); font-family:var(--mono); font-size:12px}
   footer .wrap{padding-top:28px; padding-bottom:28px; display:flex; justify-content:space-between}
+
   @media (max-width:900px){
-    .wrap{padding:0 16px} .hero{grid-template-columns:1fr; padding-top:16px; padding-bottom:40px; gap:24px}
-    .left{padding-top:0} h1{font-size:42px} .lead{font-size:16px; margin-top:16px}
-    .viz{flex-direction:column; align-items:stretch; gap:12px} .stage{width:auto; height:72vw} #gl, svg#ov{inset:0}
-    .cap{width:auto} .rail{flex-wrap:wrap; gap:10px 0}
-    .white{padding:72px 0 88px} .films{grid-template-columns:1fr; gap:32px; margin-top:40px}
+    .wrap{padding:0 16px} .hero{grid-template-columns:1fr; padding:16px 0 48px; gap:16px}
+    h1{font-size:42px} .lead{font-size:16px; margin-top:16px}
+    .stage{height:78vw} #gl, svg#ov{inset:0}
+    .sec{padding-top:72px} .sec:last-of-type{padding-bottom:88px}
+    .arch{grid-template-columns:1fr; margin-top:36px} .box{min-height:0}
+    .flow{flex-direction:row; justify-content:center; gap:20px; padding:18px 0}
+    .flow div{display:flex; flex-direction:column; align-items:center; gap:6px; width:120px}
+    .flow i{width:2px; height:36px; margin:0} .flow .l i{margin:0}
+    .flow .r i::after{right:auto; top:auto; left:-5px; bottom:-2px; border:6px solid transparent; border-top:9px solid var(--blue); border-bottom:0}
+    .flow .l i::after{left:-5px; top:-2px; border:6px solid transparent; border-bottom:9px solid var(--orange); border-top:0}
+    .cards{grid-template-columns:1fr 1fr; gap:10px; margin-top:32px} .card{min-height:140px; padding:16px} .card b{font-size:16px}
+    .apps-head{flex-direction:column; align-items:start}
   }
 </style>
 </head>
 <body>
-<div class="dark wrap">
-<nav><div class="logo">A<i>10</i></div><a href="#">Contact</a></nav>
-<main class="hero">
-  <section class="left">
-    <h1>AI that designs <span>molecular machines.</span></h1>
-    <p class="lead">A fully generative, end-to-end AI system that designs machines with atomic precision. One universal, multimodal model for molecules, materials and proteins, across every application.</p>
-  </section>
-  <section class="right">
-    <div class="viz">
-      <div class="stage"><div id="gl"></div><svg id="ov"></svg></div>
-      <aside class="cap"><h2 id="name"></h2><small id="size"></small><p id="step"></p><i id="prog"></i></aside>
-    </div>
-    <div class="rail" id="rail"></div>
-  </section>
-</main>
+<div class="dark">
+  <div class="wrap">
+    <nav><div class="logo">A<i>10</i></div><a href="#">Contact</a></nav>
+    <main class="hero">
+      <section class="left">
+        <h1>AI that designs <span>molecular machines.</span></h1>
+        <p class="lead">A fully generative, end-to-end AI system that designs machines with atomic precision. One universal, multimodal model for molecules, materials and proteins, across every application.</p>
+      </section>
+      <section class="right">
+        <div class="stage"><div id="gl"></div><svg id="ov"></svg></div>
+        <p class="cap"><b id="name"></b><small id="size"></small><br><span id="step"></span></p>
+      </section>
+    </main>
+  </div>
 </div>
-<section class="white"><div class="wrap">
-  <h3>Working machines, from a 10 Å molecule to a 220 Å protein motor.</h3>
-  <div class="films" id="films"></div>
-</div></section>
+
+<div class="white">
+  <section class="sec wrap">
+    <h3>Architecture</h3>
+    <div class="arch">
+      <div class="box design"><b>Design model</b><p>Designs, reasons, and orchestrates every run.</p></div>
+      <div class="flow"><div class="r">candidate designs<i></i></div><div class="l"><i></i>energies · forces · motion</div></div>
+      <div class="box phys"><b>Physics models</b>
+        <ul><li>Quantum chemistry<span>xTB · DFT</span></li><li>ML potentials<span>MACE · UMA</span></li><li>Molecular dynamics<span>OpenMM</span></li><li>Coarse-grained<span>oxDNA · CG proteins</span></li></ul></div>
+    </div>
+  </section>
+
+  <section class="sec wrap">
+    <div class="apps-head"><h3>Applications</h3><a class="more" href="/apps">More</a></div>
+    <div class="cards" id="cards"></div>
+  </section>
+</div>
 <footer><div class="wrap"><span>A10</span><span>© 2026</span></div></footer>
+
 <script type="module">
 import { Stage } from './live.js';
-import { FILMS as ALL } from './films.js';
-const FILMS = (await Promise.all(ALL.map(f => fetch(`live/${f.id}/scene.json`, { method:'HEAD' }).then(r => r.ok && f.id !== 'mof' ? f : null).catch(() => null)))).filter(Boolean);
+import { FILMS } from './films.js';
 const $ = s => document.getElementById(s);
-const stage = new Stage($('gl'), null, { minimal:true, fill:f => Math.min(.7, f * 1.12) });
-let cur = 0, loadedAt = 0, pending = false;
-$('rail').innerHTML = FILMS.map((f, i) => `<button data-i="${i}" aria-label="${f.name}"><img src="thumbs/${f.id}.png" alt=""></button>`).join('');
-async function pick(i){
-  cur = i; const f = FILMS[i];
-  document.querySelectorAll('.rail button').forEach((b, k) => b.classList.toggle('on', k === i));
-  $('name').textContent = f.name; $('size').textContent = f.size; $('step').textContent = '';
-  await stage.load(f);
-  stage.ov = { svg:$('ov') };
-  loadedAt = performance.now(); stage.touched = 0;
-}
-stage.onFrame = (v, k) => {
-  const f = FILMS[cur], part = stage.sc.story.part[k];
-  if (f.short && $('step').textContent !== f.short[part]) $('step').textContent = f.short[part];
-  $('prog').style.width = (v / 20 * 100) + '%';
-};
-$('rail').addEventListener('click', e => { const b = e.target.closest('button'); if (b) pick(+b.dataset.i); });
-// white section: the rendered films, playing while on screen
-$('films').innerHTML = FILMS.map(f => `<div><video data-src="videos/${f.id}.mp4" poster="videos/${f.id}.jpg" muted loop playsinline preload="none"></video><b>${f.name}</b><small>${f.size} · ${f.kind}</small></div>`).join('');
-const io = new IntersectionObserver(es => es.forEach(e => { const v = e.target; if (e.isIntersecting){ if (!v.src) v.src = v.dataset.src; v.play().catch(() => {}); } else v.pause(); }), { threshold:.4 });
-document.querySelectorAll('.films video').forEach(v => io.observe(v));
-pick(0);
+
+// 3 · a few applications; each opens its page in /apps
+const APPS = [
+  [38, 'Environment', 'PFAS trap for drinking water'],
+  [51, 'Energy', 'Solid electrolyte for solid-state batteries'],
+  [44, 'Data centers & chips', 'Heat paste that pulls heat out of AI chips'],
+  [27, 'Medicine', 'Potassium binder for kidney patients'],
+  [34, 'Biotech', 'Stabilizer that keeps vaccines safe without a freezer'],
+  [55, 'Mining', 'Lithium picker for brine'],
+  [15, 'Agriculture', 'Catalyst that makes ammonia at low heat'],
+  [2, 'Food & drink', 'Decaf sponge that pulls caffeine and keeps flavor'],
+];
+$('cards').innerHTML = APPS.map(([p, c, t]) => `<a class="card" href="/apps#p${p}"><small>${c}</small><b>${t}</b></a>`).join('');
+
+// 1 · one machine (?m=<id> previews another)
+const f = FILMS.find(x => x.id === new URLSearchParams(location.search).get('m')) || FILMS.find(x => x.id === 'rotor');
+const stage = new Stage($('gl'), null, { minimal:true, fill:x => Math.min(.72, x * 1.15) });
+$('name').textContent = f.name; $('size').textContent = f.size;
+await stage.load(f); stage.ov = { svg:$('ov') };
+stage.onFrame = (v, k) => { const t = f.short?.[stage.sc.story.part[k]]; if (t && $('step').textContent !== t) $('step').textContent = t; };
 </script>
 </body>
 </html>
