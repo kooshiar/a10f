@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>97A · PFAS trap for drinking water</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/frame.css">
+<link rel="stylesheet" href="/apps/app.css">
+</head>
+<body>
+<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/" class="on">Applications</a><a href="/technology/">Technology</a><a href="/contact/">Contact</a></div></nav></div></header>
+<main class="wrap app">
+  <a class="crumb" href="/apps/">Applications</a><span class="crumb">/ Environment</span>
+  <div class="grid">
+    <div class="card"><h1>PFAS trap for drinking water</h1><table><tr class="g0"><th scope="rowgroup" class="grp" rowspan="3">Why</th><th scope="row">Category</th><td><span class="chip tag">Environment</span></td></tr><tr><th scope="row">Level</th><td><span class="chip ok">Easy</span> </td></tr><tr><th scope="row">Use</th><td>Pull “forever chemicals” out of drinking water. US utilities must meet the 2024 EPA limit of 4 ppt</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="1">What</th><th scope="row">Atoms</th><td>Trap 100–200 + PFAS 26, plus ~2k water. C H O N F</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">How</th><td><a class="ask" href="/contact/">Contact us for the design specs and build plan &rarr;</a></td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Demo</th><td>PFAS drifts in water and the new trap catches it, scored against cyclodextrin</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Competition</th><td>Carbon filters, ion-exchange resins, Cyclopure (cyclodextrin)</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="2">Business</th><th scope="row">Buyers</th><td>Water utilities, filter makers</td></tr><tr><th scope="row">Revenue</th><td><span class="chip ok">High</span> Sorbent license or co-development with filter makers. ~$1–10M/yr if adopted</td></tr></table></div>
+    <figure class="mol" data-k="pfas"><canvas aria-label="PFOA inside β-cyclodextrin, today’s baseline trap"></canvas><figcaption>PFOA inside β-cyclodextrin, today’s baseline trap</figcaption></figure>
+  </div>
+  <nav class="pn"><a href="/apps/cheap-ligand-that-pulls-antibodies-out-of-cell-broth/">&larr; Antibody capture</a><a href="/apps/co2-trap-that-works-in-humid-air/">CO₂ trap for humid air &rarr;</a></nav>
+</main>
+<footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
+<script type="module">
+import { setup } from '/site/appmols.js';
+const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, querySelector:() => f.querySelector('canvas') });
+v.active(true); let last = performance.now();
+(function loop(t){ v.tick(t - last); last = t; requestAnimationFrame(loop); })(last);
+addEventListener('resize', () => v.draw());
+</script>
+</body>
+</html>

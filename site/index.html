@@ -22,6 +22,7 @@
   #gl{cursor:grab} #gl:active{cursor:grabbing} #gl canvas{display:block; width:100%; height:100%}
   svg#ov{pointer-events:none}
   .sec h2{margin:0; font-weight:500; font-size:24px; letter-spacing:-.02em}
+  .sec h2 a{color:inherit; text-decoration:none} .sec h2 a:hover{color:var(--blue)}
 
   /* 2 · applications: title on its own line, one row; drag or scroll sideways */
   .apps{padding-block:36px 40px}
@@ -37,7 +38,7 @@
   .card canvas{display:block; width:104px; height:104px; border-radius:24px; background:var(--bg); pointer-events:none; transition:transform .2s}
   .card:hover canvas{transform:translateY(-2px)}
   .card div{padding:9px 2px 0}
-  .card b{display:block; font-weight:500; font-size:12.5px; line-height:1.25; letter-spacing:-.005em}
+  .card b{display:block; font-weight:500; font-size:13.5px; line-height:1.25; letter-spacing:-.005em}
   .card small{display:block; margin-top:3px; font-family:var(--mono); font-size:9.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--mute)}
 
   /* 3 · technology: layered system, short band; style switch in the footer (1-4) */
@@ -66,8 +67,6 @@
   .dia.levels .nd{flex-direction:row; align-items:center; gap:18px; padding:6px 12px; justify-self:center}
   .dia.levels .structure{justify-self:end} .dia.levels .physics{justify-self:start}
   .dia.levels .designer{padding-block:9px} .dia.levels .physics{padding-block:8px}
-  #tstyles{display:flex; gap:4px} #tstyles button{all:unset; cursor:pointer; width:16px; height:16px; display:grid; place-items:center; border-radius:4px; font-size:9px; color:var(--dim); border:1px solid rgba(242,243,247,.15)}
-  #tstyles button.on{color:var(--bg); background:var(--txt2)}
   @media (max-width:900px){
     .hero .top{grid-template-columns:1fr; gap:0} h1{font-size:36px}
     .stage{height:60vw} #gl, svg#ov{inset:0}
@@ -78,7 +77,7 @@
 </head>
 <body>
 <header class="hero">
-  <div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><a href="/contact">Contact</a></nav></div>
+  <div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/">Applications</a><a href="/technology/">Technology</a><a href="/contact/">Contact</a></div></nav></div>
   <div class="wrap top">
     <h1>AI that designs <span>molecular machines.</span></h1>
     <div class="stage"><div id="gl"></div><svg id="ov"></svg></div>
@@ -87,12 +86,12 @@
 
 <main>
   <section class="sec apps wrap">
-    <h2>Applications</h2>
-    <div class="rowbox"><a class="more" href="/apps">More</a><div class="row" id="row"></div></div>
+    <h2><a href="/apps/">Applications</a></h2>
+    <div class="rowbox"><a class="more" href="/apps/">More</a><div class="row" id="row"></div></div>
   </section>
 
-  <div class="techbg" id="techbg"><section class="sec tech wrap">
-    <h2>Technology</h2>
+  <div class="techbg white" id="techbg"><section class="sec tech wrap">
+    <h2><a href="/technology/">Technology</a></h2>
     <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
   <symbol id="i-chat" viewBox="0 0 48 48"><path d="M8 10h32v20H22l-9 8v-8H8z"/><circle class="f" cx="17" cy="20" r="2.2"/><circle class="f" cx="24" cy="20" r="2.2"/><circle class="f" cx="31" cy="20" r="2.2"/></symbol>
   <symbol id="i-goal" viewBox="0 0 48 48"><circle cx="24" cy="24" r="16"/><circle cx="24" cy="24" r="9"/><circle class="fo" cx="24" cy="24" r="3.5"/></symbol>
@@ -128,7 +127,8 @@
 <script type="module">
 import { Stage } from './live.js';
 import { FILMS } from './films.js';
-import { APPS, setup } from './appmols.js';
+import { setup } from './appmols.js';
+import { APPS, HOME } from './appsdata.js';
 const $ = s => document.getElementById(s);
 
 // 1 · one machine (?m=<id> previews another)
@@ -136,10 +136,11 @@ const f = FILMS.find(x => x.id === new URLSearchParams(location.search).get('m')
 const stage = new Stage($('gl'), null, { minimal:true, fill:x => Math.min(.95, x * 1.15) });
 stage.load(f).then(() => { stage.ov = { svg:$('ov') }; });
 
-// applications: rotating molecules from the /apps deck; drag or scroll sideways
+// applications: molecule tiles; drag or scroll sideways; each opens its page
 const row = $('row');
-row.innerHTML = APPS.map(([p, c, t]) => `<a class="card" href="/apps#p${p}" draggable="false"><canvas></canvas><div><b>${t}</b><small>${c}</small></div></a>`).join('');
-const views = [...row.querySelectorAll('.card')].map((el, i) => { const fig = { dataset:{ k:APPS[i][3] }, querySelector:() => el.querySelector('canvas') }; return setup(fig); });
+const picks = HOME.map(s => APPS.find(a => a.slug === s));
+row.innerHTML = picks.map(a => `<a class="card" href="/apps/${a.slug}/" draggable="false"><canvas></canvas><div><b>${a.short}</b><small>${a.cs}</small></div></a>`).join('');
+const views = [...row.querySelectorAll('.card')].map((el, i) => setup({ dataset:{ k:picks[i].k }, querySelector:() => el.querySelector('canvas') }));
 // one structure moves at a time: hovering a card wakes its molecule and pauses the machine on top
 let last = performance.now(), hot = -1;
 (function loop(t){ if (hot >= 0) views[hot].tick(t - last); last = t; requestAnimationFrame(loop); })(last);
@@ -154,8 +155,7 @@ addEventListener('pointermove', e => { if (!drag) return; const dx = e.clientX -
 addEventListener('pointerup', () => { if (!drag) return; const m = drag.moved; drag = null; row.classList.remove('drag'); if (m) row.addEventListener('click', e => e.preventDefault(), { capture:true, once:true }); });
 
 
-// technology diagram: connectors drawn from the boxes' positions; footer buttons 1-4 switch layout and background (?t=1..4)
-const TSTYLES = [['flow', 'dark'], ['flow', 'white'], ['levels', 'dark'], ['levels', 'white']];
+// technology diagram: connectors drawn from the boxes' positions (side by side on wide screens, stacked on phones)
 function links(){
   const dia = $('dia'), R = dia.getBoundingClientRect(), box = k => { const r = dia.querySelector('.' + k).getBoundingClientRect();
     return { l:r.left - R.left, r:r.right - R.left, t:r.top - R.top, b:r.bottom - R.top, cx:(r.left + r.right) / 2 - R.left, cy:(r.top + r.bottom) / 2 - R.top }; };
@@ -169,15 +169,8 @@ function links(){
   $('links').innerHTML = [['agent', 'designer'], ['designer', 'structure'], ['designer', 'physics'], ['structure', 'physics'], ['structure', 'data'], ['physics', 'data']]
     .map(([a, b]) => `<path d="${line(a, b)}"/>`).join('') + `<path class="dash" d="${back}"/>`;
 }
-function tstyle(n){
-  const [lay, bg] = TSTYLES[n - 1] || TSTYLES[0];
-  $('dia').className = 'dia ' + (innerWidth <= 900 ? 'levels' : lay); $('techbg').classList.toggle('white', bg === 'white');
-  document.querySelectorAll('#tstyles button').forEach(b => b.classList.toggle('on', b.dataset.n == n)); links();
-}
-document.querySelector('footer .wrap span').insertAdjacentHTML('afterend', `<span id="tstyles">${TSTYLES.map((_, i) => `<button data-n="${i + 1}" aria-label="Technology style ${i + 1}">${i + 1}</button>`).join('')}</span>`);
-let tcur = +(new URLSearchParams(location.search).get('t') || 1);
-$('tstyles').onclick = e => { const b = e.target.closest('button'); if (b) tstyle(tcur = +b.dataset.n); };
-addEventListener('resize', () => tstyle(tcur)); document.fonts.ready.then(() => tstyle(tcur)); tstyle(tcur);
+function layout(){ $('dia').className = 'dia ' + (innerWidth <= 900 ? 'levels' : 'flow'); links(); }
+addEventListener('resize', layout); document.fonts.ready.then(layout); layout();
 </script>
 </body>
 </html>

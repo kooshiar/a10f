@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>97A · Cell-freezing solution without DMSO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/frame.css">
+<link rel="stylesheet" href="/apps/app.css">
+</head>
+<body>
+<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/" class="on">Applications</a><a href="/technology/">Technology</a><a href="/contact/">Contact</a></div></nav></div></header>
+<main class="wrap app">
+  <a class="crumb" href="/apps/">Applications</a><span class="crumb">/ Biotech</span>
+  <div class="grid">
+    <div class="card"><h1>Cell-freezing solution without DMSO</h1><table><tr class="g0"><th scope="rowgroup" class="grp" rowspan="3">Why</th><th scope="row">Category</th><td><span class="chip tag">Biotech</span></td></tr><tr><th scope="row">Level</th><td><span class="chip hard">Hard</span> </td></tr><tr><th scope="row">Use</th><td>Freeze cell therapies without toxic DMSO, by stopping ice crystals from growing</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="1">What</th><th scope="row">Atoms</th><td>Ice surface 300–1k + molecule + water. C H O N</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">How</th><td><a class="ask" href="/contact/">Contact us for the design specs and build plan &rarr;</a></td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Demo</th><td>Ice crystal stops growing where the new molecule sits</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Competition</th><td>DMSO media (BioLife CryoStor), sugar and polymer ice blockers in research</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="2">Business</th><th scope="row">Buyers</th><td>Cell therapy makers, cell banks</td></tr><tr><th scope="row">Revenue</th><td><span class="chip ok">High</span> License to cell-media makers. ~$1–5M/yr</td></tr></table></div>
+    <figure class="mol" data-k="cryo"><canvas aria-label="DMSO, today’s standard cell-freezing additive"></canvas><figcaption>DMSO, today’s standard cell-freezing additive</figcaption></figure>
+  </div>
+  <nav class="pn"><a href="/apps/stabilizer-that-keeps-vaccines-safe-without-a-freezer/">&larr; Freezer-free vaccines</a><a href="/apps/cheap-ligand-that-pulls-antibodies-out-of-cell-broth/">Antibody capture &rarr;</a></nav>
+</main>
+<footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
+<script type="module">
+import { setup } from '/site/appmols.js';
+const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, querySelector:() => f.querySelector('canvas') });
+v.active(true); let last = performance.now();
+(function loop(t){ v.tick(t - last); last = t; requestAnimationFrame(loop); })(last);
+addEventListener('resize', () => v.draw());
+</script>
+</body>
+</html>

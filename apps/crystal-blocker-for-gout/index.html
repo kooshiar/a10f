@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>97A · Crystal blocker for gout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/frame.css">
+<link rel="stylesheet" href="/apps/app.css">
+</head>
+<body>
+<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/" class="on">Applications</a><a href="/technology/">Technology</a><a href="/contact/">Contact</a></div></nav></div></header>
+<main class="wrap app">
+  <a class="crumb" href="/apps/">Applications</a><span class="crumb">/ Medicine</span>
+  <div class="grid">
+    <div class="card"><h1>Crystal blocker for gout</h1><table><tr class="g0"><th scope="rowgroup" class="grp" rowspan="3">Why</th><th scope="row">Category</th><td><span class="chip tag">Medicine</span></td></tr><tr><th scope="row">Level</th><td><span class="chip mid">Medium</span> </td></tr><tr><th scope="row">Use</th><td>Molecule that stops uric acid from forming needle crystals in joints</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="1">What</th><th scope="row">Atoms</th><td>Urate crystal cell 300–1k + molecule + water. C H O N</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">How</th><td><a class="ask" href="/contact/">Contact us for the design specs and build plan &rarr;</a></td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Demo</th><td>Crystal stops growing where the blocker binds</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Competition</th><td>Urate-lowering drugs (allopurinol, febuxostat), crystal blockers in research</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="2">Business</th><th scope="row">Buyers</th><td>Rheumatology drug makers</td></tr><tr><th scope="row">Revenue</th><td><span class="chip ok">High</span> License to a drug partner. ~$5–20M/yr if approved</td></tr></table></div>
+    <figure class="mol" data-k="gout"><canvas aria-label="Uric acid, the molecule that crystallizes in gout"></canvas><figcaption>Uric acid, the molecule that crystallizes in gout</figcaption></figure>
+  </div>
+  <nav class="pn"><a href="/apps/slow-release-joint-injection-for-arthritis/">&larr; Slow-release joint shot</a><a href="/apps/antibiotic-free-coating-that-stops-catheter-infections/">Infection-free catheter &rarr;</a></nav>
+</main>
+<footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
+<script type="module">
+import { setup } from '/site/appmols.js';
+const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, querySelector:() => f.querySelector('canvas') });
+v.active(true); let last = performance.now();
+(function loop(t){ v.tick(t - last); last = t; requestAnimationFrame(loop); })(last);
+addEventListener('resize', () => v.draw());
+</script>
+</body>
+</html>

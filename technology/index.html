@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>97A · Technology</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/frame.css">
+<style>
+  main.wrap{padding-block:36px 64px}
+  h1{margin:0; font-weight:500; font-size:28px; letter-spacing:-.02em}
+  .thesis{margin:16px 0 0; max-width:640px; font-size:17px; line-height:1.6; color:var(--ink2)}
+  .lv{position:relative; display:grid; grid-template-columns:1fr 1fr; gap:46px 34px; width:min(860px, 100%); margin:48px 0 0}
+  .lv .links{position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; fill:none; stroke:#9AA1AD; stroke-width:1.5}
+  .lv .links .dash{stroke-dasharray:5 5} .lv .links text{fill:var(--mute); stroke:none; font-family:var(--mono); font-size:12px}
+  .nd{position:relative; border:1.5px solid #7A808C; border-radius:14px; padding:16px 20px; background:#fff; display:flex; flex-direction:column; gap:10px}
+  .nd .h{display:flex; justify-content:space-between; align-items:baseline; gap:16px}
+  .nd b{font-weight:500; font-size:19px; letter-spacing:-.015em}
+  .nd i{font-style:normal; font-family:var(--mono); font-size:12px; color:var(--mute)}
+  .nd .d{display:flex; justify-content:space-between; align-items:center; gap:16px}
+  .nd .d span{font-family:var(--mono); font-size:12.5px; color:var(--mute)}
+  .ic{display:flex; gap:8px; color:#5E636D}
+  .ic svg{flex:none; width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+  .ic .f, .ic .fo{fill:currentColor; stroke:none} .ic .o{stroke:currentColor}
+  .agent, .designer{grid-column:1 / 3; justify-self:center; width:54%} .data{grid-column:1 / 3}
+  .designer{background:#12151D; border-color:#12151D; color:var(--txt)} .designer i, .designer .d span{color:var(--dim)} .designer .ic{color:#C9CDD8}
+  .physics{background:#F3F4F6; border-color:var(--ink)}
+  @media (max-width:760px){ .lv{grid-template-columns:1fr; gap:28px} .agent, .designer, .data{grid-column:auto; width:auto} .nd .d{flex-direction:column; align-items:flex-start} }
+</style>
+</head>
+<body>
+<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/">Applications</a><a class="on" href="/technology/">Technology</a><a href="/contact/">Contact</a></div></nav></div></header>
+<main class="wrap">
+  <h1>Technology</h1>
+  <p class="thesis">A new molecule, material or protein usually takes years of trial and error in the lab. We run that search in software. A designer model proposes atomic structures for a goal; structure and physics models test every candidate, and their scores steer the next round until the design works. The physics models learn from synthetic quantum-accurate data made by compute, so the loop does not depend on lab data.</p>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-chat" viewBox="0 0 48 48"><path d="M8 10h32v20H22l-9 8v-8H8z"/><circle class="f" cx="17" cy="20" r="2.2"/><circle class="f" cx="24" cy="20" r="2.2"/><circle class="f" cx="31" cy="20" r="2.2"/></symbol>
+  <symbol id="i-goal" viewBox="0 0 48 48"><circle cx="24" cy="24" r="16"/><circle cx="24" cy="24" r="9"/><circle class="fo" cx="24" cy="24" r="3.5"/></symbol>
+  <symbol id="i-tree" viewBox="0 0 48 48"><circle class="f" cx="24" cy="9" r="4"/><circle cx="11" cy="38" r="4"/><circle cx="24" cy="38" r="4"/><circle class="fo" cx="37" cy="38" r="4"/><path d="M24 13v8M24 21L11 34M24 21v13M24 21l13 13"/></symbol>
+  <symbol id="i-hex" viewBox="0 0 48 48"><path d="M24 7l14 8v16l-14 8-14-8V15z"/><circle class="fo" cx="38" cy="15" r="4"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 48 48"><path d="M24 6c2 10 8 16 18 18-10 2-16 8-18 18-2-10-8-16-18-18 10-2 16-8 18-18z"/></symbol>
+  <symbol id="i-hub" viewBox="0 0 48 48"><circle class="f" cx="24" cy="24" r="5"/><circle cx="8" cy="10" r="3"/><circle cx="40" cy="10" r="3"/><circle cx="8" cy="38" r="3"/><circle cx="40" cy="38" r="3"/><path d="M20 20l-9.5-7.5M28 20l9.5-7.5M20 28l-9.5 7.5M28 28l9.5 7.5"/></symbol>
+  <symbol id="i-loop" viewBox="0 0 48 48"><path d="M38 24a14 14 0 1 1-4.1-9.9"/><path class="o" d="M34 6v8.5h-8.5"/></symbol>
+  <symbol id="i-ball" viewBox="0 0 48 48"><path d="M12 34l12-8 12 8M24 26V12"/><circle class="f" cx="24" cy="12" r="5"/><circle cx="12" cy="34" r="5"/><circle cx="36" cy="34" r="5"/></symbol>
+  <symbol id="i-helix" viewBox="0 0 48 48"><path d="M14 6c0 10 20 8 20 18S14 32 14 42M34 6c0 10-20 8-20 18s20 8 20 18"/></symbol>
+  <symbol id="i-lattice" viewBox="0 0 48 48"><path d="M8 8h32v32H8zM8 24h32M24 8v32"/><circle class="f" cx="8" cy="8" r="3"/><circle class="f" cx="40" cy="8" r="3"/><circle class="f" cx="24" cy="24" r="3"/><circle class="f" cx="8" cy="40" r="3"/><circle class="f" cx="40" cy="40" r="3"/></symbol>
+  <symbol id="i-well" viewBox="0 0 48 48"><path d="M6 8c4 0 6 30 18 30S38 14 42 14"/><circle class="fo" cx="24" cy="38" r="3.5"/></symbol>
+  <symbol id="i-force" viewBox="0 0 48 48"><circle class="f" cx="24" cy="24" r="5"/><path d="M24 18V6M20 9l4-4 4 4M29 27l9 9M38 30v6h-6M19 27l-9 6M13 37l-4-3 3-5"/></symbol>
+  <symbol id="i-md" viewBox="0 0 48 48"><path d="M6 36c5-14 9 6 14-8s9 2 13-10 7 2 9-4" stroke-dasharray="2 4"/><circle class="f" cx="42" cy="14" r="4.5"/></symbol>
+  <symbol id="i-orbit" viewBox="0 0 48 48"><ellipse cx="24" cy="24" rx="18" ry="7"/><ellipse cx="24" cy="24" rx="18" ry="7" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="18" ry="7" transform="rotate(120 24 24)"/><circle class="fo" cx="24" cy="24" r="3.5"/></symbol>
+  <symbol id="i-beads" viewBox="0 0 48 48"><path d="M8 38c6-10 6-20 16-20s10-10 16-12"/><circle class="f" cx="8" cy="38" r="4.5"/><circle cx="16" cy="24" r="4.5"/><circle class="f" cx="28" cy="17" r="4.5"/><circle cx="40" cy="7" r="4.5"/></symbol>
+  <symbol id="i-db" viewBox="0 0 48 48"><ellipse cx="24" cy="10" rx="15" ry="5"/><path d="M9 10v28c0 3 7 5 15 5s15-2 15-5V10M9 24c0 3 7 5 15 5s15-2 15-5"/></symbol>
+  <symbol id="i-wave" viewBox="0 0 48 48"><path d="M4 24c4-14 8-14 12 0s8 14 12 0 8-14 12 0 4 7 6 4"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 48 48"><g class="f"><circle cx="10" cy="10" r="3"/><circle cx="24" cy="10" r="3"/><circle cx="38" cy="10" r="3"/><circle cx="10" cy="24" r="3"/><circle cx="24" cy="24" r="3"/><circle cx="38" cy="24" r="3"/><circle cx="10" cy="38" r="3"/><circle cx="24" cy="38" r="3"/><circle cx="38" cy="38" r="3"/></g></symbol>
+</defs></svg>
+  <div class="lv" id="lv">
+    <svg class="links" id="links"></svg>
+    <div class="nd agent"><div class="h"><b>Agent interface</b><i>Level 3</i></div><div class="d"><span>design goal in, results out</span><span class="ic"><svg><use href="#i-chat"/></svg><svg><use href="#i-goal"/></svg></span></div></div>
+    <div class="nd designer"><div class="h"><b>Designer</b><i>Level 2</i></div><div class="d"><span>generates and refines</span><span class="ic"><svg><use href="#i-tree"/></svg><svg><use href="#i-hex"/></svg><svg><use href="#i-spark"/></svg><svg><use href="#i-hub"/></svg><svg><use href="#i-loop"/></svg></span></div></div>
+    <div class="nd structure"><div class="h"><b>Structure models</b><i>Level 1</i></div><div class="d"><span>3D geometry</span><span class="ic"><svg><use href="#i-ball"/></svg><svg><use href="#i-helix"/></svg><svg><use href="#i-lattice"/></svg></span></div></div>
+    <div class="nd physics"><div class="h"><b>Physics models</b><i>Level 1</i></div><div class="d"><span>energies, forces</span><span class="ic"><svg><use href="#i-well"/></svg><svg><use href="#i-force"/></svg><svg><use href="#i-md"/></svg><svg><use href="#i-orbit"/></svg><svg><use href="#i-beads"/></svg></span></div></div>
+    <div class="nd data"><div class="h"><b>Synthetic quantum-accurate data</b><i>Level 1</i></div><div class="d"><span>generated by compute, not the lab</span><span class="ic"><svg><use href="#i-db"/></svg><svg><use href="#i-wave"/></svg><svg><use href="#i-grid"/></svg></span></div></div>
+  </div>
+</main>
+<footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
+<script>
+function links(){
+  const lv = document.getElementById('lv'), R = lv.getBoundingClientRect(), wide = innerWidth > 760;
+  const b = k => { const r = lv.querySelector('.' + k).getBoundingClientRect(); return { l:r.left - R.left, r:r.right - R.left, t:r.top - R.top, b:r.bottom - R.top, cx:(r.left + r.right) / 2 - R.left, cy:(r.top + r.bottom) / 2 - R.top }; };
+  const A = b('agent'), D = b('designer'), S = b('structure'), P = b('physics'), T = b('data');
+  let d = '';
+  if (wide) {
+    d = `<path d="M${A.cx} ${A.b}V${D.t}"/>` +
+        `<path d="M${D.l + (D.r - D.l) * .25} ${D.b}L${S.cx} ${S.t}"/><path d="M${D.l + (D.r - D.l) * .75} ${D.b}L${P.cx} ${P.t}"/>` +
+        `<path d="M${S.r} ${S.cy}H${P.l}"/><path d="M${S.cx} ${S.b}V${T.t}"/><path d="M${P.cx} ${P.b}V${T.t}"/>` +
+        `<path class="dash" d="M${D.r} ${D.cy}H${P.r + 28}V${P.cy}H${P.r}"/><text x="${P.r + 36}" y="${(D.cy + P.cy) / 2 + 4}">scores</text>`;
+  } else {
+    const order = [A, D, S, P, T]; for (let i = 0; i < 4; i++) d += `<path d="M${order[i].cx} ${order[i].b}V${order[i + 1].t}"/>`;
+  }
+  document.getElementById('links').innerHTML = d;
+}
+addEventListener('resize', links); document.fonts.ready.then(links); links();
+</script>
+</body>
+</html>
