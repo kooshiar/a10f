@@ -150,7 +150,11 @@ export class Stage {
     this.camera.near = d / 50; this.camera.far = d * 10; this.camera.updateProjectionMatrix(); this.controls.update();
   }
 
-  time(){ return ((performance.now() - this.t0) / 1000) % DUR; }
+  time(){ return (((this.pausedAt ?? performance.now()) - this.t0) / 1000) % DUR; }
+  pause(on){                                       // freeze the story in place; rotating by mouse still works
+    if (on && this.pausedAt == null) this.pausedAt = performance.now();
+    if (!on && this.pausedAt != null){ this.t0 += performance.now() - this.pausedAt; this.pausedAt = null; }
+  }
   frame(force){
     if (!this.ready) return;
     const v = this.opts.capture ? this.vCapture : this.time(), sc = this.sc, F = sc.frames, x = v / DUR * (F - 1), k0 = Math.floor(x), k1 = Math.min(F - 1, k0 + 1), w = x - k0;

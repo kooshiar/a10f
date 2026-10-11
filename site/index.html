@@ -17,8 +17,8 @@
   .hero .top{display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:40px; padding-bottom:12px}
   h1{margin:0; font-weight:500; font-size:clamp(38px, 4vw, 56px); line-height:1.02; letter-spacing:-.035em}
   h1 span{color:var(--sky)}
-  .stage{position:relative; height:230px}
-  #gl, svg#ov{position:absolute; inset:-30px -40px}
+  .stage{position:relative; height:300px}
+  #gl, svg#ov{position:absolute; inset:-36px -60px}
   #gl{cursor:grab} #gl:active{cursor:grabbing} #gl canvas{display:block; width:100%; height:100%}
   svg#ov{pointer-events:none}
   .sec h2{margin:0; font-weight:500; font-size:24px; letter-spacing:-.02em}
@@ -27,18 +27,19 @@
   .apps{padding-block:36px 40px}
   .apps h2{margin-bottom:16px}
   .rowbox{position:relative}
-  .more{position:absolute; right:10px; top:10px; z-index:2; padding:7px 14px; border-radius:99px; background:var(--orange); color:#fff;
-    font-family:var(--mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; text-decoration:none}
+  .more{position:absolute; right:8px; top:8px; z-index:2; padding:6px 12px; border-radius:99px; background:var(--orange); color:#fff;
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; text-decoration:none}
   .more:hover{background:var(--blue)}
-  .row{display:grid; grid-auto-flow:column; grid-auto-columns:212px; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; cursor:grab;
+  .row{display:grid; grid-auto-flow:column; grid-auto-columns:168px; gap:10px; overflow-x:auto; scroll-snap-type:x mandatory; cursor:grab;
     scrollbar-width:none; -ms-overflow-style:none; user-select:none}
   .row::-webkit-scrollbar{display:none} .row.drag{cursor:grabbing; scroll-snap-type:none}
   .card{scroll-snap-align:start; display:block; border:1px solid var(--rule); border-radius:12px; overflow:hidden; color:var(--ink); text-decoration:none; transition:border-color .2s}
   .card:hover{border-color:var(--ink)}
-  .card canvas{display:block; width:100%; height:128px; background:var(--bg); pointer-events:none}
-  .card div{padding:9px 12px 11px}
-  .card small{display:block; font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--blue)}
-  .card b{display:block; margin-top:4px; font-weight:500; font-size:14.5px; line-height:1.25; letter-spacing:-.01em}
+  .card canvas{display:block; width:100%; height:96px; background:#F3F4F6; pointer-events:none; transition:background .25s}
+  .card:hover canvas{background:var(--bg)}
+  .card div{padding:8px 10px 10px}
+  .card small{display:block; font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--blue)}
+  .card b{display:block; margin-top:3px; font-weight:500; font-size:13px; line-height:1.25; letter-spacing:-.01em}
 
   /* 3 · technology, dark like the top */
   .techbg{background:var(--bg); color:var(--txt)}
@@ -57,7 +58,7 @@
   @media (max-width:900px){
     .hero .top{grid-template-columns:1fr; gap:0} h1{font-size:36px}
     .stage{height:60vw} #gl, svg#ov{inset:0}
-    .row{grid-auto-columns:62%}
+    .row{grid-auto-columns:46%}
     .tech{grid-template-columns:1fr; gap:14px} .arch{grid-template-columns:1fr 1fr; gap:10px} .box{height:120px; padding:12px} .box b{font-size:16px} .icons{gap:6px} .icons svg{width:22px; height:22px}
   }
 </style>
@@ -119,21 +120,28 @@ import { FILMS } from './films.js';
 import { APPS, setup } from './appmols.js';
 const $ = s => document.getElementById(s);
 
+// 1 · one machine (?m=<id> previews another)
+const f = FILMS.find(x => x.id === new URLSearchParams(location.search).get('m')) || FILMS.find(x => x.id === 'rotor');
+const stage = new Stage($('gl'), null, { minimal:true, fill:x => Math.min(.72, x * 1.15) });
+stage.load(f).then(() => { stage.ov = { svg:$('ov') }; });
+
 // applications: rotating molecules from the /apps deck; drag or scroll sideways
 const row = $('row');
 row.innerHTML = APPS.map(([p, c, t]) => `<a class="card" href="/apps#p${p}" draggable="false"><canvas></canvas><div><small>${c}</small><b>${t}</b></div></a>`).join('');
 const views = [...row.querySelectorAll('.card')].map((el, i) => { const fig = { dataset:{ k:APPS[i][3] }, querySelector:() => el.querySelector('canvas') }; return setup(fig); });
-let last = performance.now();
-(function loop(t){ views.forEach(v => v.tick(t - last)); last = t; requestAnimationFrame(loop); })(last);
+// one structure moves at a time: hovering a card wakes its molecule and pauses the machine on top
+let last = performance.now(), hot = -1;
+(function loop(t){ if (hot >= 0) views[hot].tick(t - last); last = t; requestAnimationFrame(loop); })(last);
+requestAnimationFrame(() => views.forEach(v => v.draw()));
+row.querySelectorAll('.card').forEach((el, i) => {
+  el.addEventListener('mouseenter', () => { hot = i; views[i].active(true); stage.pause(true); });
+  el.addEventListener('mouseleave', () => { if (hot === i) hot = -1; views[i].active(false); stage.pause(false); });
+});
 let drag = null;
 row.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; drag = { x:e.clientX, s:row.scrollLeft, moved:false }; });
 addEventListener('pointermove', e => { if (!drag) return; const dx = e.clientX - drag.x; if (Math.abs(dx) > 4){ drag.moved = true; row.classList.add('drag'); } row.scrollLeft = drag.s - dx; });
 addEventListener('pointerup', () => { if (!drag) return; const m = drag.moved; drag = null; row.classList.remove('drag'); if (m) row.addEventListener('click', e => e.preventDefault(), { capture:true, once:true }); });
 
-// 1 · one machine (?m=<id> previews another)
-const f = FILMS.find(x => x.id === new URLSearchParams(location.search).get('m')) || FILMS.find(x => x.id === 'rotor');
-const stage = new Stage($('gl'), null, { minimal:true, fill:x => Math.min(.72, x * 1.15) });
-await stage.load(f); stage.ov = { svg:$('ov') };
 </script>
 </body>
 </html>
