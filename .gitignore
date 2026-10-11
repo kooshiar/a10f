@@ -13,3 +13,5 @@
 site/machines
 site/videos
 site/render
+cf/dist
+.wrangler
