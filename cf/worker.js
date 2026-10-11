@@ -5,7 +5,7 @@ export default {
     const url = new URL(request.url);
     if (url.hostname === 'www.97a.io') return Response.redirect(`https://97a.io${url.pathname}${url.search}`, 301);
     if (url.pathname === '/api/contact') return contact(request, env);
-    if (url.pathname === '/') return env.ASSETS.fetch(new Request(new URL('/site/index.html', url), request));
+    if (url.pathname === '/') return env.ASSETS.fetch(new Request(new URL('/site/', url), request));
     return env.ASSETS.fetch(request);
   },
 };
