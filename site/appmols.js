@@ -10,6 +10,11 @@ export function setup(fig){
   const d=DATA[fig.dataset.k], cv=fig.querySelector('canvas'), ctx=cv.getContext('2d');
   const guest=new Set(Array.isArray(d.guest)?d.guest:d.guest?[...Array(d.guest).keys()]:[]);
   const show=d.els.map(e=>COL[e]!=null);
+  // site palette only: guest orange, host elements by count -> pearl, blue, sky, lilac, pink
+  const PAL=['#F4EBF0','#3B74D6','#8DB3F0','#D8CFEE','#EAD6E2'], cnt={};
+  d.els.forEach((e,i)=>{if(show[i]&&!guest.has(i))cnt[e]=(cnt[e]||0)+1;});
+  const ecol={}; Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).forEach((e,k)=>ecol[e]=PAL[Math.min(k,PAL.length-1)]);
+  const cols=d.els.map((e,i)=>guest.has(i)?'#FF6B1A':ecol[e]);
   let R=0; d.X.forEach((p,i)=>{if(show[i])R=Math.max(R,Math.hypot(...p));});
   const st={th:.6,ph:d.ph??-.35,drag:null,auto:!reduce};
   const lines=[];
@@ -21,7 +26,7 @@ export function setup(fig){
     ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
     const sc=Math.min(W,H)/(2*R+3)*.98, cx=W/2, cy=H/2;
     const P=d.X.map(rot), pr=p=>[cx+p[0]*sc,cy-p[1]*sc];
-    ctx.strokeStyle='#C9CFDA';ctx.lineWidth=1;
+    ctx.strokeStyle='#2E3547';ctx.lineWidth=1;
     lines.forEach(([a,b])=>{const A=pr(rot(a)),B=pr(rot(b));ctx.beginPath();ctx.moveTo(...A);ctx.lineTo(...B);ctx.stroke();});
     const items=[];
     d.bonds.forEach(([i,j,o])=>{if(show[i]&&show[j])items.push({z:(P[i][2]+P[j][2])/2-.3,b:[i,j,o]});});
@@ -29,11 +34,11 @@ export function setup(fig){
     items.sort((u,v)=>u.z-v.z);
     for(const it of items){
       if(it.b){const [i,j,o]=it.b,A=pr(P[i]),B=pr(P[j]);const host=guest.size&&!guest.has(i);
-        ctx.strokeStyle='#3A3F4A';ctx.lineWidth=Math.max(1,sc*(host?.09:(o>1?.2:.16)));ctx.lineCap='round';
+        ctx.strokeStyle='#5A6378';ctx.lineWidth=Math.max(1,sc*(host?.09:(o>1?.2:.16)));ctx.lineCap='round';
         ctx.beginPath();ctx.moveTo(...A);ctx.lineTo(...B);ctx.stroke();continue;}
       const i=it.a,e=d.els[i],[x,y]=pr(P[i]);const g=guest.size&&guest.has(i);
       let r=RAD[e]*sc*(d.cell||d.solid?.85:.62)*(guest.size?(g?(d.guestScale||1.35):.8):1); if(d.cell&&e==='Li')r*=.8;
-      const depth=(P[i][2]/R+1)/2, c=COL[e];
+      const depth=(P[i][2]/R+1)/2, c=cols[i];
       ctx.globalAlpha=(d.cell&&e==='Li')?.8:1;
       const gr=ctx.createRadialGradient(x-r*.35,y-r*.35,r*.1,x,y,r);
       gr.addColorStop(0,tone(c,.45));gr.addColorStop(.55,tone(c,-.05+(1-depth)*-.15));gr.addColorStop(1,tone(c,-.45));

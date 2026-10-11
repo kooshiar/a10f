@@ -14,50 +14,51 @@
 <style>
   /* 1 · title + one machine */
   .hero{background:var(--bg); color:var(--txt); overflow-x:clip}
-  .hero .top{display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:40px; padding-top:8px; padding-bottom:28px}
-  h1{margin:0; font-weight:500; font-size:clamp(40px, 4.4vw, 60px); line-height:1.02; letter-spacing:-.035em}
+  .hero .top{display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:40px; padding-bottom:12px}
+  h1{margin:0; font-weight:500; font-size:clamp(38px, 4vw, 56px); line-height:1.02; letter-spacing:-.035em}
   h1 span{color:var(--sky)}
-  .stage{position:relative; height:280px}
-  #gl, svg#ov{position:absolute; inset:-36px -40px}
+  .stage{position:relative; height:230px}
+  #gl, svg#ov{position:absolute; inset:-30px -40px}
   #gl{cursor:grab} #gl:active{cursor:grabbing} #gl canvas{display:block; width:100%; height:100%}
   svg#ov{pointer-events:none}
+  .sec h2{margin:0; font-weight:500; font-size:24px; letter-spacing:-.02em}
 
-  /* sections: title on the left, content on the right, a rule between */
-  .sec{display:grid; grid-template-columns:200px minmax(0, 1fr); align-items:center; gap:24px; padding-block:56px}
-  .sec + .sec{border-top:1px solid var(--rule)}
-  .sec h2{margin:0; font-weight:500; font-size:28px; letter-spacing:-.025em}
-
-  /* 2 · applications: one row, scroll or drag */
-  .rowbox{position:relative; min-width:0}
-  .more{position:absolute; right:0; top:-34px; font-family:var(--mono); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink); text-decoration:none}
-  .more:hover{color:var(--blue)}
-  .row{display:grid; grid-auto-flow:column; grid-auto-columns:196px; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; cursor:grab;
+  /* 2 · applications: title on its own line, one row; drag or scroll sideways */
+  .apps{padding-block:36px 40px}
+  .apps h2{margin-bottom:16px}
+  .rowbox{position:relative}
+  .more{position:absolute; right:10px; top:10px; z-index:2; padding:7px 14px; border-radius:99px; background:var(--orange); color:#fff;
+    font-family:var(--mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; text-decoration:none}
+  .more:hover{background:var(--blue)}
+  .row{display:grid; grid-auto-flow:column; grid-auto-columns:212px; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; cursor:grab;
     scrollbar-width:none; -ms-overflow-style:none; user-select:none}
   .row::-webkit-scrollbar{display:none} .row.drag{cursor:grabbing; scroll-snap-type:none}
-  .card{scroll-snap-align:start; display:flex; flex-direction:column; height:236px; border:1px solid var(--rule); border-radius:14px; overflow:hidden;
-    color:var(--ink); text-decoration:none; transition:border-color .2s}
+  .card{scroll-snap-align:start; display:block; border:1px solid var(--rule); border-radius:12px; overflow:hidden; color:var(--ink); text-decoration:none; transition:border-color .2s}
   .card:hover{border-color:var(--ink)}
-  .card canvas{display:block; width:100%; height:132px; pointer-events:none}
-  .card div{padding:10px 14px 14px; display:flex; flex-direction:column; gap:6px}
-  .card small{font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--blue)}
-  .card b{font-weight:500; font-size:15px; line-height:1.25; letter-spacing:-.01em}
+  .card canvas{display:block; width:100%; height:128px; background:var(--bg); pointer-events:none}
+  .card div{padding:9px 12px 11px}
+  .card small{display:block; font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--blue)}
+  .card b{display:block; margin-top:4px; font-weight:500; font-size:14.5px; line-height:1.25; letter-spacing:-.01em}
 
-  /* 3 · technology: two small boxes */
-  .arch{display:grid; grid-template-columns:repeat(2, 300px); gap:14px}
-  .box{height:150px; border-radius:14px; padding:18px 20px; display:flex; flex-direction:column; justify-content:space-between}
-  .box b{font-weight:500; font-size:21px; letter-spacing:-.02em; line-height:1.1}
-  .design{background:var(--bg); color:var(--sky)}
-  .phys{border:1.5px solid var(--ink); color:var(--ink)}
-  .icons{display:flex; gap:12px; align-items:end}
-  .icons svg{width:32px; height:32px; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
-  .design .icons svg{stroke:#8DB3F0} .design .icons .f{fill:#8DB3F0; stroke:none} .design .icons .o{stroke:#FF6B1A} .design .icons .fo{fill:#FF6B1A; stroke:none}
-  .phys .icons svg{stroke:var(--ink)} .phys .icons .f{fill:var(--blue); stroke:none} .phys .icons .o{stroke:#FF6B1A} .phys .icons .fo{fill:#FF6B1A; stroke:none} .phys .icons .b{stroke:var(--blue)}
+  /* 3 · technology, dark like the top */
+  .techbg{background:var(--bg); color:var(--txt)}
+  .tech{display:grid; grid-template-columns:200px minmax(0, 1fr); align-items:center; gap:24px; padding-block:36px}
+  .arch{display:grid; grid-template-columns:repeat(2, 280px); gap:12px}
+  .box{height:132px; border-radius:12px; padding:16px 18px; display:flex; flex-direction:column; justify-content:space-between}
+  .box b{font-weight:500; font-size:19px; letter-spacing:-.02em; line-height:1.1}
+  .design{background:#1F2638; color:var(--sky)}
+  .phys{border:1.5px solid rgba(242,243,247,.4); color:var(--txt)}
+  .icons{display:flex; gap:11px; align-items:end}
+  .icons svg{width:28px; height:28px; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; stroke:var(--sky)}
+  .icons .f{fill:var(--sky); stroke:none} .icons .o{stroke:var(--orange)} .icons .fo{fill:var(--orange); stroke:none} .icons .b{stroke:var(--blue)}
+  .phys .icons svg{stroke:var(--txt2)} .phys .icons .f{fill:var(--blue)}
+  footer{background:var(--bg); border-top-color:rgba(242,243,247,.08); color:var(--dim)}
 
   @media (max-width:900px){
-    .hero .top{grid-template-columns:1fr; gap:4px} h1{font-size:38px}
-    .stage{height:64vw} #gl, svg#ov{inset:0}
-    .sec{grid-template-columns:1fr; gap:16px; padding-block:40px} .more{top:-30px}
-    .row{grid-auto-columns:64%} .arch{grid-template-columns:1fr 1fr; gap:10px} .box{height:132px; padding:14px} .box b{font-size:17px} .icons{gap:8px} .icons svg{width:24px; height:24px}
+    .hero .top{grid-template-columns:1fr; gap:0} h1{font-size:36px}
+    .stage{height:60vw} #gl, svg#ov{inset:0}
+    .row{grid-auto-columns:62%}
+    .tech{grid-template-columns:1fr; gap:14px} .arch{grid-template-columns:1fr 1fr; gap:10px} .box{height:120px; padding:12px} .box b{font-size:16px} .icons{gap:6px} .icons svg{width:22px; height:22px}
   }
 </style>
 </head>
@@ -71,12 +72,12 @@
 </header>
 
 <main>
-  <section class="sec wrap">
+  <section class="sec apps wrap">
     <h2>Applications</h2>
     <div class="rowbox"><a class="more" href="/apps">More</a><div class="row" id="row"></div></div>
   </section>
 
-  <section class="sec wrap">
+  <div class="techbg"><section class="sec tech wrap">
     <h2>Technology</h2>
     <div class="arch">
       <div class="box design"><b>Design agents</b>
@@ -108,7 +109,7 @@
         </div>
       </div>
     </div>
-  </section>
+  </section></div>
 </main>
 <footer><div class="wrap"><span>A10</span><span>© 2026</span></div></footer>
 
