@@ -40,24 +40,39 @@
   .card b{display:block; font-weight:500; font-size:12.5px; line-height:1.25; letter-spacing:-.005em}
   .card small{display:block; margin-top:3px; font-family:var(--mono); font-size:9.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--mute)}
 
-  /* 3 · technology, dark like the top */
-  .techbg{background:var(--bg); color:var(--txt)}
-  .tech{display:grid; grid-template-columns:200px minmax(0, 1fr); align-items:center; gap:24px; padding-block:36px}
-  .arch{display:grid; grid-template-columns:repeat(2, 280px); gap:12px}
-  .box{height:132px; border-radius:12px; padding:16px 18px; display:flex; flex-direction:column; justify-content:space-between}
-  .box b{font-weight:500; font-size:19px; letter-spacing:-.02em; line-height:1.1}
-  .design{background:#1F2638; color:var(--sky)}
-  .phys{border:1.5px solid rgba(242,243,247,.4); color:var(--txt)}
-  .icons{display:flex; gap:11px; align-items:end}
-  .icons svg{width:28px; height:28px; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; stroke:var(--sky)}
-  .icons .f{fill:var(--sky); stroke:none} .icons .o{stroke:var(--orange)} .icons .fo{fill:var(--orange); stroke:none} .icons .b{stroke:var(--blue)}
-  .phys .icons svg{stroke:var(--txt2)} .phys .icons .f{fill:var(--blue)}
-
+  /* 3 · technology: layered system, short band; style switch in the footer (1-4) */
+  .techbg{background:var(--bg); color:var(--txt); --line:#5A6378; --c-agent:#8DB3F0; --c-designer:#3B74D6; --c-structure:#D8CFEE; --c-physics:#FF6B1A; --c-data:#F4EBF0}
+  .techbg.white{background:#fff; color:var(--ink); border-top:1px solid var(--rule); --line:#9AA1AD; --c-agent:#3B74D6; --c-designer:#12151D; --c-structure:#3B74D6; --c-physics:#FF6B1A; --c-data:#12151D}
+  .tech{display:grid; grid-template-columns:200px minmax(0, 1fr); align-items:center; gap:24px; padding-block:40px}
+  .dia{position:relative; display:grid; column-gap:30px; row-gap:12px}
+  .dia .links{position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; fill:none; stroke:var(--line); stroke-width:1.5}
+  .dia .links .dash{stroke-dasharray:4 4}
+  .nd{position:relative; border:1.5px solid var(--c); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; justify-content:space-between; gap:10px; min-width:0}
+  .nd b{font-weight:500; font-size:15px; letter-spacing:-.01em; line-height:1.15}
+  .nd .ic{display:flex; flex-wrap:wrap; gap:9px; color:var(--c)}
+  .nd .ic svg{width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+  .nd .ic .f{fill:currentColor; stroke:none} .nd .ic .o{stroke:var(--orange)} .nd .ic .fo{fill:var(--orange); stroke:none}
+  .agent{--c:var(--c-agent); grid-area:agent} .designer{--c:var(--c-designer); grid-area:designer} .structure{--c:var(--c-structure); grid-area:structure}
+  .physics{--c:var(--c-physics); grid-area:physics} .data{--c:var(--c-data); grid-area:data}
+  .techbg:not(.white) .designer{background:#1A2132} .techbg:not(.white) .physics{background:#1E1B1C}
+  .techbg.white .designer{background:#12151D; color:var(--txt)} .techbg.white .designer .ic{color:#8DB3F0}
+  .techbg.white .physics{background:#FFF4EE}
+  /* flow: left to right, top level to base */
+  .dia.flow{grid-template-columns:.8fr 1.5fr 1.1fr .9fr; grid-template-rows:.85fr 1.15fr; grid-template-areas:"agent designer structure data" "agent designer physics data"; height:220px}
+  .dia.flow .agent{align-self:center; height:58%}
+  .dia.flow .designer .ic svg{width:30px; height:30px}
+  /* levels: the stacked diagram, squeezed */
+  .dia.levels{grid-template-columns:.85fr 1.15fr; grid-template-areas:"agent agent" "designer designer" "structure physics" "data data"; row-gap:14px}
+  .dia.levels .nd{flex-direction:row; align-items:center; padding:9px 14px}
+  .dia.levels .agent{justify-self:center; width:38%} .dia.levels .designer{justify-self:center; width:72%}
+  .dia.levels .designer{padding-block:13px} .dia.levels .physics{padding-block:12px}
+  #tstyles{display:flex; gap:4px} #tstyles button{all:unset; cursor:pointer; width:16px; height:16px; display:grid; place-items:center; border-radius:4px; font-size:9px; color:var(--dim); border:1px solid rgba(242,243,247,.15)}
+  #tstyles button.on{color:var(--bg); background:var(--txt2)}
   @media (max-width:900px){
     .hero .top{grid-template-columns:1fr; gap:0} h1{font-size:36px}
     .stage{height:60vw} #gl, svg#ov{inset:0}
     .row{grid-auto-columns:46%}
-    .tech{grid-template-columns:1fr; gap:14px} .arch{grid-template-columns:1fr 1fr; gap:10px} .box{height:120px; padding:12px} .box b{font-size:16px} .icons{gap:6px} .icons svg{width:22px; height:22px}
+    .tech{grid-template-columns:1fr; gap:14px} .dia.flow{grid-template-columns:1fr 1fr; grid-template-rows:auto; grid-template-areas:"agent agent" "designer designer" "structure physics" "data data"; height:auto} .dia.flow .agent{height:auto}
   }
 </style>
 </head>
@@ -76,37 +91,35 @@
     <div class="rowbox"><a class="more" href="/apps">More</a><div class="row" id="row"></div></div>
   </section>
 
-  <div class="techbg"><section class="sec tech wrap">
+  <div class="techbg" id="techbg"><section class="sec tech wrap">
     <h2>Technology</h2>
-    <div class="arch">
-      <div class="box design"><b>Design agents</b>
-        <div class="icons">
-          <!-- reasoning: a branching tree -->
-          <svg viewBox="0 0 48 48"><circle class="f" cx="24" cy="9" r="4"/><circle cx="11" cy="38" r="4"/><circle cx="24" cy="38" r="4"/><circle class="fo" cx="37" cy="38" r="4"/><path d="M24 13v8M24 21L11 34M24 21v13M24 21l13 13"/></svg>
-          <!-- design: a ring being drawn -->
-          <svg viewBox="0 0 48 48"><path d="M24 7l14 8v16l-14 8-14-8V15z"/><circle class="fo" cx="38" cy="15" r="4"/><path class="o" d="M30 40l9-9"/></svg>
-          <!-- orchestration: one hub, many jobs -->
-          <svg viewBox="0 0 48 48"><circle class="f" cx="24" cy="24" r="5"/><circle cx="8" cy="10" r="3"/><circle cx="40" cy="10" r="3"/><circle cx="8" cy="38" r="3"/><circle cx="40" cy="38" r="3"/><path d="M20 20l-9.5-7.5M28 20l9.5-7.5M20 28l-9.5 7.5M28 28l9.5 7.5"/></svg>
-          <!-- loop: try, check, improve -->
-          <svg viewBox="0 0 48 48"><path d="M38 24a14 14 0 1 1-4.1-9.9"/><path class="o" d="M34 6v8.5h-8.5"/></svg>
-        </div>
-      </div>
-      <div class="box phys"><b>Physics models</b>
-        <div class="icons">
-          <!-- structure -->
-          <svg viewBox="0 0 48 48"><path d="M12 34l12-8 12 8M24 26V12"/><circle class="f" cx="24" cy="12" r="5"/><circle cx="12" cy="34" r="5"/><circle cx="36" cy="34" r="5"/><circle class="f" cx="24" cy="26" r="3"/></svg>
-          <!-- energy -->
-          <svg viewBox="0 0 48 48"><path d="M6 8c4 0 6 30 18 30S38 14 42 14"/><circle class="fo" cx="24" cy="38" r="3.5"/><path class="b" d="M6 44h36"/></svg>
-          <!-- forces -->
-          <svg viewBox="0 0 48 48"><circle class="f" cx="24" cy="24" r="5"/><path class="o" d="M24 18V6M20 9l4-4 4 4M29 27l9 9M38 30v6h-6M19 27l-9 6M13 37l-4-3 3-5"/></svg>
-          <!-- molecular dynamics: a path in time -->
-          <svg viewBox="0 0 48 48"><path class="b" d="M6 36c5-14 9 6 14-8s9 2 13-10 7 2 9-4" stroke-dasharray="2 4"/><circle class="f" cx="42" cy="14" r="4.5"/><circle cx="6" cy="36" r="3"/></svg>
-          <!-- electrons (DFT) -->
-          <svg viewBox="0 0 48 48"><ellipse cx="24" cy="24" rx="18" ry="7"/><ellipse cx="24" cy="24" rx="18" ry="7" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="18" ry="7" transform="rotate(120 24 24)"/><circle class="fo" cx="24" cy="24" r="3.5"/></svg>
-          <!-- coarse-grained beads -->
-          <svg viewBox="0 0 48 48"><path d="M8 38c6-10 6-20 16-20s10-10 16-12"/><circle class="f" cx="8" cy="38" r="4.5"/><circle cx="16" cy="24" r="4.5"/><circle class="f" cx="28" cy="17" r="4.5"/><circle cx="40" cy="7" r="4.5"/></svg>
-        </div>
-      </div>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-chat" viewBox="0 0 48 48"><path d="M8 10h32v20H22l-9 8v-8H8z"/><circle class="f" cx="17" cy="20" r="2.2"/><circle class="f" cx="24" cy="20" r="2.2"/><circle class="f" cx="31" cy="20" r="2.2"/></symbol>
+  <symbol id="i-goal" viewBox="0 0 48 48"><circle cx="24" cy="24" r="16"/><circle cx="24" cy="24" r="9"/><circle class="fo" cx="24" cy="24" r="3.5"/></symbol>
+  <symbol id="i-tree" viewBox="0 0 48 48"><circle class="f" cx="24" cy="9" r="4"/><circle cx="11" cy="38" r="4"/><circle cx="24" cy="38" r="4"/><circle class="fo" cx="37" cy="38" r="4"/><path d="M24 13v8M24 21L11 34M24 21v13M24 21l13 13"/></symbol>
+  <symbol id="i-hex" viewBox="0 0 48 48"><path d="M24 7l14 8v16l-14 8-14-8V15z"/><circle class="fo" cx="38" cy="15" r="4"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 48 48"><path d="M24 6c2 10 8 16 18 18-10 2-16 8-18 18-2-10-8-16-18-18 10-2 16-8 18-18z"/></symbol>
+  <symbol id="i-hub" viewBox="0 0 48 48"><circle class="f" cx="24" cy="24" r="5"/><circle cx="8" cy="10" r="3"/><circle cx="40" cy="10" r="3"/><circle cx="8" cy="38" r="3"/><circle cx="40" cy="38" r="3"/><path d="M20 20l-9.5-7.5M28 20l9.5-7.5M20 28l-9.5 7.5M28 28l9.5 7.5"/></symbol>
+  <symbol id="i-loop" viewBox="0 0 48 48"><path d="M38 24a14 14 0 1 1-4.1-9.9"/><path class="o" d="M34 6v8.5h-8.5"/></symbol>
+  <symbol id="i-ball" viewBox="0 0 48 48"><path d="M12 34l12-8 12 8M24 26V12"/><circle class="f" cx="24" cy="12" r="5"/><circle cx="12" cy="34" r="5"/><circle cx="36" cy="34" r="5"/></symbol>
+  <symbol id="i-helix" viewBox="0 0 48 48"><path d="M14 6c0 10 20 8 20 18S14 32 14 42M34 6c0 10-20 8-20 18s20 8 20 18"/></symbol>
+  <symbol id="i-lattice" viewBox="0 0 48 48"><path d="M8 8h32v32H8zM8 24h32M24 8v32"/><circle class="f" cx="8" cy="8" r="3"/><circle class="f" cx="40" cy="8" r="3"/><circle class="f" cx="24" cy="24" r="3"/><circle class="f" cx="8" cy="40" r="3"/><circle class="f" cx="40" cy="40" r="3"/></symbol>
+  <symbol id="i-well" viewBox="0 0 48 48"><path d="M6 8c4 0 6 30 18 30S38 14 42 14"/><circle class="fo" cx="24" cy="38" r="3.5"/></symbol>
+  <symbol id="i-force" viewBox="0 0 48 48"><circle class="f" cx="24" cy="24" r="5"/><path d="M24 18V6M20 9l4-4 4 4M29 27l9 9M38 30v6h-6M19 27l-9 6M13 37l-4-3 3-5"/></symbol>
+  <symbol id="i-md" viewBox="0 0 48 48"><path d="M6 36c5-14 9 6 14-8s9 2 13-10 7 2 9-4" stroke-dasharray="2 4"/><circle class="f" cx="42" cy="14" r="4.5"/></symbol>
+  <symbol id="i-orbit" viewBox="0 0 48 48"><ellipse cx="24" cy="24" rx="18" ry="7"/><ellipse cx="24" cy="24" rx="18" ry="7" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="18" ry="7" transform="rotate(120 24 24)"/><circle class="fo" cx="24" cy="24" r="3.5"/></symbol>
+  <symbol id="i-beads" viewBox="0 0 48 48"><path d="M8 38c6-10 6-20 16-20s10-10 16-12"/><circle class="f" cx="8" cy="38" r="4.5"/><circle cx="16" cy="24" r="4.5"/><circle class="f" cx="28" cy="17" r="4.5"/><circle cx="40" cy="7" r="4.5"/></symbol>
+  <symbol id="i-db" viewBox="0 0 48 48"><ellipse cx="24" cy="10" rx="15" ry="5"/><path d="M9 10v28c0 3 7 5 15 5s15-2 15-5V10M9 24c0 3 7 5 15 5s15-2 15-5"/></symbol>
+  <symbol id="i-wave" viewBox="0 0 48 48"><path d="M4 24c4-14 8-14 12 0s8 14 12 0 8-14 12 0 4 7 6 4"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 48 48"><g class="f"><circle cx="10" cy="10" r="3"/><circle cx="24" cy="10" r="3"/><circle cx="38" cy="10" r="3"/><circle cx="10" cy="24" r="3"/><circle cx="24" cy="24" r="3"/><circle cx="38" cy="24" r="3"/><circle cx="10" cy="38" r="3"/><circle cx="24" cy="38" r="3"/><circle cx="38" cy="38" r="3"/></g></symbol>
+</defs></svg>
+    <div class="dia flow" id="dia">
+      <svg class="links" id="links"></svg>
+      <div class="nd agent"><b>Agent interface</b><span class="ic"><svg><use href="#i-chat"/></svg><svg><use href="#i-goal"/></svg></span></div>
+      <div class="nd designer"><b>Designer</b><span class="ic"><svg><use href="#i-tree"/></svg><svg><use href="#i-hex"/></svg><svg><use href="#i-spark"/></svg><svg><use href="#i-hub"/></svg><svg><use href="#i-loop"/></svg></span></div>
+      <div class="nd structure"><b>Structure</b><span class="ic"><svg><use href="#i-ball"/></svg><svg><use href="#i-helix"/></svg><svg><use href="#i-lattice"/></svg></span></div>
+      <div class="nd physics"><b>Physics</b><span class="ic"><svg><use href="#i-well"/></svg><svg><use href="#i-force"/></svg><svg><use href="#i-md"/></svg><svg><use href="#i-orbit"/></svg><svg><use href="#i-beads"/></svg></span></div>
+      <div class="nd data"><b>Quantum-accurate data</b><span class="ic"><svg><use href="#i-db"/></svg><svg><use href="#i-wave"/></svg><svg><use href="#i-grid"/></svg></span></div>
     </div>
   </section></div>
 </main>
@@ -140,6 +153,31 @@ row.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return
 addEventListener('pointermove', e => { if (!drag) return; const dx = e.clientX - drag.x; if (Math.abs(dx) > 4){ drag.moved = true; row.classList.add('drag'); } row.scrollLeft = drag.s - dx; });
 addEventListener('pointerup', () => { if (!drag) return; const m = drag.moved; drag = null; row.classList.remove('drag'); if (m) row.addEventListener('click', e => e.preventDefault(), { capture:true, once:true }); });
 
+
+// technology diagram: connectors drawn from the boxes' positions; footer buttons 1-4 switch layout and background (?t=1..4)
+const TSTYLES = [['flow', 'dark'], ['flow', 'white'], ['levels', 'dark'], ['levels', 'white']];
+function links(){
+  const dia = $('dia'), R = dia.getBoundingClientRect(), box = k => { const r = dia.querySelector('.' + k).getBoundingClientRect();
+    return { l:r.left - R.left, r:r.right - R.left, t:r.top - R.top, b:r.bottom - R.top, cx:(r.left + r.right) / 2 - R.left, cy:(r.top + r.bottom) / 2 - R.top }; };
+  const line = (a, b) => { const A = box(a), B = box(b);
+    if (B.l >= A.r - 1){ const y = Math.max(A.t, B.t) < Math.min(A.b, B.b) ? (Math.max(A.t, B.t) + Math.min(A.b, B.b)) / 2 : null;
+      return y != null ? `M${A.r} ${y}H${B.l}` : `M${A.r} ${A.cy}C${(A.r + B.l) / 2} ${A.cy} ${(A.r + B.l) / 2} ${B.cy} ${B.l} ${B.cy}`; }
+    const x = Math.max(A.l, B.l) < Math.min(A.r, B.r) ? (Math.max(A.l, B.l) + Math.min(A.r, B.r)) / 2 : null;
+    return x != null ? `M${x} ${A.b}V${B.t}` : `M${A.cx} ${A.b}C${A.cx} ${(A.b + B.t) / 2} ${B.cx} ${(A.b + B.t) / 2} ${B.cx} ${B.t}`; };
+  const D = box('designer'), P = box('physics');
+  const back = dia.classList.contains('levels') ? `M${P.r} ${P.cy}H${P.r + 20}V${D.cy}H${D.r}` : `M${P.cx} ${P.b}V${P.b + 14}H${D.cx}V${D.b}`;
+  $('links').innerHTML = [['agent', 'designer'], ['designer', 'structure'], ['designer', 'physics'], ['structure', 'physics'], ['structure', 'data'], ['physics', 'data']]
+    .map(([a, b]) => `<path d="${line(a, b)}"/>`).join('') + `<path class="dash" d="${back}"/>`;
+}
+function tstyle(n){
+  const [lay, bg] = TSTYLES[n - 1] || TSTYLES[0];
+  $('dia').className = 'dia ' + (innerWidth <= 900 ? 'levels' : lay); $('techbg').classList.toggle('white', bg === 'white');
+  document.querySelectorAll('#tstyles button').forEach(b => b.classList.toggle('on', b.dataset.n == n)); links();
+}
+document.querySelector('footer .wrap span').insertAdjacentHTML('afterend', `<span id="tstyles">${TSTYLES.map((_, i) => `<button data-n="${i + 1}" aria-label="Technology style ${i + 1}">${i + 1}</button>`).join('')}</span>`);
+let tcur = +(new URLSearchParams(location.search).get('t') || 1);
+$('tstyles').onclick = e => { const b = e.target.closest('button'); if (b) tstyle(tcur = +b.dataset.n); };
+addEventListener('resize', () => tstyle(tcur)); document.fonts.ready.then(() => tstyle(tcur)); tstyle(tcur);
 </script>
 </body>
 </html>
