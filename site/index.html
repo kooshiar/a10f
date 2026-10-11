@@ -30,12 +30,14 @@
     font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; text-decoration:none}
   .more:hover{background:var(--blue)}
   .apps h2{margin-bottom:14px}
+  #schemes{display:flex; gap:4px} #schemes button{all:unset; cursor:pointer; width:16px; height:16px; display:grid; place-items:center; border-radius:4px; font-size:9px; color:var(--dim); border:1px solid rgba(242,243,247,.15)}
+  #schemes button.on{color:var(--bg); background:var(--txt2)}
   .row{display:grid; grid-auto-flow:column; grid-auto-columns:116px; gap:10px; overflow-x:auto; scroll-snap-type:x mandatory; cursor:grab;
     scrollbar-width:none; -ms-overflow-style:none; user-select:none}
   .row::-webkit-scrollbar{display:none} .row.drag{cursor:grabbing; scroll-snap-type:none}
   .card{scroll-snap-align:start; display:block; border:1px solid var(--rule); border-radius:12px; overflow:hidden; color:var(--ink); text-decoration:none; transition:border-color .2s}
   .card:hover{border-color:var(--ink)}
-  .card canvas{display:block; width:100%; height:106px; background:var(--bg); pointer-events:none}
+  .card canvas{display:block; width:100%; height:106px; background:var(--cardbg, #1E2433); pointer-events:none}
   .card div{padding:8px 8px 9px}
   .card small{display:block; font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--blue)}
   .card b{display:block; margin-top:3px; min-height:2.5em; font-weight:500; font-size:12px; line-height:1.25; letter-spacing:-.01em}
@@ -115,7 +117,7 @@
 <script type="module">
 import { Stage } from './live.js';
 import { FILMS } from './films.js';
-import { APPS, setup } from './appmols.js';
+import { APPS, setup, setScheme, SCHEMES } from './appmols.js';
 const $ = s => document.getElementById(s);
 
 // 1 · one machine (?m=<id> previews another)
@@ -130,7 +132,12 @@ const views = [...row.querySelectorAll('.card')].map((el, i) => { const fig = { 
 // one structure moves at a time: hovering a card wakes its molecule and pauses the machine on top
 let last = performance.now(), hot = -1;
 (function loop(t){ if (hot >= 0) views[hot].tick(t - last); last = t; requestAnimationFrame(loop); })(last);
-requestAnimationFrame(() => views.forEach(v => v.draw()));
+// temporary: tiny buttons in the footer switch the cards' colour scheme (?c=1..5)
+const scheme = n => { const S = setScheme(n); row.style.setProperty('--cardbg', S.bg); views.forEach(v => v.draw());
+  document.querySelectorAll('#schemes button').forEach(b => b.classList.toggle('on', b.dataset.n == n)); };
+document.querySelector('footer .wrap span').insertAdjacentHTML('afterend', `<span id="schemes">${Object.keys(SCHEMES).map(n => `<button data-n="${n}" aria-label="Card colours ${n}">${n}</button>`).join('')}</span>`);
+$('schemes').onclick = e => { const b = e.target.closest('button'); if (b) scheme(b.dataset.n); };
+requestAnimationFrame(() => scheme(new URLSearchParams(location.search).get('c') || 1));
 row.querySelectorAll('.card').forEach((el, i) => {
   el.addEventListener('mouseenter', () => { hot = i; views[i].active(true); stage.pause(true); });
   el.addEventListener('mouseleave', () => { if (hot === i) hot = -1; views[i].active(false); stage.pause(false); });
