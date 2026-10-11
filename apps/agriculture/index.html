@@ -12,7 +12,7 @@
   h1 a, h2 a{color:inherit; text-decoration:none} h1 a:hover, h2 a:hover{color:var(--blue)}
   .n{margin-left:9px; font-family:var(--mono); font-size:15px; font-weight:500; letter-spacing:0; color:var(--ink2); vertical-align:1px}
   .tile{flex:none; color:var(--ink); text-decoration:none}
-  .tile canvas{display:block; border-radius:19px; background:var(--bg); transition:transform .2s}
+  .tile canvas{display:block; border-radius:19px; background:#F3F4F6; transition:transform .2s}
   .tile:hover canvas{transform:translateY(-2px)}
   .tile b{display:block; padding:6px 1px 0; font-weight:500; line-height:1.25; letter-spacing:-.005em}
   main.wrap{padding-block:26px 56px}
@@ -37,7 +37,7 @@
 <script type="module">
 import { setup } from '/site/appmols.js';
 const tiles = [...document.querySelectorAll('.tile')];
-const views = tiles.map(el => setup({ dataset:{ k:el.dataset.k }, querySelector:() => el.querySelector('canvas') }));
+const views = tiles.map(el => setup({ dataset:{ k:el.dataset.k }, orig:true, querySelector:() => el.querySelector('canvas') }));
 let hot = -1, last = performance.now();
 (function loop(t){ if (hot >= 0) views[hot].tick(t - last); last = t; requestAnimationFrame(loop); })(last);
 requestAnimationFrame(() => views.forEach(v => v.draw()));
