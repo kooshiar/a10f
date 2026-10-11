@@ -19,7 +19,7 @@ DECK = ROOT / "demo_cards" / "problem-cards.html"
 SHORT = {
     "Decaf sponge that pulls caffeine and keeps flavor": "Decaf that keeps flavor",
     "Cork-taint remover for wine": "Cork-taint remover",
-    "Off-flavor trap for plant-based milk and meat": "Plant-protein off-flavor trap",
+    "Off-flavor trap for plant-based milk and meat": "Off-flavor trap",
     "Stable natural blue food color": "Natural blue color",
     "Fat-bloom blocker for chocolate": "Chocolate bloom blocker",
     "Sugar-like sweetener with no calories": "Zero-calorie sweetener",
@@ -32,7 +32,7 @@ SHORT = {
     "Catalyst that makes ammonia at low heat": "Low-heat ammonia",
     "Feed additive that cuts cow methane": "Cow methane cutter",
     "Perfume capsule that releases scent slowly": "Slow-release perfume",
-    "Vitamin C serum that doesn’t turn brown": "Stable vitamin C serum",
+    "Vitamin C serum that doesn’t turn brown": "Stable vitamin C",
     "Odor trap for deodorants": "Deodorant odor trap",
     "Reef-safe sunscreen UV filter": "Reef-safe UV filter",
     "PFAS-free water-repellent coating for fabric": "PFAS-free rain coating",
@@ -65,7 +65,7 @@ SHORT = {
     "Lithium picker for brine": "Lithium from brine",
     "Cyanide-free gold extraction": "Cyanide-free gold",
     "Rare-earth separator for magnet supply chains": "Rare-earth separator",
-    "Corrosion inhibitor for steel pipes": "Pipe corrosion inhibitor",
+    "Corrosion inhibitor for steel pipes": "Pipe corrosion",
     "Copper-free antifouling paint for ships": "Copper-free ship paint",
     "Heat shield coating for jet engine blades": "Jet blade heat shield",
 }
@@ -111,7 +111,8 @@ def main():
         i = next(k for k, r in enumerate(rows) if ">How</th>" in r)
         rows = rows[:i] + [CONTACT_ROW] + rows[i + 5:]
         fig = re.search(r'data-k="([^"]+)"[^>]*title="([^"]*)"', body)
-        apps.append(dict(slug=slug(title), title=title, short=SHORT.get(title, title), cat=cat, cs=CAT_SHORT.get(cat, cat),
+        use = re.sub(r"<[^>]+>", "", re.search(r'<th scope="row">Use</th><td>(.*?)</td>', body, re.S).group(1)).strip()
+        apps.append(dict(slug=slug(title), title=title, short=SHORT.get(title, title), cat=cat, cs=CAT_SHORT.get(cat, cat), use=html.unescape(use),
                          k=fig.group(1) if fig else None, cap=re.sub(r"\s*\([^)]*=[^)]*\)", "", html.unescape(fig.group(2))) if fig else "", table="<table>" + "".join(rows) + "</table>"))
     assert len(apps) == 51 and len({a["slug"] for a in apps}) == 51
     cats = list(dict.fromkeys(a["cat"] for a in apps))
@@ -124,55 +125,82 @@ def main():
            f"export const DATA = {json.dumps({k: data[k] for k in sorted(used)}, separators=(',', ':'))};\n")
     (WEB / "site" / "appsdata.js").write_text(out)
 
-    # ---- index: a treemap of categories (8-column grid, cell width by number of apps), lines only between cells
+    # ---- index: a treemap of categories that fits one screen. Each cell shows one row of tiles (as many as its width
+    #      holds); the title and count link to the category page with the full list.
     SPAN = {"Agriculture": 4, "Medicine": 4, "Food & drink": 3, "Cosmetics & home": 3, "Environment": 2,
             "Data centers & chips": 3, "Energy": 3, "Biotech": 2, "Mining": 4, "Industry": 4}
     ORDER = ["Agriculture", "Medicine", "Food & drink", "Cosmetics & home", "Environment", "Data centers & chips", "Energy", "Biotech", "Mining", "Industry"]
     assert sorted(ORDER) == sorted(cats)
-    cells = "\n".join(
-        f'  <section class="cell" style="--span:{SPAN[c]}"><h2>{html.escape(c)}</h2><div class="tiles">' +
-        "".join(f'<a class="tile" href="/apps/{a["slug"]}/" data-k="{a["k"]}"><canvas></canvas><b>{html.escape(a["short"])}</b></a>' for a in apps if a["cat"] == c) +
-        "</div></section>" for c in ORDER)
-    (WEB / "apps" / "index.html").write_text(f"""<!doctype html>
+    cslug = {c: slug(c) for c in cats}
+    assert not set(cslug.values()) & {a["slug"] for a in apps}
+    tile = lambda a: f'<a class="tile" href="/apps/{a["slug"]}/" data-k="{a["k"]}"><canvas></canvas><b>{html.escape(a["short"])}</b></a>'
+    def head(c, tag="h2"):
+        n = sum(a["cat"] == c for a in apps)
+        return f'<{tag}><a href="/apps/{cslug[c]}/">{html.escape(c)}</a><span class="n">{n}</span></{tag}>'
+    cells = "\n".join(f'  <section class="cell" style="--span:{SPAN[c]}">{head(c)}<div class="tiles">' +
+                      "".join(tile(a) for a in [a for a in apps if a["cat"] == c][:SPAN[c]]) + "</div></section>" for c in ORDER)
+    TILE_JS = """<script type="module">
+import { setup } from '/site/appmols.js';
+const tiles = [...document.querySelectorAll('.tile')];
+const views = tiles.map(el => setup({ dataset:{ k:el.dataset.k }, querySelector:() => el.querySelector('canvas') }));
+let hot = -1, last = performance.now();
+(function loop(t){ if (hot >= 0) views[hot].tick(t - last); last = t; requestAnimationFrame(loop); })(last);
+requestAnimationFrame(() => views.forEach(v => v.draw()));
+tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(true); }; el.onmouseleave = () => { if (hot === i) hot = -1; views[i].active(false); }; });
+</script>"""
+    HEAD_CSS = """  h1, .cell h2{margin:0; font-weight:500; letter-spacing:-.02em; color:var(--ink)}
+  h1 a, h2 a{color:inherit; text-decoration:none} h1 a:hover, h2 a:hover{color:var(--blue)}
+  .n{margin-left:8px; font-family:var(--mono); font-size:12px; font-weight:400; letter-spacing:0; color:var(--mute); vertical-align:2px}
+  .tile{flex:none; color:var(--ink); text-decoration:none}
+  .tile canvas{display:block; border-radius:19px; background:var(--bg); transition:transform .2s}
+  .tile:hover canvas{transform:translateY(-2px)}
+  .tile b{display:block; padding:6px 1px 0; font-weight:500; line-height:1.25; letter-spacing:-.005em}"""
+    page = lambda title, body, css: f"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>97A · Applications</title>
+<title>97A · {html.escape(title)}</title>
 {FONTS}
 <style>
-  main.wrap{{padding-block:28px 56px}}
-  .tm{{display:grid; grid-template-columns:repeat(8, 1fr); overflow:hidden}}
-  .cell{{grid-column:span var(--span); padding:22px 20px 26px; border-left:1px solid var(--rule); border-top:1px solid var(--rule); margin:-1px 0 0 -1px}}
-  .cell h2{{margin:0 0 16px; font-weight:500; font-size:21px; letter-spacing:-.02em; color:var(--ink)}}
-  .tiles{{display:flex; flex-wrap:wrap; gap:18px 14px}}
-  .tile{{flex:none; width:92px; color:var(--ink); text-decoration:none}}
-  .tile canvas{{display:block; width:92px; height:92px; border-radius:21px; background:var(--bg); transition:transform .2s}}
-  .tile:hover canvas{{transform:translateY(-2px)}}
-  .tile b{{display:block; padding:7px 1px 0; font-weight:500; font-size:12.5px; line-height:1.25; letter-spacing:-.005em}}
-  @media (max-width:900px){{ .tm{{grid-template-columns:1fr}} .cell{{grid-column:auto; padding-inline:4px}} }}
+{HEAD_CSS}
+{css}
 </style>
 </head>
 <body>
 {bar("Applications")}
-<main class="wrap">
-<div class="tm">
-{cells}
-</div>
-</main>
+{body}
 {FOOT}
-<script type="module">
-import {{ setup }} from '/site/appmols.js';
-const tiles = [...document.querySelectorAll('.tile')];
-const views = tiles.map(el => setup({{ dataset:{{ k:el.dataset.k }}, querySelector:() => el.querySelector('canvas') }}));
-let hot = -1, last = performance.now();
-(function loop(t){{ if (hot >= 0) views[hot].tick(t - last); last = t; requestAnimationFrame(loop); }})(last);
-requestAnimationFrame(() => views.forEach(v => v.draw()));
-tiles.forEach((el, i) => {{ el.onmouseenter = () => {{ hot = i; views[i].active(true); }}; el.onmouseleave = () => {{ if (hot === i) hot = -1; views[i].active(false); }}; }});
-</script>
+{TILE_JS}
 </body>
 </html>
-""")
+"""
+    (WEB / "apps" / "index.html").write_text(page("Applications", f'<main class="wrap">\n<div class="tm">\n{cells}\n</div>\n</main>', """  main.wrap{padding-block:12px 24px}
+  .tm{display:grid; grid-template-columns:repeat(8, 1fr); overflow:hidden}
+  .cell{grid-column:span var(--span); padding:11px 16px 12px; border-left:1px solid var(--rule); border-top:1px solid var(--rule); margin:-1px 0 0 -1px}
+  .cell h2{margin-bottom:9px; font-size:19px}
+  .tiles{display:flex; gap:12px; overflow:hidden}
+  .tile{width:78px} .tile canvas{width:78px; height:78px} .tile b{font-size:12px}
+  @media (max-width:900px){ .tm{grid-template-columns:1fr} .cell{grid-column:auto; padding-inline:4px} .tiles{overflow-x:auto} }"""))
+
+    # ---- one page per category: every application in it, with its one-line use
+    for c in cats:
+        items = "".join(f'<li>{tile(a)}<div><a class="t" href="/apps/{a["slug"]}/">{html.escape(a["title"])}</a><p>{html.escape(a["use"])}</p></div></li>'
+                        for a in apps if a["cat"] == c)
+        d = WEB / "apps" / cslug[c]; d.mkdir(parents=True, exist_ok=True)
+        (d / "index.html").write_text(page(c, f"""<main class="wrap">
+  <a class="crumb" href="/apps/">Applications</a>
+  {head(c, "h1")}
+  <ul class="list">{items}</ul>
+</main>""", """  main.wrap{padding-block:26px 56px}
+  .crumb{font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--mute); text-decoration:none} .crumb:hover{color:var(--ink)}
+  h1{margin-top:10px; font-size:30px} h1 .n{font-size:13px}
+  .list{list-style:none; margin:26px 0 0; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:22px 40px}
+  .list li{display:flex; gap:18px; align-items:center; padding-bottom:22px; border-bottom:1px solid var(--rule)}
+  .tile{width:96px} .tile canvas{width:96px; height:96px} .tile b{display:none}
+  .t{font-weight:500; font-size:17px; letter-spacing:-.01em; color:var(--ink); text-decoration:none} .t:hover{color:var(--blue)}
+  .list p{margin:6px 0 0; font-size:14px; line-height:1.45; color:var(--ink2)}
+  @media (max-width:900px){ .list{grid-template-columns:1fr} }"""))
 
     # ---- one page per application
     for n, a in enumerate(apps):
@@ -190,7 +218,7 @@ tiles.forEach((el, i) => {{ el.onmouseenter = () => {{ hot = i; views[i].active(
 <body>
 {bar("Applications")}
 <main class="wrap app">
-  <a class="crumb" href="/apps/">Applications</a><span class="crumb">/ {html.escape(a["cat"])}</span>
+  <a class="crumb" href="/apps/">Applications</a><span class="crumb">/</span><a class="crumb" href="/apps/{slug(a["cat"])}/">{html.escape(a["cat"])}</a>
   <div class="grid">
     <div class="card"><h1>{html.escape(a["title"])}</h1>{a["table"]}</div>
     <figure class="mol" data-k="{a["k"]}"><canvas aria-label="{html.escape(a["cap"])}"></canvas><figcaption>{html.escape(a["cap"])}</figcaption></figure>

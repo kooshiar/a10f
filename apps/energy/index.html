@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>97A · Energy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/frame.css">
+<style>
+  h1, .cell h2{margin:0; font-weight:500; letter-spacing:-.02em; color:var(--ink)}
+  h1 a, h2 a{color:inherit; text-decoration:none} h1 a:hover, h2 a:hover{color:var(--blue)}
+  .n{margin-left:8px; font-family:var(--mono); font-size:12px; font-weight:400; letter-spacing:0; color:var(--mute); vertical-align:2px}
+  .tile{flex:none; color:var(--ink); text-decoration:none}
+  .tile canvas{display:block; border-radius:19px; background:var(--bg); transition:transform .2s}
+  .tile:hover canvas{transform:translateY(-2px)}
+  .tile b{display:block; padding:6px 1px 0; font-weight:500; line-height:1.25; letter-spacing:-.005em}
+  main.wrap{padding-block:26px 56px}
+  .crumb{font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--mute); text-decoration:none} .crumb:hover{color:var(--ink)}
+  h1{margin-top:10px; font-size:30px} h1 .n{font-size:13px}
+  .list{list-style:none; margin:26px 0 0; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:22px 40px}
+  .list li{display:flex; gap:18px; align-items:center; padding-bottom:22px; border-bottom:1px solid var(--rule)}
+  .tile{width:96px} .tile canvas{width:96px; height:96px} .tile b{display:none}
+  .t{font-weight:500; font-size:17px; letter-spacing:-.01em; color:var(--ink); text-decoration:none} .t:hover{color:var(--blue)}
+  .list p{margin:6px 0 0; font-size:14px; line-height:1.45; color:var(--ink2)}
+  @media (max-width:900px){ .list{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/" class="on">Applications</a><a href="/technology/">Technology</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
+<main class="wrap">
+  <a class="crumb" href="/apps/">Applications</a>
+  <h1><a href="/apps/energy/">Energy</a><span class="n">5</span></h1>
+  <ul class="list"><li><a class="tile" href="/apps/iodine-trap-for-nuclear-fuel-recycling/" data-k="iodine"><canvas></canvas><b>Nuclear iodine trap</b></a><div><a class="t" href="/apps/iodine-trap-for-nuclear-fuel-recycling/">Iodine trap for nuclear fuel recycling</a><p>Capture radioactive iodine gas released when spent nuclear fuel is recycled</p></div></li><li><a class="tile" href="/apps/hydrogen-storage-material-for-trucks/" data-k="h2store"><canvas></canvas><b>Hydrogen storage</b></a><div><a class="t" href="/apps/hydrogen-storage-material-for-trucks/">Hydrogen storage material for trucks</a><p>Store hydrogen densely at mild pressure and temperature</p></div></li><li><a class="tile" href="/apps/solid-electrolyte-for-solid-state-batteries/" data-k="elec"><canvas></canvas><b>Solid-state batteries</b></a><div><a class="t" href="/apps/solid-electrolyte-for-solid-state-batteries/">Solid electrolyte for solid-state batteries</a><p>The solid that replaces the flammable liquid in batteries. Main blocker for solid-state cells</p></div></li><li><a class="tile" href="/apps/iridium-free-catalyst-for-green-hydrogen/" data-k="iro2"><canvas></canvas><b>Iridium-free hydrogen</b></a><div><a class="t" href="/apps/iridium-free-catalyst-for-green-hydrogen/">Iridium-free catalyst for green hydrogen</a><p>Split water in acid electrolyzers without iridium, one of the rarest metals</p></div></li><li><a class="tile" href="/apps/rare-earth-free-permanent-magnet/" data-k="magnet"><canvas></canvas><b>Rare-earth-free magnet</b></a><div><a class="t" href="/apps/rare-earth-free-permanent-magnet/">Rare-earth-free permanent magnet</a><p>Strong magnets for motors without the rare earths China controls</p></div></li></ul>
+</main>
+<footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
+<script type="module">
+import { setup } from '/site/appmols.js';
+const tiles = [...document.querySelectorAll('.tile')];
+const views = tiles.map(el => setup({ dataset:{ k:el.dataset.k }, querySelector:() => el.querySelector('canvas') }));
+let hot = -1, last = performance.now();
+(function loop(t){ if (hot >= 0) views[hot].tick(t - last); last = t; requestAnimationFrame(loop); })(last);
+requestAnimationFrame(() => views.forEach(v => v.draw()));
+tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(true); }; el.onmouseleave = () => { if (hot === i) hot = -1; views[i].active(false); }; });
+</script>
+</body>
+</html>

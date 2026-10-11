@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>97A · Environment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/frame.css">
+<style>
+  h1, .cell h2{margin:0; font-weight:500; letter-spacing:-.02em; color:var(--ink)}
+  h1 a, h2 a{color:inherit; text-decoration:none} h1 a:hover, h2 a:hover{color:var(--blue)}
+  .n{margin-left:8px; font-family:var(--mono); font-size:12px; font-weight:400; letter-spacing:0; color:var(--mute); vertical-align:2px}
+  .tile{flex:none; color:var(--ink); text-decoration:none}
+  .tile canvas{display:block; border-radius:19px; background:var(--bg); transition:transform .2s}
+  .tile:hover canvas{transform:translateY(-2px)}
+  .tile b{display:block; padding:6px 1px 0; font-weight:500; line-height:1.25; letter-spacing:-.005em}
+  main.wrap{padding-block:26px 56px}
+  .crumb{font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--mute); text-decoration:none} .crumb:hover{color:var(--ink)}
+  h1{margin-top:10px; font-size:30px} h1 .n{font-size:13px}
+  .list{list-style:none; margin:26px 0 0; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:22px 40px}
+  .list li{display:flex; gap:18px; align-items:center; padding-bottom:22px; border-bottom:1px solid var(--rule)}
+  .tile{width:96px} .tile canvas{width:96px; height:96px} .tile b{display:none}
+  .t{font-weight:500; font-size:17px; letter-spacing:-.01em; color:var(--ink); text-decoration:none} .t:hover{color:var(--blue)}
+  .list p{margin:6px 0 0; font-size:14px; line-height:1.45; color:var(--ink2)}
+  @media (max-width:900px){ .list{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/" class="on">Applications</a><a href="/technology/">Technology</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
+<main class="wrap">
+  <a class="crumb" href="/apps/">Applications</a>
+  <h1><a href="/apps/environment/">Environment</a><span class="n">3</span></h1>
+  <ul class="list"><li><a class="tile" href="/apps/pfas-trap-for-drinking-water/" data-k="pfas"><canvas></canvas><b>PFAS trap for water</b></a><div><a class="t" href="/apps/pfas-trap-for-drinking-water/">PFAS trap for drinking water</a><p>Pull “forever chemicals” out of drinking water. US utilities must meet the 2024 EPA limit of 4 ppt</p></div></li><li><a class="tile" href="/apps/co2-trap-that-works-in-humid-air/" data-k="mof"><canvas></canvas><b>CO₂ trap for humid air</b></a><div><a class="t" href="/apps/co2-trap-that-works-in-humid-air/">CO₂ trap that works in humid air</a><p>Capture CO₂ from air or flue gas without water blocking the binding sites</p></div></li><li><a class="tile" href="/apps/catalyst-that-turns-mixed-plastic-back-into-fuel/" data-k="plastic"><canvas></canvas><b>Plastic-to-fuel catalyst</b></a><div><a class="t" href="/apps/catalyst-that-turns-mixed-plastic-back-into-fuel/">Catalyst that turns mixed plastic back into fuel</a><p>Break polyethylene and polypropylene waste into useful liquids at low heat</p></div></li></ul>
+</main>
+<footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
+<script type="module">
+import { setup } from '/site/appmols.js';
+const tiles = [...document.querySelectorAll('.tile')];
+const views = tiles.map(el => setup({ dataset:{ k:el.dataset.k }, querySelector:() => el.querySelector('canvas') }));
+let hot = -1, last = performance.now();
+(function loop(t){ if (hot >= 0) views[hot].tick(t - last); last = t; requestAnimationFrame(loop); })(last);
+requestAnimationFrame(() => views.forEach(v => v.draw()));
+tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(true); }; el.onmouseleave = () => { if (hot === i) hot = -1; views[i].active(false); }; });
+</script>
+</body>
+</html>
