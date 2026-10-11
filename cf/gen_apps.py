@@ -181,7 +181,7 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
     (WEB / "apps" / "index.html").write_text(page("Applications", f'<main class="wrap">\n<div class="tm">\n{cells}\n</div>\n</main>', """  main.wrap{padding-block:8px 24px}
   .tm{display:grid; grid-template-columns:repeat(8, 1fr); overflow:hidden}
   .cell{grid-column:span var(--span); padding:14px 22px 12px; border-left:1px solid var(--sep); border-top:1px solid var(--sep); margin:-1px 0 0 -1px}
-  .cell h2{margin:0 0 10px; font-size:20px; font-weight:600; letter-spacing:-.025em}
+  .cell h2{margin:0 0 10px; font-size:20px; font-weight:600; letter-spacing:-.025em; white-space:nowrap}
   .tiles{display:grid; grid-template-columns:repeat(var(--span), minmax(0, 1fr)); gap:22px}
   .tile{width:100%; max-width:84px; min-width:0} .tile canvas{width:100%; height:auto; aspect-ratio:1} .tile b{font-size:12px}
   @media (max-width:900px){ .tm{grid-template-columns:1fr} .cell{grid-column:auto; padding-inline:4px} .tiles{overflow-x:auto} }"""))
