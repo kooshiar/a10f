@@ -5,123 +5,109 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <base href="/site/">
 <title>A10 · AI that designs molecular machines</title>
-<meta name="description" content="A fully generative, end-to-end AI system that designs machines with atomic precision.">
+<meta name="description" content="AI that designs molecular machines.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="frame.css">
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
 <style>
-  :root{ --bg:#12151D; --txt:#F2F3F7; --txt2:#C9CDD8; --dim:#8A90A2; --line:rgba(230,232,239,.12); --sky:#8DB3F0; --blue:#3B74D6; --orange:#FF6B1A;
-         --ink:#0E0F12; --ink2:#454A55; --mute:#7A808C; --rule:#E4E6EB;
-         --font:"Space Grotesk",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace }
-  *{box-sizing:border-box} html,body{margin:0; background:var(--bg); color:var(--txt); font-family:var(--font); -webkit-font-smoothing:antialiased}
-  .wrap{max-width:1120px; margin:0 auto; padding:0 40px} .dark{overflow-x:clip}
-  nav{height:72px; display:flex; align-items:center; justify-content:space-between}
-  .logo{font-weight:600; font-size:22px; letter-spacing:-.02em} .logo i{font-style:normal; color:var(--sky)}
-  nav a{font-family:var(--mono); font-size:12.5px; letter-spacing:.08em; color:var(--txt2); text-decoration:none; text-transform:uppercase}
-
-  /* 1 · hero: title left, one machine right */
-  .hero{display:grid; grid-template-columns:minmax(0, 480px) minmax(0, 520px); justify-content:space-between; gap:40px; padding:56px 0 104px}
-  .left{align-self:center}
-  h1{margin:0; font-weight:500; font-size:clamp(38px, 4.1vw, 60px); line-height:1.02; letter-spacing:-.035em}
+  /* 1 · title + one machine */
+  .hero{background:var(--bg); color:var(--txt); overflow-x:clip}
+  .hero .top{display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:40px; padding-top:24px; padding-bottom:40px}
+  h1{margin:0; font-weight:500; font-size:clamp(40px, 4.6vw, 64px); line-height:1.02; letter-spacing:-.035em}
   h1 span{color:var(--sky)}
-  .lead{margin:22px 0 0; max-width:440px; font-size:16.5px; line-height:1.55; color:var(--txt2)}
-  .right{display:flex; flex-direction:column; align-items:center; gap:14px}
-  .stage{position:relative; width:100%; height:360px}
-  #gl, svg#ov{position:absolute; inset:-60px -40px}
+  .stage{position:relative; height:340px}
+  #gl, svg#ov{position:absolute; inset:-40px -40px}
   #gl{cursor:grab} #gl:active{cursor:grabbing} #gl canvas{display:block; width:100%; height:100%}
   svg#ov{pointer-events:none}
-  .cap{position:relative; z-index:2; margin:0; font-size:13.5px; line-height:1.6; color:var(--txt2); text-align:center; min-height:44px}
-  .cap b{font-weight:500; color:var(--txt)} .cap small{font-family:var(--mono); font-size:11px; color:var(--dim); margin-left:8px}
 
-  /* white sections */
-  .white{background:#fff; color:var(--ink)}
-  .sec{padding-top:112px}
-  .sec:last-of-type{padding-bottom:128px}
-  .sec h3{margin:0; font-weight:500; font-size:clamp(30px, 3.2vw, 46px); letter-spacing:-.03em; line-height:1.05}
+  /* sections on white, a rule between them */
+  .sec{padding-block:88px}
+  .sec + .sec{border-top:1px solid var(--rule)}
 
-  /* 2 · architecture: two parts */
-  .arch{display:grid; grid-template-columns:1fr 240px 1fr; align-items:center; margin-top:56px}
-  .box{border-radius:16px; padding:30px 30px 32px; min-height:280px; display:flex; flex-direction:column}
-  .box b{font-weight:500; font-size:22px; letter-spacing:-.02em}
-  .box p{margin:10px 0 0; font-size:15px; line-height:1.5}
-  .design{background:var(--bg); color:var(--txt); justify-content:center}
-  .design b{color:var(--sky)} .design p{color:var(--txt2)}
-  .phys{border:1.5px solid var(--ink)}
-  .phys ul{list-style:none; margin:18px 0 0; padding:0}
-  .phys li{display:flex; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid var(--rule); font-size:15px}
-  .phys li span{font-family:var(--mono); font-size:12px; color:var(--mute); align-self:center}
-  .flow{display:flex; flex-direction:column; gap:30px; padding:0 14px}
-  .flow div{font-family:var(--mono); font-size:11.5px; color:var(--ink2); text-align:center}
-  .flow i{display:block; height:2px; background:var(--blue); position:relative; margin-top:8px}
-  .flow i::after{content:""; position:absolute; top:-5px; border:6px solid transparent}
-  .flow .r i::after{right:-2px; border-left:9px solid var(--blue); border-right:0}
-  .flow .l i{background:var(--orange); margin:0 0 8px} .flow .l i::after{left:-2px; border-right:9px solid var(--orange); border-left:0}
+  /* 2 · two parts */
+  .arch{display:grid; grid-template-columns:1fr 1fr; gap:20px}
+  .box{height:240px; border-radius:16px; padding:28px 30px; display:flex; flex-direction:column; justify-content:space-between}
+  .box b{font-weight:500; font-size:30px; letter-spacing:-.025em; line-height:1.05}
+  .design{background:var(--bg); color:var(--sky)}
+  .phys{border:1.5px solid var(--ink); color:var(--ink)}
+  .icons{display:flex; gap:22px; align-items:end}
+  .icons svg{width:46px; height:46px; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round}
+  .design .icons svg{stroke:#8DB3F0} .design .icons .f{fill:#8DB3F0; stroke:none} .design .icons .o{stroke:#FF6B1A} .design .icons .fo{fill:#FF6B1A; stroke:none}
+  .phys .icons svg{stroke:var(--ink)} .phys .icons .f{fill:var(--blue); stroke:none} .phys .icons .o{stroke:#FF6B1A} .phys .icons .fo{fill:#FF6B1A; stroke:none} .phys .icons .b{stroke:var(--blue)}
 
-  /* 3 · applications */
-  .apps-head{display:flex; align-items:end; justify-content:space-between; gap:24px}
-  .more{font-family:var(--mono); font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink); text-decoration:none;
-    border:1.5px solid var(--ink); border-radius:99px; padding:11px 20px; white-space:nowrap}
-  .more:hover{background:var(--ink); color:#fff}
-  .cards{display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-top:48px}
-  .card{display:flex; flex-direction:column; justify-content:space-between; gap:28px; min-height:168px; padding:20px 20px 22px; border:1px solid var(--rule);
-    border-radius:14px; color:var(--ink); text-decoration:none; transition:border-color .2s, transform .2s}
-  .card:hover{border-color:var(--ink); transform:translateY(-2px)}
+  /* 3 · one row of applications */
+  .row{display:grid; grid-auto-flow:column; grid-auto-columns:calc((100% - 4 * 14px) / 4.4); gap:14px; overflow-x:auto; scroll-snap-type:x mandatory;
+    scrollbar-width:none; -ms-overflow-style:none}
+  .row::-webkit-scrollbar{display:none}
+  .card{scroll-snap-align:start; display:flex; flex-direction:column; justify-content:space-between; gap:24px; height:170px; padding:20px 20px 22px;
+    border:1px solid var(--rule); border-radius:14px; color:var(--ink); text-decoration:none; transition:border-color .2s}
+  .card:hover{border-color:var(--ink)}
   .card small{font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--blue)}
   .card b{font-weight:500; font-size:18px; line-height:1.25; letter-spacing:-.015em}
-
-  footer{background:#fff; color:var(--mute); border-top:1px solid var(--rule); font-family:var(--mono); font-size:12px}
-  footer .wrap{padding-top:28px; padding-bottom:28px; display:flex; justify-content:space-between}
+  .ctl{display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-top:22px}
+  .ctl button,.ctl a{all:unset; cursor:pointer; height:40px; min-width:40px; box-sizing:border-box; border:1.5px solid var(--ink); border-radius:99px;
+    display:grid; place-items:center; font-family:var(--mono); font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink)}
+  .ctl a{padding:0 18px} .ctl button:hover,.ctl a:hover{background:var(--ink); color:#fff}
+  .ctl svg{width:16px; height:16px; stroke:currentColor; stroke-width:2; fill:none}
 
   @media (max-width:900px){
-    .wrap{padding:0 16px} .hero{grid-template-columns:1fr; padding:16px 0 48px; gap:16px}
-    h1{font-size:42px} .lead{font-size:16px; margin-top:16px}
-    .stage{height:78vw} #gl, svg#ov{inset:0}
-    .sec{padding-top:72px} .sec:last-of-type{padding-bottom:88px}
-    .arch{grid-template-columns:1fr; margin-top:36px} .box{min-height:0}
-    .flow{flex-direction:row; justify-content:center; gap:20px; padding:18px 0}
-    .flow div{display:flex; flex-direction:column; align-items:center; gap:6px; width:120px}
-    .flow i{width:2px; height:36px; margin:0} .flow .l i{margin:0}
-    .flow .r i::after{right:auto; top:auto; left:-5px; bottom:-2px; border:6px solid transparent; border-top:9px solid var(--blue); border-bottom:0}
-    .flow .l i::after{left:-5px; top:-2px; border:6px solid transparent; border-bottom:9px solid var(--orange); border-top:0}
-    .cards{grid-template-columns:1fr 1fr; gap:10px; margin-top:32px} .card{min-height:140px; padding:16px} .card b{font-size:16px}
-    .apps-head{flex-direction:column; align-items:start}
+    .hero .top{grid-template-columns:1fr; gap:8px; padding-top:12px} h1{font-size:40px}
+    .stage{height:72vw} #gl, svg#ov{inset:0}
+    .sec{padding-block:56px} .arch{grid-template-columns:1fr} .box{height:200px} .box b{font-size:26px} .icons{gap:16px} .icons svg{width:38px; height:38px}
+    .row{grid-auto-columns:72%}
   }
 </style>
 </head>
 <body>
-<div class="dark">
-  <div class="wrap">
-    <nav><div class="logo">A<i>10</i></div><a href="#">Contact</a></nav>
-    <main class="hero">
-      <section class="left">
-        <h1>AI that designs <span>molecular machines.</span></h1>
-        <p class="lead">A fully generative, end-to-end AI system that designs machines with atomic precision. One universal, multimodal model for molecules, materials and proteins, across every application.</p>
-      </section>
-      <section class="right">
-        <div class="stage"><div id="gl"></div><svg id="ov"></svg></div>
-        <p class="cap"><b id="name"></b><small id="size"></small><br><span id="step"></span></p>
-      </section>
-    </main>
+<header class="hero">
+  <nav class="wrap"><a class="logo" href="/">A<i>10</i></a><a href="/contact">Contact</a></nav>
+  <div class="wrap top">
+    <h1>AI that designs <span>molecular machines.</span></h1>
+    <div class="stage"><div id="gl"></div><svg id="ov"></svg></div>
   </div>
-</div>
+</header>
 
-<div class="white">
+<main>
   <section class="sec wrap">
-    <h3>Architecture</h3>
     <div class="arch">
-      <div class="box design"><b>Design model</b><p>Designs, reasons, and orchestrates every run.</p></div>
-      <div class="flow"><div class="r">candidate designs<i></i></div><div class="l"><i></i>energies · forces · motion</div></div>
+      <div class="box design"><b>Design model</b>
+        <div class="icons">
+          <!-- reasoning: a branching tree -->
+          <svg viewBox="0 0 48 48"><circle class="f" cx="24" cy="9" r="4"/><circle cx="11" cy="38" r="4"/><circle cx="24" cy="38" r="4"/><circle class="fo" cx="37" cy="38" r="4"/><path d="M24 13v8M24 21L11 34M24 21v13M24 21l13 13"/></svg>
+          <!-- design: a ring being drawn -->
+          <svg viewBox="0 0 48 48"><path d="M24 7l14 8v16l-14 8-14-8V15z"/><circle class="fo" cx="38" cy="15" r="4"/><path class="o" d="M30 40l9-9"/></svg>
+          <!-- orchestration: one hub, many jobs -->
+          <svg viewBox="0 0 48 48"><circle class="f" cx="24" cy="24" r="5"/><circle cx="8" cy="10" r="3"/><circle cx="40" cy="10" r="3"/><circle cx="8" cy="38" r="3"/><circle cx="40" cy="38" r="3"/><path d="M20 20l-9.5-7.5M28 20l9.5-7.5M20 28l-9.5 7.5M28 28l9.5 7.5"/></svg>
+          <!-- loop: try, check, improve -->
+          <svg viewBox="0 0 48 48"><path d="M38 24a14 14 0 1 1-4.1-9.9"/><path class="o" d="M34 6v8.5h-8.5"/></svg>
+        </div>
+      </div>
       <div class="box phys"><b>Physics models</b>
-        <ul><li>Quantum chemistry<span>xTB · DFT</span></li><li>ML potentials<span>MACE · UMA</span></li><li>Molecular dynamics<span>OpenMM</span></li><li>Coarse-grained<span>oxDNA · CG proteins</span></li></ul></div>
+        <div class="icons">
+          <!-- structure -->
+          <svg viewBox="0 0 48 48"><path d="M12 34l12-8 12 8M24 26V12"/><circle class="f" cx="24" cy="12" r="5"/><circle cx="12" cy="34" r="5"/><circle cx="36" cy="34" r="5"/><circle class="f" cx="24" cy="26" r="3"/></svg>
+          <!-- energy -->
+          <svg viewBox="0 0 48 48"><path d="M6 8c4 0 6 30 18 30S38 14 42 14"/><circle class="fo" cx="24" cy="38" r="3.5"/><path class="b" d="M6 44h36"/></svg>
+          <!-- forces -->
+          <svg viewBox="0 0 48 48"><circle class="f" cx="24" cy="24" r="5"/><path class="o" d="M24 18V6M20 9l4-4 4 4M29 27l9 9M38 30v6h-6M19 27l-9 6M13 37l-4-3 3-5"/></svg>
+          <!-- molecular dynamics: a path in time -->
+          <svg viewBox="0 0 48 48"><path class="b" d="M6 36c5-14 9 6 14-8s9 2 13-10 7 2 9-4" stroke-dasharray="2 4"/><circle class="f" cx="42" cy="14" r="4.5"/><circle cx="6" cy="36" r="3"/></svg>
+          <!-- electrons (DFT) -->
+          <svg viewBox="0 0 48 48"><ellipse cx="24" cy="24" rx="18" ry="7"/><ellipse cx="24" cy="24" rx="18" ry="7" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="18" ry="7" transform="rotate(120 24 24)"/><circle class="fo" cx="24" cy="24" r="3.5"/></svg>
+          <!-- coarse-grained beads -->
+          <svg viewBox="0 0 48 48"><path d="M8 38c6-10 6-20 16-20s10-10 16-12"/><circle class="f" cx="8" cy="38" r="4.5"/><circle cx="16" cy="24" r="4.5"/><circle class="f" cx="28" cy="17" r="4.5"/><circle cx="40" cy="7" r="4.5"/></svg>
+        </div>
+      </div>
     </div>
   </section>
 
   <section class="sec wrap">
-    <div class="apps-head"><h3>Applications</h3><a class="more" href="/apps">More</a></div>
-    <div class="cards" id="cards"></div>
+    <div class="row" id="row"></div>
+    <div class="ctl"><button id="prev" aria-label="Previous"><svg viewBox="0 0 16 16"><path d="M10 3L5 8l5 5"/></svg></button><button id="next" aria-label="Next"><svg viewBox="0 0 16 16"><path d="M6 3l5 5-5 5"/></svg></button><a href="/apps">More</a></div>
   </section>
-</div>
+</main>
 <footer><div class="wrap"><span>A10</span><span>© 2026</span></div></footer>
 
 <script type="module">
@@ -129,7 +115,7 @@ import { Stage } from './live.js';
 import { FILMS } from './films.js';
 const $ = s => document.getElementById(s);
 
-// 3 · a few applications; each opens its page in /apps
+// 3 · applications; each card opens its page in /apps
 const APPS = [
   [38, 'Environment', 'PFAS trap for drinking water'],
   [51, 'Energy', 'Solid electrolyte for solid-state batteries'],
@@ -139,15 +125,18 @@ const APPS = [
   [55, 'Mining', 'Lithium picker for brine'],
   [15, 'Agriculture', 'Catalyst that makes ammonia at low heat'],
   [2, 'Food & drink', 'Decaf sponge that pulls caffeine and keeps flavor'],
+  [47, 'Data centers & chips', 'Long-life blue emitter for OLED screens'],
+  [56, 'Mining', 'Cyanide-free gold extraction'],
 ];
-$('cards').innerHTML = APPS.map(([p, c, t]) => `<a class="card" href="/apps#p${p}"><small>${c}</small><b>${t}</b></a>`).join('');
+$('row').innerHTML = APPS.map(([p, c, t]) => `<a class="card" href="/apps#p${p}"><small>${c}</small><b>${t}</b></a>`).join('');
+const step = () => $('row').querySelector('.card').offsetWidth + 14;
+$('next').onclick = () => $('row').scrollBy({ left:step(), behavior:'smooth' });
+$('prev').onclick = () => $('row').scrollBy({ left:-step(), behavior:'smooth' });
 
 // 1 · one machine (?m=<id> previews another)
 const f = FILMS.find(x => x.id === new URLSearchParams(location.search).get('m')) || FILMS.find(x => x.id === 'rotor');
 const stage = new Stage($('gl'), null, { minimal:true, fill:x => Math.min(.72, x * 1.15) });
-$('name').textContent = f.name; $('size').textContent = f.size;
 await stage.load(f); stage.ov = { svg:$('ov') };
-stage.onFrame = (v, k) => { const t = f.short?.[stage.sc.story.part[k]]; if (t && $('step').textContent !== t) $('step').textContent = t; };
 </script>
 </body>
 </html>

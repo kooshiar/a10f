@@ -1,0 +1,15 @@
+/* Shared page frame: tokens, nav bar, footer bar. Used by the homepage and /contact. */
+:root{ --bg:#12151D; --txt:#F2F3F7; --txt2:#C9CDD8; --dim:#8A90A2; --sky:#8DB3F0; --blue:#3B74D6; --orange:#FF6B1A;
+       --ink:#0E0F12; --ink2:#454A55; --mute:#7A808C; --rule:#E4E6EB;
+       --font:"Space Grotesk",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace }
+*{box-sizing:border-box}
+html,body{margin:0; background:#fff; color:var(--ink); font-family:var(--font); -webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px; margin:0 auto; padding:0 40px}
+nav{height:72px; display:flex; align-items:center; justify-content:space-between}
+nav a{font-family:var(--mono); font-size:12.5px; letter-spacing:.08em; color:var(--txt2); text-decoration:none; text-transform:uppercase}
+nav a:hover{color:var(--txt)}
+nav .logo{font-family:var(--font); font-weight:600; font-size:22px; letter-spacing:-.02em; text-transform:none; color:var(--txt)}
+.logo i{font-style:normal; color:var(--sky)}
+footer{border-top:1px solid var(--rule); color:var(--mute); font-family:var(--mono); font-size:12px}
+footer .wrap{height:64px; display:flex; align-items:center; justify-content:space-between}
+@media (max-width:900px){ .wrap{padding:0 16px} }
