@@ -19,7 +19,7 @@
   .crumb{font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--mute); text-decoration:none} .crumb:hover{color:var(--ink)}
   h1{margin-top:10px; font-size:30px; font-weight:600; letter-spacing:-.03em} h1 .n{font-size:17px}
   .list{list-style:none; margin:26px 0 0; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:22px 40px}
-  .list li{display:flex; gap:18px; align-items:center; padding-bottom:22px; border-bottom:1px solid var(--rule)}
+  .list li{display:flex; gap:18px; align-items:center; padding-bottom:22px; border-bottom:1px solid var(--sep)}
   .tile{width:96px} .tile canvas{width:96px; height:96px} .tile b{display:none}
   .t{font-weight:500; font-size:17px; letter-spacing:-.01em; color:var(--ink); text-decoration:none} .t:hover{color:var(--blue)}
   .list p{margin:6px 0 0; font-size:14px; line-height:1.45; color:var(--ink2)}
@@ -30,13 +30,13 @@
 <header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/" class="on">Applications</a><a href="/technology/">Technology</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
 <main class="wrap">
   <a class="crumb" href="/apps/">Applications</a>
-  <h1><a href="/apps/agriculture/">Agriculture</a><span class="n">8</span></h1>
+  <h1><a href="/apps/agriculture/">Agriculture<span class="n">8</span></a></h1>
   <ul class="list"><li><a class="tile" href="/apps/ethylene-trap-that-keeps-fruit-fresh-longer/" data-k="ethylene"><canvas></canvas><b>Ethylene trap for fruit</b></a><div><a class="t" href="/apps/ethylene-trap-that-keeps-fruit-fresh-longer/">Ethylene trap that keeps fruit fresh longer</a><p>Soak up ethylene, the gas that ripens fruit, in storage and shipping boxes</p></div></li><li><a class="tile" href="/apps/pheromone-dispenser-that-confuses-crop-pests/" data-k="pheromone"><canvas></canvas><b>Pest pheromone</b></a><div><a class="t" href="/apps/pheromone-dispenser-that-confuses-crop-pests/">Pheromone dispenser that confuses crop pests</a><p>Release insect sex pheromone slowly in fields so moths can’t find mates, no insecticide</p></div></li><li><a class="tile" href="/apps/mycotoxin-binder-for-animal-feed/" data-k="mycotoxin"><canvas></canvas><b>Mycotoxin binder</b></a><div><a class="t" href="/apps/mycotoxin-binder-for-animal-feed/">Mycotoxin binder for animal feed</a><p>Bind aflatoxin from moldy grain in the gut so animals don’t absorb it</p></div></li><li><a class="tile" href="/apps/phosphorus-catcher-for-farm-runoff/" data-k="phosphate"><canvas></canvas><b>Phosphorus catcher</b></a><div><a class="t" href="/apps/phosphorus-catcher-for-farm-runoff/">Phosphorus catcher for farm runoff</a><p>Pull phosphate out of runoff and manure water, then reuse it as fertilizer</p></div></li><li><a class="tile" href="/apps/fertilizer-stabilizer-that-stops-nitrogen-loss/" data-k="urease"><canvas></canvas><b>Fertilizer stabilizer</b></a><div><a class="t" href="/apps/fertilizer-stabilizer-that-stops-nitrogen-loss/">Fertilizer stabilizer that stops nitrogen loss</a><p>Block the soil enzyme that turns urea fertilizer into ammonia gas lost to the air</p></div></li><li><a class="tile" href="/apps/herbicide-that-kills-resistant-weeds/" data-k="herbicide"><canvas></canvas><b>Resistant-weed killer</b></a><div><a class="t" href="/apps/herbicide-that-kills-resistant-weeds/">Herbicide that kills resistant weeds</a><p>New way to block a weed enzyme, since many weeds now survive glyphosate</p></div></li><li><a class="tile" href="/apps/catalyst-that-makes-ammonia-at-low-heat/" data-k="nitrogen"><canvas></canvas><b>Low-heat ammonia</b></a><div><a class="t" href="/apps/catalyst-that-makes-ammonia-at-low-heat/">Catalyst that makes ammonia at low heat</a><p>Fertilizer ammonia without the high heat and pressure of Haber–Bosch</p></div></li><li><a class="tile" href="/apps/feed-additive-that-cuts-cow-methane/" data-k="methane"><canvas></canvas><b>Cow methane cutter</b></a><div><a class="t" href="/apps/feed-additive-that-cuts-cow-methane/">Feed additive that cuts cow methane</a><p>Stop gut microbes from making methane, a large share of farm emissions</p></div></li></ul>
 </main>
 <footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
 <script type="module">
 import { setup } from '/site/appmols.js';
-const tiles = [...document.querySelectorAll('.tile[data-k]')];
+const tiles = [...document.querySelectorAll('.tile')];
 const views = tiles.map(el => setup({ dataset:{ k:el.dataset.k }, querySelector:() => el.querySelector('canvas') }));
 let hot = -1, last = performance.now();
 (function loop(t){ if (hot >= 0) views[hot].tick(t - last); last = t; requestAnimationFrame(loop); })(last);

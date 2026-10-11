@@ -19,7 +19,7 @@
   .crumb{font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--mute); text-decoration:none} .crumb:hover{color:var(--ink)}
   h1{margin-top:10px; font-size:30px; font-weight:600; letter-spacing:-.03em} h1 .n{font-size:17px}
   .list{list-style:none; margin:26px 0 0; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:22px 40px}
-  .list li{display:flex; gap:18px; align-items:center; padding-bottom:22px; border-bottom:1px solid var(--rule)}
+  .list li{display:flex; gap:18px; align-items:center; padding-bottom:22px; border-bottom:1px solid var(--sep)}
   .tile{width:96px} .tile canvas{width:96px; height:96px} .tile b{display:none}
   .t{font-weight:500; font-size:17px; letter-spacing:-.01em; color:var(--ink); text-decoration:none} .t:hover{color:var(--blue)}
   .list p{margin:6px 0 0; font-size:14px; line-height:1.45; color:var(--ink2)}
@@ -30,13 +30,13 @@
 <header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/" class="on">Applications</a><a href="/technology/">Technology</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
 <main class="wrap">
   <a class="crumb" href="/apps/">Applications</a>
-  <h1><a href="/apps/mining/">Mining</a><span class="n">3</span></h1>
+  <h1><a href="/apps/mining/">Mining<span class="n">3</span></a></h1>
   <ul class="list"><li><a class="tile" href="/apps/lithium-picker-for-brine/" data-k="lithium"><canvas></canvas><b>Lithium from brine</b></a><div><a class="t" href="/apps/lithium-picker-for-brine/">Lithium picker for brine</a><p>Grab lithium and ignore sodium in salty brine, for direct lithium extraction</p></div></li><li><a class="tile" href="/apps/cyanide-free-gold-extraction/" data-k="gold"><canvas></canvas><b>Cyanide-free gold</b></a><div><a class="t" href="/apps/cyanide-free-gold-extraction/">Cyanide-free gold extraction</a><p>Dissolve gold from ore with a safe chemical instead of cyanide</p></div></li><li><a class="tile" href="/apps/rare-earth-separator-for-magnet-supply-chains/" data-k="rareearth"><canvas></canvas><b>Rare-earth separator</b></a><div><a class="t" href="/apps/rare-earth-separator-for-magnet-supply-chains/">Rare-earth separator for magnet supply chains</a><p>Separate neighboring rare earths, like Nd from Pr, in fewer steps</p></div></li></ul>
 </main>
 <footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
 <script type="module">
 import { setup } from '/site/appmols.js';
-const tiles = [...document.querySelectorAll('.tile[data-k]')];
+const tiles = [...document.querySelectorAll('.tile')];
 const views = tiles.map(el => setup({ dataset:{ k:el.dataset.k }, querySelector:() => el.querySelector('canvas') }));
 let hot = -1, last = performance.now();
 (function loop(t){ if (hot >= 0) views[hot].tick(t - last); last = t; requestAnimationFrame(loop); })(last);

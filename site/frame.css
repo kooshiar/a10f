@@ -1,6 +1,6 @@
 /* Shared page frame: tokens, nav bar, footer bar. Used by the homepage and /contact. */
 :root{ --bg:#12151D; --txt:#F2F3F7; --txt2:#C9CDD8; --dim:#8A90A2; --sky:#8DB3F0; --blue:#3B74D6; --orange:#FF6B1A;
-       --ink:#0E0F12; --ink2:#454A55; --mute:#7A808C; --rule:#E4E6EB;
+       --ink:#0E0F12; --ink2:#454A55; --mute:#7A808C; --rule:#E4E6EB; --sep:#C3C8D0;
        --font:"Space Grotesk",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace }
 *{box-sizing:border-box}
 html,body{margin:0; background:#fff; color:var(--ink); font-family:var(--font); -webkit-font-smoothing:antialiased}

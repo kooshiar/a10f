@@ -19,7 +19,7 @@
   .crumb{font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--mute); text-decoration:none} .crumb:hover{color:var(--ink)}
   h1{margin-top:10px; font-size:30px; font-weight:600; letter-spacing:-.03em} h1 .n{font-size:17px}
   .list{list-style:none; margin:26px 0 0; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:22px 40px}
-  .list li{display:flex; gap:18px; align-items:center; padding-bottom:22px; border-bottom:1px solid var(--rule)}
+  .list li{display:flex; gap:18px; align-items:center; padding-bottom:22px; border-bottom:1px solid var(--sep)}
   .tile{width:96px} .tile canvas{width:96px; height:96px} .tile b{display:none}
   .t{font-weight:500; font-size:17px; letter-spacing:-.01em; color:var(--ink); text-decoration:none} .t:hover{color:var(--blue)}
   .list p{margin:6px 0 0; font-size:14px; line-height:1.45; color:var(--ink2)}
@@ -30,13 +30,13 @@
 <header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/" class="on">Applications</a><a href="/technology/">Technology</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
 <main class="wrap">
   <a class="crumb" href="/apps/">Applications</a>
-  <h1><a href="/apps/industry/">Industry</a><span class="n">3</span></h1>
+  <h1><a href="/apps/industry/">Industry<span class="n">3</span></a></h1>
   <ul class="list"><li><a class="tile" href="/apps/corrosion-inhibitor-for-steel-pipes/" data-k="corrosion"><canvas></canvas><b>Pipe corrosion</b></a><div><a class="t" href="/apps/corrosion-inhibitor-for-steel-pipes/">Corrosion inhibitor for steel pipes</a><p>A molecule that sticks to steel and blocks rust, without toxic chromates</p></div></li><li><a class="tile" href="/apps/copper-free-antifouling-paint-for-ships/" data-k="antifoul"><canvas></canvas><b>Copper-free ship paint</b></a><div><a class="t" href="/apps/copper-free-antifouling-paint-for-ships/">Copper-free antifouling paint for ships</a><p>Keep barnacles off hulls without leaching copper into harbors</p></div></li><li><a class="tile" href="/apps/heat-shield-coating-for-jet-engine-blades/" data-k="ysz"><canvas></canvas><b>Jet blade heat shield</b></a><div><a class="t" href="/apps/heat-shield-coating-for-jet-engine-blades/">Heat shield coating for jet engine blades</a><p>Coating that lets turbine blades run hotter, which saves fuel</p></div></li></ul>
 </main>
 <footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
 <script type="module">
 import { setup } from '/site/appmols.js';
-const tiles = [...document.querySelectorAll('.tile[data-k]')];
+const tiles = [...document.querySelectorAll('.tile')];
 const views = tiles.map(el => setup({ dataset:{ k:el.dataset.k }, querySelector:() => el.querySelector('canvas') }));
 let hot = -1, last = performance.now();
 (function loop(t){ if (hot >= 0) views[hot].tick(t - last); last = t; requestAnimationFrame(loop); })(last);

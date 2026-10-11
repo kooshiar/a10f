@@ -127,9 +127,9 @@ def main():
 
     # ---- index: a treemap of categories that fits one screen. Each cell shows one row of tiles (as many as its width
     #      holds); the title and count link to the category page with the full list.
-    # 10 tile slots per row; a category's cell is as wide as the tiles it shows, plus a "+N" tile when it has more
-    SPAN = {"Agriculture": 5, "Medicine": 5, "Food & drink": 5, "Cosmetics & home": 5, "Data centers & chips": 4,
-            "Environment": 3, "Biotech": 3, "Energy": 4, "Mining": 3, "Industry": 3}
+    # 8 tile slots per row; a category's cell is as wide as the tiles it shows; the title opens the full list
+    SPAN = {"Agriculture": 4, "Medicine": 4, "Food & drink": 4, "Cosmetics & home": 4, "Data centers & chips": 3,
+            "Environment": 3, "Biotech": 2, "Energy": 2, "Mining": 3, "Industry": 3}
     ORDER = ["Agriculture", "Medicine", "Food & drink", "Cosmetics & home", "Data centers & chips", "Environment", "Biotech", "Energy", "Mining", "Industry"]
     assert sorted(ORDER) == sorted(cats)
     cslug = {c: slug(c) for c in cats}
@@ -137,16 +137,14 @@ def main():
     tile = lambda a: f'<a class="tile" href="/apps/{a["slug"]}/" data-k="{a["k"]}"><canvas></canvas><b>{html.escape(a["short"])}</b></a>'
     def head(c, tag="h2"):
         n = sum(a["cat"] == c for a in apps)
-        return f'<{tag}><a href="/apps/{cslug[c]}/">{html.escape(c)}</a><span class="n">{n}</span></{tag}>'
+        return f'<{tag}><a href="/apps/{cslug[c]}/">{html.escape(c)}<span class="n">{n}</span></a></{tag}>'
     def cell(c):
-        mine = [a for a in apps if a["cat"] == c]; k = SPAN[c]
-        shown = mine if len(mine) <= k else mine[:k - 1]
-        more = f'<a class="tile more" href="/apps/{cslug[c]}/"><span>+{len(mine) - len(shown)}</span></a>' if len(shown) < len(mine) else ""
-        return f'  <section class="cell" style="--span:{k}">{head(c)}<div class="tiles">' + "".join(tile(a) for a in shown) + more + "</div></section>"
+        shown = [a for a in apps if a["cat"] == c][:SPAN[c]]
+        return f'  <section class="cell" style="--span:{SPAN[c]}">{head(c)}<div class="tiles">' + "".join(tile(a) for a in shown) + "</div></section>"
     cells = "\n".join(cell(c) for c in ORDER)
     TILE_JS = """<script type="module">
 import { setup } from '/site/appmols.js';
-const tiles = [...document.querySelectorAll('.tile[data-k]')];
+const tiles = [...document.querySelectorAll('.tile')];
 const views = tiles.map(el => setup({ dataset:{ k:el.dataset.k }, querySelector:() => el.querySelector('canvas') }));
 let hot = -1, last = performance.now();
 (function loop(t){ if (hot >= 0) views[hot].tick(t - last); last = t; requestAnimationFrame(loop); })(last);
@@ -180,14 +178,12 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
 </body>
 </html>
 """
-    (WEB / "apps" / "index.html").write_text(page("Applications", f'<main class="wrap">\n<div class="tm">\n{cells}\n</div>\n</main>', """  main.wrap{padding-block:12px 24px}
-  .tm{display:grid; grid-template-columns:repeat(10, 1fr); overflow:hidden}
-  .cell{grid-column:span var(--span); padding:12px 6px 12px; border-left:1px solid var(--rule); border-top:1px solid var(--rule); margin:-1px 0 0 -1px}
-  .cell h2{margin:0 0 10px; padding-left:4px; font-size:20px; font-weight:600; letter-spacing:-.025em}
-  .tiles{display:grid; grid-template-columns:repeat(var(--span), minmax(0, 1fr)); gap:12px}
+    (WEB / "apps" / "index.html").write_text(page("Applications", f'<main class="wrap">\n<div class="tm">\n{cells}\n</div>\n</main>', """  main.wrap{padding-block:8px 24px}
+  .tm{display:grid; grid-template-columns:repeat(8, 1fr); overflow:hidden}
+  .cell{grid-column:span var(--span); padding:14px 20px 12px; border-left:1px solid var(--sep); border-top:1px solid var(--sep); margin:-1px 0 0 -1px}
+  .cell h2{margin:0 0 10px; font-size:20px; font-weight:600; letter-spacing:-.025em}
+  .tiles{display:grid; grid-template-columns:repeat(var(--span), minmax(0, 1fr)); gap:40px}
   .tile{width:auto; min-width:0} .tile canvas{width:100%; height:auto; aspect-ratio:1} .tile b{font-size:12px}
-  .tile.more{display:grid; place-items:center; aspect-ratio:1; border-radius:19px; background:#F1F2F5; color:var(--ink); font-family:var(--mono); font-size:17px; font-weight:500}
-  .tile.more:hover{background:#E6E8EE}
   @media (max-width:900px){ .tm{grid-template-columns:1fr} .cell{grid-column:auto; padding-inline:4px} .tiles{overflow-x:auto} }"""))
 
     # ---- one page per category: every application in it, with its one-line use
@@ -203,7 +199,7 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
   .crumb{font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--mute); text-decoration:none} .crumb:hover{color:var(--ink)}
   h1{margin-top:10px; font-size:30px; font-weight:600; letter-spacing:-.03em} h1 .n{font-size:17px}
   .list{list-style:none; margin:26px 0 0; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:22px 40px}
-  .list li{display:flex; gap:18px; align-items:center; padding-bottom:22px; border-bottom:1px solid var(--rule)}
+  .list li{display:flex; gap:18px; align-items:center; padding-bottom:22px; border-bottom:1px solid var(--sep)}
   .tile{width:96px} .tile canvas{width:96px; height:96px} .tile b{display:none}
   .t{font-weight:500; font-size:17px; letter-spacing:-.01em; color:var(--ink); text-decoration:none} .t:hover{color:var(--blue)}
   .list p{margin:6px 0 0; font-size:14px; line-height:1.45; color:var(--ink2)}
