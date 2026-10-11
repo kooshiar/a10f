@@ -6,7 +6,8 @@
 html,body{margin:0; background:#fff; color:var(--ink); font-family:var(--font); -webkit-font-smoothing:antialiased}
 .wrap{max-width:1040px; margin:0 auto; padding:0 40px}
 header.site{background:var(--bg)}
-.bar nav{height:56px; display:flex; align-items:center; justify-content:space-between}
+.bar nav{height:56px; display:flex; align-items:center; gap:44px}
+.bar nav [data-cta]{margin-left:auto}
 .bar nav a{font-family:var(--mono); font-size:12.5px; letter-spacing:.08em; color:var(--txt2); text-decoration:none; text-transform:uppercase}
 .bar nav a:hover{color:var(--txt)}
 .bar nav .logo{font-family:var(--font); font-weight:600; font-size:17px; letter-spacing:0; text-transform:none; color:#C9CDD8}

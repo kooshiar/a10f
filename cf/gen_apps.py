@@ -28,7 +28,7 @@ SHORT = {
     "Mycotoxin binder for animal feed": "Mycotoxin binder",
     "Phosphorus catcher for farm runoff": "Phosphorus catcher",
     "Fertilizer stabilizer that stops nitrogen loss": "Fertilizer stabilizer",
-    "Herbicide that kills resistant weeds": "Resistant-weed herbicide",
+    "Herbicide that kills resistant weeds": "Resistant-weed killer",
     "Catalyst that makes ammonia at low heat": "Low-heat ammonia",
     "Feed additive that cuts cow methane": "Cow methane cutter",
     "Perfume capsule that releases scent slowly": "Slow-release perfume",
@@ -83,9 +83,9 @@ FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="
 
 
 def bar(active):
-    tabs = "".join(f'<a href="{h}"{" class=\"on\"" if k == active else ""}>{k}</a>' for k, h in
-                   (("Applications", "/apps/"), ("Technology", "/technology/"), ("Contact", "/contact/")))
-    return f'<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs">{tabs}</div></nav></div></header>'
+    t = lambda k, h, x="": f'<a {x}href="{h}"' + (' class="on"' if k == active else '') + f'>{k}</a>'
+    return (f'<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs">{t("Applications", "/apps/")}'
+            f'{t("Technology", "/technology/")}</div>{t("Contact", "/contact/", "data-cta ")}</nav></div></header>')
 
 
 FOOT = '<footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>'
@@ -124,11 +124,15 @@ def main():
            f"export const DATA = {json.dumps({k: data[k] for k in sorted(used)}, separators=(',', ':'))};\n")
     (WEB / "site" / "appsdata.js").write_text(out)
 
-    # ---- index: one row per category
-    rows = "\n".join(
-        f'  <section class="cat"><h2>{html.escape(c)}</h2><div class="tiles">' +
+    # ---- index: a treemap of categories (8-column grid, cell width by number of apps), lines only between cells
+    SPAN = {"Agriculture": 4, "Medicine": 4, "Food & drink": 3, "Cosmetics & home": 3, "Environment": 2,
+            "Data centers & chips": 3, "Energy": 3, "Biotech": 2, "Mining": 4, "Industry": 4}
+    ORDER = ["Agriculture", "Medicine", "Food & drink", "Cosmetics & home", "Environment", "Data centers & chips", "Energy", "Biotech", "Mining", "Industry"]
+    assert sorted(ORDER) == sorted(cats)
+    cells = "\n".join(
+        f'  <section class="cell" style="--span:{SPAN[c]}"><h2>{html.escape(c)}</h2><div class="tiles">' +
         "".join(f'<a class="tile" href="/apps/{a["slug"]}/" data-k="{a["k"]}"><canvas></canvas><b>{html.escape(a["short"])}</b></a>' for a in apps if a["cat"] == c) +
-        "</div></section>" for c in cats)
+        "</div></section>" for c in ORDER)
     (WEB / "apps" / "index.html").write_text(f"""<!doctype html>
 <html lang="en">
 <head>
@@ -137,22 +141,24 @@ def main():
 <title>97A · Applications</title>
 {FONTS}
 <style>
-  main.wrap{{padding-block:36px 56px}}
-  h1{{margin:0 0 8px; font-weight:500; font-size:28px; letter-spacing:-.02em}}
-  .cat{{padding-top:22px}}
-  .cat h2{{margin:0 0 10px; font-family:var(--mono); font-weight:400; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--mute)}}
-  .tiles{{display:flex; gap:16px; overflow-x:auto; scrollbar-width:none}} .tiles::-webkit-scrollbar{{display:none}}
-  .tile{{flex:none; width:100px; color:var(--ink); text-decoration:none}}
-  .tile canvas{{display:block; width:100px; height:100px; border-radius:23px; background:var(--bg); transition:transform .2s}}
+  main.wrap{{padding-block:28px 56px}}
+  .tm{{display:grid; grid-template-columns:repeat(8, 1fr); overflow:hidden}}
+  .cell{{grid-column:span var(--span); padding:22px 20px 26px; border-left:1px solid var(--rule); border-top:1px solid var(--rule); margin:-1px 0 0 -1px}}
+  .cell h2{{margin:0 0 16px; font-weight:500; font-size:21px; letter-spacing:-.02em; color:var(--ink)}}
+  .tiles{{display:flex; flex-wrap:wrap; gap:18px 14px}}
+  .tile{{flex:none; width:92px; color:var(--ink); text-decoration:none}}
+  .tile canvas{{display:block; width:92px; height:92px; border-radius:21px; background:var(--bg); transition:transform .2s}}
   .tile:hover canvas{{transform:translateY(-2px)}}
-  .tile b{{display:block; padding:8px 2px 0; font-weight:500; font-size:13px; line-height:1.25; letter-spacing:-.005em}}
+  .tile b{{display:block; padding:7px 1px 0; font-weight:500; font-size:12.5px; line-height:1.25; letter-spacing:-.005em}}
+  @media (max-width:900px){{ .tm{{grid-template-columns:1fr}} .cell{{grid-column:auto; padding-inline:4px}} }}
 </style>
 </head>
 <body>
 {bar("Applications")}
 <main class="wrap">
-  <h1>Applications</h1>
-{rows}
+<div class="tm">
+{cells}
+</div>
 </main>
 {FOOT}
 <script type="module">
