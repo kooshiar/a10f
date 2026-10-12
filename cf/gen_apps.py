@@ -200,6 +200,40 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
   .tile{min-width:0} .tile canvas{width:100%; height:auto; aspect-ratio:1} .tile b{font-size:12px}
   @media (max-width:900px){ .row{flex-direction:column} .cell{width:auto !important; padding-inline:0 !important} .cell + .cell{border-left:0; border-top:1px solid var(--sep)} }"""))
 
+    # ---- hidden /ss: one square card per category to screenshot for social posts (not linked from the site)
+    COLS = {8: 4, 6: 3, 5: 3, 3: 3}
+    cards = "\n".join(
+        f'  <section class="sq" id="{cslug[c]}" style="--cols:{COLS[sum(a["cat"] == c for a in apps)]}"><h1>{html.escape(c)}</h1><div class="g">' +
+        "".join(f'<div class="t" data-k="{a["k"]}"><canvas></canvas><b>{html.escape(a["short"])}</b></div>' for a in apps if a["cat"] == c) +
+        "</div></section>" for c in cats)
+    (WEB / "ss").mkdir(exist_ok=True)
+    (WEB / "ss" / "index.html").write_text(f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>97A · Cards</title>
+{FONTS}
+<style>
+  body{{background:#fff; padding:40px 0 80px}}
+  .sq{{width:720px; height:720px; margin:0 auto 48px; background:#E8EDF4; padding:64px 60px; display:flex; flex-direction:column}}
+  .sq h1{{margin:0; font-weight:600; font-size:44px; letter-spacing:-.03em; color:var(--ink)}}
+  .g{{flex:1; display:grid; grid-template-columns:repeat(var(--cols), 1fr); align-content:center; gap:30px 26px}}
+  .t canvas{{display:block; width:100%; aspect-ratio:1; border-radius:28px; background:var(--bg)}}
+  .t b{{display:block; margin-top:10px; font-weight:500; font-size:16px; line-height:1.25; letter-spacing:-.01em; color:var(--ink)}}
+</style>
+</head>
+<body>
+{cards}
+<script type="module">
+import {{ setup }} from '/site/appmols.js';
+document.querySelectorAll('.t').forEach(el => setup({{ dataset:{{ k:el.dataset.k }}, look:'dark', scale:.9, querySelector:() => el.querySelector('canvas') }}).draw());
+</script>
+</body>
+</html>
+""")
+
     # ---- one page per category: every application in it, with its one-line use
     for c in cats:
         items = "".join(f'<li>{tile(a)}<div><a class="t" href="/apps/{a["slug"]}/">{html.escape(a["title"])}</a><p>{html.escape(a["use"])}</p></div></li>'
