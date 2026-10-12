@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>97A · Corrosion inhibitor for liquid-cooling loops</title>
+<script async src="/site/analytics.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/frame.css">
+<link rel="stylesheet" href="/apps/app.css">
+</head>
+<body>
+<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/" class="on">Applications</a><a href="/technology/">Technology</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
+<main class="wrap app">
+  <a class="crumb" href="/apps/">Applications</a><span class="crumb">/</span><a class="crumb" href="/apps/data-centers-chips/">Data centers &amp; chips</a>
+  <div class="grid">
+    <div class="card"><h1>Corrosion inhibitor for liquid-cooling loops</h1><table><tr class="g0"><th scope="rowgroup" class="grp" rowspan="3">Why</th><th scope="row">Category</th><td><span class="chip tag">Data centers & chips</span></td></tr><tr><th scope="row">Level</th><td><span class="chip mid">Medium</span> </td></tr><tr><th scope="row">Use</th><td>Keep copper cold plates and steel pipes in glycol cooling loops from corroding and leaking over servers</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="1">What</th><th scope="row">Atoms</th><td>Copper surface 200–500 + inhibitor + glycol and water. Cu Fe C H O N S</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">How</th><td><a class="ask" href="/contact/">Contact us for the design specs and build plan &rarr;</a></td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Demo</th><td>Inhibitor forms a layer on copper; water can’t reach the metal</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Competition</th><td>Inhibited glycol fluids with azoles, nitrite and molybdate packages (Dow DOWFROST, Nalco Water)</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="2">Business</th><th scope="row">Buyers</th><td>Coolant makers, Vertiv, CDU makers</td></tr><tr><th scope="row">Revenue</th><td><span class="chip ok">High</span> License to coolant makers. ~$1–5M/yr</td></tr></table></div>
+    <figure class="mol" data-k="loopcorr"><canvas aria-label="Tolyltriazole on copper, today’s standard inhibitor (orange = Cu)"></canvas><figcaption>Tolyltriazole on copper, today’s standard inhibitor (orange = Cu)</figcaption></figure>
+  </div>
+  <nav class="pn"><a href="/apps/coolant-for-data-centers-after-3m-leaves-pfas/">&larr; PFAS-free coolant</a><a href="/apps/longer-life-transformer-oil/">Long-life transformer oil &rarr;</a></nav>
+</main>
+<footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
+<script type="module">
+import { setup } from '/site/appmols.js';
+const look = new URLSearchParams(location.search).get('bg') === 'light' ? 'light' : 'dark';
+document.body.classList.toggle('light', look === 'light');
+const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, look, querySelector:() => f.querySelector('canvas') });
+v.active(true); let last = performance.now();
+(function loop(t){ v.tick(t - last); last = t; requestAnimationFrame(loop); })(last);
+addEventListener('resize', () => v.draw());
+// left / right arrow keys step through the applications
+const pn = document.querySelectorAll('.pn a');
+addEventListener('keydown', e => { if (e.altKey || e.metaKey || e.ctrlKey || /input|textarea/i.test(e.target.tagName)) return;
+  if (e.key === 'ArrowLeft') location.href = pn[0].href; if (e.key === 'ArrowRight') location.href = pn[1].href; });
+</script>
+</body>
+</html>

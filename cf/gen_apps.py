@@ -68,6 +68,9 @@ SHORT = {
     "Corrosion inhibitor for steel pipes": "Pipe corrosion",
     "Copper-free antifouling paint for ships": "Copper-free ship paint",
     "Heat shield coating for jet engine blades": "Jet blade heat shield",
+    "Corrosion inhibitor for liquid-cooling loops": "Cooling-loop corrosion",
+    "Longer-life transformer oil": "Long-life transformer oil",
+    "Concrete additive for heavier data center floors": "Stronger data-center floors",
 }
 CAT_SHORT = {"Food & drink": "Food", "Agriculture": "Farming", "Cosmetics & home": "Home", "Data centers & chips": "Chips"}
 HOME = ["PFAS trap for drinking water", "Solid electrolyte for solid-state batteries", "Heat paste that pulls heat out of AI chips",
@@ -115,7 +118,7 @@ def main():
         use = re.sub(r"<[^>]+>", "", re.search(r'<th scope="row">Use</th><td>(.*?)</td>', body, re.S).group(1)).strip()
         apps.append(dict(slug=slug(title), title=title, short=SHORT.get(title, title), cat=cat, cs=CAT_SHORT.get(cat, cat), use=html.unescape(use),
                          k=fig.group(1) if fig else None, cap=html.unescape(fig.group(2)) if fig else "", focus='cyclodextrin' in (fig.group(2) if fig else ''), table="<table>" + "".join(rows) + "</table>"))
-    assert len(apps) == 51 and len({a["slug"] for a in apps}) == 51
+    assert len(apps) == 54 and len({a["slug"] for a in apps}) == 54
     cats = list(dict.fromkeys(a["cat"] for a in apps))
 
     used = {a["k"] for a in apps if a["k"]}
