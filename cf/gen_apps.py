@@ -202,12 +202,17 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
     .cell h2{font-size:22px; margin-bottom:14px} .tiles{grid-template-columns:repeat(auto-fill, minmax(88px, 1fr)); grid-template-rows:auto; grid-auto-rows:0; row-gap:0; column-gap:14px; overflow:hidden}
       .tile b{font-size:13.5px; padding-top:7px} }"""))
 
-    # ---- hidden /ss: one square card per category to screenshot for social posts (not linked from the site)
-    COLS = {8: 4, 6: 3, 5: 3, 3: 3}
-    cards = "\n".join(
-        f'  <section class="sq" id="{cslug[c]}" style="--cols:{COLS[sum(a["cat"] == c for a in apps)]}"><h1>{html.escape(c)}</h1><div class="g">' +
-        "".join(f'<div class="t" data-k="{a["k"]}"{" data-focus" if a["focus"] else ""}><canvas></canvas><b>{html.escape(a["short"])}</b></div>' for a in apps if a["cat"] == c) +
-        "</div></section>" for c in cats)
+    # ---- hidden /ss: four square images to screenshot for social posts (not linked). Similar categories share an image;
+    #      each category is one row of up to 5 tiles, like the phone layout.
+    GROUPS = [["Medicine", "Biotech", "Cosmetics & home"], ["Food & drink", "Agriculture"],
+              ["Energy", "Data centers & chips"], ["Environment", "Mining", "Industry"]]
+    assert sorted(c for g in GROUPS for c in g) == sorted(cats)
+    def block(c):
+        mine = [a for a in apps if a["cat"] == c]
+        return (f'<div class="blk"><h2>{html.escape(c)}<span>{len(mine)}</span></h2><div class="g">' +
+                "".join(f'<div class="t" data-k="{a["k"]}"{" data-focus" if a["focus"] else ""}><canvas></canvas><b>{html.escape(a["short"])}</b></div>' for a in mine[:5]) +
+                "</div></div>")
+    cards = "\n".join(f'  <section class="sq" id="ss{i + 1}">' + "".join(block(c) for c in g) + "</section>" for i, g in enumerate(GROUPS))
     (WEB / "ss").mkdir(exist_ok=True)
     (WEB / "ss" / "index.html").write_text(f"""<!doctype html>
 <html lang="en">
@@ -219,11 +224,12 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
 {FONTS}
 <style>
   body{{background:#fff; padding:40px 0 80px}}
-  .sq{{width:720px; height:720px; margin:0 auto 48px; background:#E8EDF4; padding:64px 60px; display:flex; flex-direction:column}}
-  .sq h1{{margin:0; font-weight:600; font-size:44px; letter-spacing:-.03em; color:var(--ink)}}
-  .g{{flex:1; display:grid; grid-template-columns:repeat(var(--cols), 1fr); align-content:center; gap:30px 26px}}
-  .t canvas{{display:block; width:100%; aspect-ratio:1; border-radius:28px; background:var(--bg)}}
-  .t b{{display:block; margin-top:10px; font-weight:500; font-size:16px; line-height:1.25; letter-spacing:-.01em; color:var(--ink)}}
+  .sq{{width:720px; height:720px; margin:0 auto 48px; background:#E8EDF4; padding:52px 60px; display:flex; flex-direction:column; justify-content:center; gap:34px}}
+  .blk h2{{margin:0 0 14px; font-weight:600; font-size:30px; letter-spacing:-.025em; color:var(--ink); white-space:nowrap}}
+  .blk h2 span{{margin-left:10px; font-family:var(--mono); font-size:17px; font-weight:500; color:var(--ink2); vertical-align:3px}}
+  .g{{display:grid; grid-template-columns:repeat(5, 104px); gap:20px}}
+  .t canvas{{display:block; width:104px; height:104px; border-radius:24px; background:var(--bg)}}
+  .t b{{display:block; margin-top:8px; font-weight:500; font-size:14px; line-height:1.25; letter-spacing:-.01em; color:var(--ink)}}
 </style>
 </head>
 <body>
