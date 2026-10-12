@@ -203,14 +203,14 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
       .tile b{font-size:13.5px; padding-top:7px} }"""))
 
     # ---- hidden /ss: four square images to screenshot for social posts (not linked). Similar categories share an image;
-    #      each category is one row of up to 5 tiles, like the phone layout.
+    #      each category is one row of up to 4 tiles, like the phone layout.
     GROUPS = [["Medicine", "Biotech", "Cosmetics & home"], ["Food & drink", "Agriculture"],
               ["Energy", "Data centers & chips"], ["Environment", "Mining", "Industry"]]
     assert sorted(c for g in GROUPS for c in g) == sorted(cats)
     def block(c):
         mine = [a for a in apps if a["cat"] == c]
         return (f'<div class="blk"><h2>{html.escape(c)}<span>{len(mine)}</span></h2><div class="g">' +
-                "".join(f'<div class="t" data-k="{a["k"]}"{" data-focus" if a["focus"] else ""}><canvas></canvas><b>{html.escape(a["short"])}</b></div>' for a in mine[:5]) +
+                "".join(f'<div class="t" data-k="{a["k"]}"{" data-focus" if a["focus"] else ""}><canvas></canvas><b>{html.escape(a["short"])}</b></div>' for a in mine[:4]) +
                 "</div></div>")
     cards = "\n".join(f'  <section class="sq" id="ss{i + 1}">' + "".join(block(c) for c in g) + "</section>" for i, g in enumerate(GROUPS))
     (WEB / "ss").mkdir(exist_ok=True)
@@ -224,11 +224,11 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
 {FONTS}
 <style>
   body{{background:#fff; padding:40px 0 80px}}
-  .sq{{width:720px; height:720px; margin:0 auto 48px; background:#E8EDF4; padding:52px 60px; display:flex; flex-direction:column; justify-content:center; gap:34px}}
+  .sq{{width:720px; height:720px; margin:0 auto 48px; background:#E8EDF4; padding:52px 60px; display:flex; flex-direction:column; justify-content:center; gap:28px}}
   .blk h2{{margin:0 0 14px; font-weight:600; font-size:30px; letter-spacing:-.025em; color:var(--ink); white-space:nowrap}}
   .blk h2 span{{margin-left:10px; font-family:var(--mono); font-size:17px; font-weight:500; color:var(--ink2); vertical-align:3px}}
-  .g{{display:grid; grid-template-columns:repeat(5, 104px); gap:20px}}
-  .t canvas{{display:block; width:104px; height:104px; border-radius:24px; background:var(--bg)}}
+  .g{{display:grid; grid-template-columns:repeat(4, 114px); gap:24px}}
+  .t canvas{{display:block; width:114px; height:114px; border-radius:26px; background:var(--bg)}}
   .t b{{display:block; margin-top:8px; font-weight:500; font-size:14px; line-height:1.25; letter-spacing:-.01em; color:var(--ink)}}
 </style>
 </head>
