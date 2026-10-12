@@ -40,7 +40,7 @@ import { setup } from '/site/appmols.js';
 const tiles = [...document.querySelectorAll('.tile')];
 const look = new URLSearchParams(location.search).get('bg') === 'light' ? 'light' : 'dark';
 document.body.classList.toggle('light', look === 'light');
-const views = tiles.map(el => setup({ dataset:{ k:el.dataset.k }, look, querySelector:() => el.querySelector('canvas') }));
+const views = tiles.map(el => setup({ dataset:{ k:el.dataset.k }, look, focus:'focus' in el.dataset, querySelector:() => el.querySelector('canvas') }));
 let hot = -1, last = performance.now();
 (function loop(t){ if (hot >= 0) views[hot].tick(t - last); last = t; requestAnimationFrame(loop); })(last);
 requestAnimationFrame(() => views.forEach(v => v.draw()));

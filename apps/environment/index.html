@@ -32,7 +32,7 @@
 <main class="wrap">
   <a class="crumb" href="/apps/">Applications</a>
   <h1><a href="/apps/environment/">Environment<span class="n">3</span></a></h1>
-  <ul class="list"><li><a class="tile" href="/apps/pfas-trap-for-drinking-water/" data-k="pfas"><canvas></canvas><b>PFAS trap for water</b></a><div><a class="t" href="/apps/pfas-trap-for-drinking-water/">PFAS trap for drinking water</a><p>Pull “forever chemicals” out of drinking water. US utilities must meet the 2024 EPA limit of 4 ppt</p></div></li><li><a class="tile" href="/apps/co2-trap-that-works-in-humid-air/" data-k="mof"><canvas></canvas><b>CO₂ trap for humid air</b></a><div><a class="t" href="/apps/co2-trap-that-works-in-humid-air/">CO₂ trap that works in humid air</a><p>Capture CO₂ from air or flue gas without water blocking the binding sites</p></div></li><li><a class="tile" href="/apps/catalyst-that-turns-mixed-plastic-back-into-fuel/" data-k="plastic"><canvas></canvas><b>Plastic-to-fuel catalyst</b></a><div><a class="t" href="/apps/catalyst-that-turns-mixed-plastic-back-into-fuel/">Catalyst that turns mixed plastic back into fuel</a><p>Break polyethylene and polypropylene waste into useful liquids at low heat</p></div></li></ul>
+  <ul class="list"><li><a class="tile" href="/apps/pfas-trap-for-drinking-water/" data-k="pfas" data-focus><canvas></canvas><b>PFAS trap for water</b></a><div><a class="t" href="/apps/pfas-trap-for-drinking-water/">PFAS trap for drinking water</a><p>Pull “forever chemicals” out of drinking water. US utilities must meet the 2024 EPA limit of 4 ppt</p></div></li><li><a class="tile" href="/apps/co2-trap-that-works-in-humid-air/" data-k="mof"><canvas></canvas><b>CO₂ trap for humid air</b></a><div><a class="t" href="/apps/co2-trap-that-works-in-humid-air/">CO₂ trap that works in humid air</a><p>Capture CO₂ from air or flue gas without water blocking the binding sites</p></div></li><li><a class="tile" href="/apps/catalyst-that-turns-mixed-plastic-back-into-fuel/" data-k="plastic"><canvas></canvas><b>Plastic-to-fuel catalyst</b></a><div><a class="t" href="/apps/catalyst-that-turns-mixed-plastic-back-into-fuel/">Catalyst that turns mixed plastic back into fuel</a><p>Break polyethylene and polypropylene waste into useful liquids at low heat</p></div></li></ul>
 </main>
 <footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
 <script type="module">
@@ -40,7 +40,7 @@ import { setup } from '/site/appmols.js';
 const tiles = [...document.querySelectorAll('.tile')];
 const look = new URLSearchParams(location.search).get('bg') === 'light' ? 'light' : 'dark';
 document.body.classList.toggle('light', look === 'light');
-const views = tiles.map(el => setup({ dataset:{ k:el.dataset.k }, look, querySelector:() => el.querySelector('canvas') }));
+const views = tiles.map(el => setup({ dataset:{ k:el.dataset.k }, look, focus:'focus' in el.dataset, querySelector:() => el.querySelector('canvas') }));
 let hot = -1, last = performance.now();
 (function loop(t){ if (hot >= 0) views[hot].tick(t - last); last = t; requestAnimationFrame(loop); })(last);
 requestAnimationFrame(() => views.forEach(v => v.draw()));

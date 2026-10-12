@@ -140,7 +140,7 @@ stage.load(f).then(() => { stage.ov = { svg:$('ov') }; });
 const row = $('row');
 const picks = HOME.map(s => APPS.find(a => a.slug === s));
 row.innerHTML = picks.map(a => `<a class="card" href="/apps/${a.slug}/" draggable="false"><canvas></canvas><div><b>${a.short}</b><small>${a.cs}</small></div></a>`).join('');
-const views = [...row.querySelectorAll('.card')].map((el, i) => setup({ dataset:{ k:picks[i].k }, querySelector:() => el.querySelector('canvas') }));
+const views = [...row.querySelectorAll('.card')].map((el, i) => setup({ dataset:{ k:picks[i].k }, focus:picks[i].focus, querySelector:() => el.querySelector('canvas') }));
 // one structure moves at a time: hovering a card wakes its molecule and pauses the machine on top
 let last = performance.now(), hot = -1;
 (function loop(t){ if (hot >= 0) views[hot].tick(t - last); last = t; requestAnimationFrame(loop); })(last);

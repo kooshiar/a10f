@@ -14,7 +14,11 @@ function tone(c,t){const x=hex(c),y=t>0?[255,255,255]:[5,8,11],k=Math.abs(t);ret
 export function setup(fig){
   const d=DATA[fig.dataset.k], cv=fig.querySelector('canvas'), ctx=cv.getContext('2d');
   const guest=new Set(Array.isArray(d.guest)?d.guest:d.guest?[...Array(d.guest).keys()]:[]);
-  const show=d.els.map(e=>COL[e]!=null);
+  // fig.focus: draw only the guest molecule, centred (tiles of apps that share the same host ring)
+  const foc=!!(fig.focus&&guest.size);
+  const show=d.els.map((e,i)=>COL[e]!=null&&(!foc||guest.has(i)));
+  const gi=[...guest], C=foc?[0,1,2].map(j=>gi.reduce((s,i)=>s+d.X[i][j],0)/gi.length):[0,0,0];
+  const X=d.X.map(p=>[p[0]-C[0],p[1]-C[1],p[2]-C[2]]);
   // site palette only: guest orange, host elements by count -> pearl, blue, sky, lilac, pink
   const PAL=['#F4EBF0','#3B74D6','#8DB3F0','#D8CFEE','#EAD6E2'], cnt={};
   d.els.forEach((e,i)=>{if(show[i]&&!guest.has(i))cnt[e]=(cnt[e]||0)+1;});
@@ -26,7 +30,7 @@ export function setup(fig){
   const look=fig.look||(fig.orig?'light':null);
   const restCol=look==='light'?(i=>COL[d.els[i]]):look==='dark'?(i=>DARK[COL[d.els[i]]]||COL[d.els[i]]):(i=>cols[i]);
   const LINE=look==='light'?{bond:'#3A3F4A',cell:'#C9CFDA'}:look==='dark'?{bond:'#6A7286',cell:'#2E3547'}:REST;
-  let R=0; d.X.forEach((p,i)=>{if(show[i])R=Math.max(R,Math.hypot(...p));});
+  let R=0; X.forEach((p,i)=>{if(show[i])R=Math.max(R,Math.hypot(...p));});
   const st={th:.6,ph:d.ph??-.35,drag:null,auto:false,on:false};
   const lines=[];
   if(d.cell){const a=d.cell/2,v=[-a,a];for(const x of v)for(const y of v){lines.push([[x,y,-a],[x,y,a]],[[x,-a,y],[x,a,y]],[[-a,x,y],[a,x,y]]);}}
@@ -35,8 +39,8 @@ export function setup(fig){
     const dpr=devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight; if(!W)return;
     if(cv.width!==Math.round(W*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}
     ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
-    const sc=Math.min(W,H)/(2*R+3)*.98*(fig.scale||SCALE), cx=W/2, cy=H/2;
-    const P=d.X.map(rot), pr=p=>[cx+p[0]*sc,cy-p[1]*sc];
+    const sc=Math.min(W,H)/(2*R+3)*.98*(fig.scale||SCALE)*(foc?1.15:1), cx=W/2, cy=H/2;
+    const P=X.map(rot), pr=p=>[cx+p[0]*sc,cy-p[1]*sc];
     ctx.strokeStyle=LINE.cell;ctx.lineWidth=1;
     lines.forEach(([a,b])=>{const A=pr(rot(a)),B=pr(rot(b));ctx.beginPath();ctx.moveTo(...A);ctx.lineTo(...B);ctx.stroke();});
     const items=[];
@@ -48,7 +52,7 @@ export function setup(fig){
         ctx.strokeStyle=LINE.bond;ctx.lineWidth=Math.max(1,sc*(host?.09:(o>1?.2:.16)));ctx.lineCap='round';
         ctx.beginPath();ctx.moveTo(...A);ctx.lineTo(...B);ctx.stroke();continue;}
       const i=it.a,e=d.els[i],[x,y]=pr(P[i]);const g=guest.size&&guest.has(i);
-      let r=RAD[e]*sc*(d.cell||d.solid?.85:.62)*(guest.size?(g?(d.guestScale||1.35):.8):1); if(d.cell&&e==='Li')r*=.8;
+      let r=RAD[e]*sc*(d.cell||d.solid?.85:.62)*(guest.size&&!foc?(g?(d.guestScale||1.35):.8):1); if(d.cell&&e==='Li')r*=.8;
       const depth=(P[i][2]/R+1)/2, c=restCol(i);
       ctx.globalAlpha=(d.cell&&e==='Li')?.8:1;
       const gr=ctx.createRadialGradient(x-r*.35,y-r*.35,r*.1,x,y,r);
