@@ -224,12 +224,12 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
 {FONTS}
 <style>
   body{{background:#fff; padding:40px 0 80px}}
-  .sq{{width:720px; height:720px; margin:0 auto 48px; background:#E8EDF4; padding:52px 60px; display:flex; flex-direction:column; justify-content:center; gap:28px}}
-  .blk h2{{margin:0 0 14px; font-weight:600; font-size:30px; letter-spacing:-.025em; color:var(--ink); white-space:nowrap}}
+  .sq{{width:720px; height:720px; margin:0 auto 48px; background:#E8EDF4; padding:44px 60px; display:flex; flex-direction:column; justify-content:center; gap:20px}}
+  .blk h2{{margin:0 0 12px; font-weight:600; font-size:28px; letter-spacing:-.025em; color:var(--ink); white-space:nowrap}}
   .blk h2 span{{margin-left:10px; font-family:var(--mono); font-size:17px; font-weight:500; color:var(--ink2); vertical-align:3px}}
-  .g{{display:grid; grid-template-columns:repeat(4, 114px); gap:24px}}
-  .t canvas{{display:block; width:114px; height:114px; border-radius:26px; background:var(--bg)}}
-  .t b{{display:block; margin-top:8px; font-weight:500; font-size:14px; line-height:1.25; letter-spacing:-.01em; color:var(--ink)}}
+  .g{{display:grid; grid-template-columns:repeat(4, 134px); gap:14px}}
+  .t canvas{{display:block; width:104px; height:104px; border-radius:24px; background:var(--bg)}}
+  .t b{{display:block; margin-top:8px; font-weight:500; font-size:16.5px; line-height:1.2; letter-spacing:-.015em; color:var(--ink)}}
 </style>
 </head>
 <body>
