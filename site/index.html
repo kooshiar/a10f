@@ -68,9 +68,12 @@
   .dia.levels .structure{justify-self:end} .dia.levels .physics{justify-self:start}
   .dia.levels .designer{padding-block:9px} .dia.levels .physics{padding-block:8px}
   @media (max-width:900px){
-    .hero .top{grid-template-columns:1fr; gap:0} h1{font-size:36px}
+    .hero .top{grid-template-columns:1fr; gap:0; padding-top:24px} h1{font-size:36px}
     .stage{height:60vw} #gl, svg#ov{inset:0}
-    .row{grid-auto-columns:46%}
+    .row{grid-auto-columns:calc((100% - 32px) / 3); gap:16px} .card canvas{width:100%; height:auto; aspect-ratio:1; border-radius:22px} .card b{font-size:14px} .card small{font-size:10.5px}
+    .dia.levels{grid-template-columns:minmax(0, 1fr); grid-template-areas:"agent" "designer" "structure" "physics" "data"; width:100%}
+    .dia.levels .nd, .dia.levels .structure, .dia.levels .physics{justify-self:stretch; justify-content:space-between}
+    .techbg.white .nd{background:#fff} .techbg.white .designer{background:#12151D} .techbg.white .physics{background:#F3F4F6}
     .dia{width:auto} .dia.flow{grid-template-columns:1fr 1fr; grid-template-rows:auto; grid-template-areas:"agent agent" "designer designer" "structure physics" "data data"; height:auto} .dia.flow .agent{height:auto}
   }
 </style>
@@ -165,9 +168,10 @@ function links(){
     const x = Math.max(A.l, B.l) < Math.min(A.r, B.r) ? (Math.max(A.l, B.l) + Math.min(A.r, B.r)) / 2 : null;
     return x != null ? `M${x} ${A.b}V${B.t}` : `M${A.cx} ${A.b}C${A.cx} ${(A.b + B.t) / 2} ${B.cx} ${(A.b + B.t) / 2} ${B.cx} ${B.t}`; };
   const D = box('designer'), P = box('physics');
-  const back = dia.classList.contains('levels') ? `M${P.r} ${P.cy}H${P.r + 20}V${D.cy}H${D.r}` : `M${P.cx} ${P.b}V${P.b + 14}H${D.cx}V${D.b}`;
+  const narrow = innerWidth <= 900;    // phones: one column, no room for the dashed loop
+  const back = narrow ? '' : dia.classList.contains('levels') ? `M${P.r} ${P.cy}H${P.r + 20}V${D.cy}H${D.r}` : `M${P.cx} ${P.b}V${P.b + 14}H${D.cx}V${D.b}`;
   $('links').innerHTML = [['agent', 'designer'], ['designer', 'structure'], ['designer', 'physics'], ['structure', 'physics'], ['structure', 'data'], ['physics', 'data']]
-    .map(([a, b]) => `<path d="${line(a, b)}"/>`).join('') + `<path class="dash" d="${back}"/>`;
+    .map(([a, b]) => `<path d="${line(a, b)}"/>`).join('') + (back ? `<path class="dash" d="${back}"/>` : '');
 }
 function layout(){ $('dia').className = 'dia ' + (innerWidth <= 900 ? 'levels' : 'flow'); links(); }
 addEventListener('resize', layout); document.fonts.ready.then(layout); layout();

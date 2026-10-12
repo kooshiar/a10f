@@ -50,7 +50,7 @@ SHORT = {
     "Cheap ligand that pulls antibodies out of cell broth": "Antibody capture",
     "PFAS trap for drinking water": "PFAS trap for water",
     "CO₂ trap that works in humid air": "CO₂ trap for humid air",
-    "Catalyst that turns mixed plastic back into fuel": "Plastic-to-fuel catalyst",
+    "Catalyst that turns mixed plastic back into fuel": "Plastic to fuel",
     "Heat battery that cuts data center cooling peaks": "Data-center heat battery",
     "Coolant for data centers after 3M leaves PFAS": "PFAS-free coolant",
     "Heat paste that pulls heat out of AI chips": "Heat paste for AI chips",
@@ -197,8 +197,9 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
   .cell + .cell{border-left:1px solid var(--sep)}
   .cell h2{margin:0 0 10px; font-size:20px; font-weight:600; letter-spacing:-.025em; white-space:nowrap}
   .tiles{display:grid; grid-template-columns:repeat(var(--k), minmax(0, 1fr)); gap:24px}
-  .tile{min-width:0} .tile canvas{width:100%; height:auto; aspect-ratio:1} .tile b{font-size:12px}
-  @media (max-width:900px){ .row{flex-direction:column} .cell{width:auto !important; padding-inline:0 !important} .cell + .cell{border-left:0; border-top:1px solid var(--sep)} }"""))
+  .tile{min-width:0} .tile canvas{width:100%; height:auto; aspect-ratio:1} .tile b{font-size:13px}
+  @media (max-width:900px){ .row{flex-direction:column} .cell{width:auto !important; padding-inline:0 !important; padding-block:18px 20px} .cell + .cell{border-left:0; border-top:1px solid var(--sep)}
+    .cell h2{font-size:22px; margin-bottom:14px} .tiles{grid-template-columns:repeat(3, minmax(0, 1fr)); gap:18px 16px} .tile b{font-size:15px; padding-top:8px} }"""))
 
     # ---- hidden /ss: one square card per category to screenshot for social posts (not linked from the site)
     COLS = {8: 4, 6: 3, 5: 3, 3: 3}
