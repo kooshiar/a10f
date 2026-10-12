@@ -110,14 +110,14 @@ def main():
             cat = html.unescape(lab); continue
         title = html.unescape(lab)
         table = re.search(r"<table>.*?</table>", body, re.S).group(0)
-        # drop the How group (5 rows) and put the contact link in its place
+        # drop the How group (6 rows) and put the contact link in its place
         rows = re.findall(r"<tr.*?</tr>", table, re.S)
         i = next(k for k, r in enumerate(rows) if ">How</th>" in r)
         # keep testing and funding from the How group, under their own heading, then the contact link
-        cell = lambda lab: re.search(rf'<th scope="row">{lab}</th>(<td>.*?</td>)', "".join(rows[i:i + 5]), re.S).group(1)
-        need = (f'<tr class="g0"><th scope="rowgroup" class="grp" rowspan="2">Build</th><th scope="row">Testing</th>{cell("Lab test")}</tr>'
-                f'<tr><th scope="row">Funding</th>{cell("Costs")}</tr>')
-        rows = rows[:i] + [need, CONTACT_ROW] + rows[i + 5:]
+        cell = lambda lab: re.search(rf'<th scope="row">{lab}</th>(<td>.*?</td>)', "".join(rows[i:i + 6]), re.S).group(1)
+        need = (f'<tr class="g0"><th scope="rowgroup" class="grp" rowspan="3">Build</th><th scope="row">Testing</th>{cell("Lab test")}</tr>'
+                f'<tr><th scope="row">Funding</th>{cell("Costs")}</tr><tr><th scope="row">Time</th>{cell("Time")}</tr>')
+        rows = rows[:i] + [need, CONTACT_ROW] + rows[i + 6:]
         fig = re.search(r'data-k="([^"]+)"[^>]*title="([^"]*)"', body)
         use = re.sub(r"<[^>]+>", "", re.search(r'<th scope="row">Use</th><td>(.*?)</td>', body, re.S).group(1)).strip()
         apps.append(dict(slug=slug(title), title=title, short=SHORT.get(title, title), cat=cat, cs=CAT_SHORT.get(cat, cat), use=html.unescape(use),
