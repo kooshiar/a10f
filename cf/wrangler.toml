@@ -13,3 +13,9 @@ binding = "ASSETS"
 html_handling = "auto-trailing-slash"
 not_found_handling = "none"
 run_worker_first = ["/", "/api/*"]
+
+# every contact message is stored here before it is emailed
+[[d1_databases]]
+binding = "DB"
+database_name = "a10-contact"
+database_id = "a02ba68b-25d6-4c19-93cc-d0f9b88d359c"
