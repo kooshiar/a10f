@@ -77,7 +77,8 @@ HOME = ["PFAS trap for drinking water", "Solid electrolyte for solid-state batte
 CONTACT_ROW = ('<tr class="g0"><th scope="row" class="grp" colspan="2">How</th>'
                '<td><a class="ask" href="/contact/">Contact us for the design specs and build plan &rarr;</a></td></tr>')
 
-FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
+FONTS = ('<script async src="/site/analytics.js?v=1"></script>\n'
+         '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
          '<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">\n'
          '<link rel="stylesheet" href="/site/frame.css">')
 

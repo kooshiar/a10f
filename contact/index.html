@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script async src="/site/analytics.js?v=1"></script>
 <title>97A · Contact</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -45,6 +46,7 @@ f.addEventListener('submit', async e => {
     const r = await fetch('/api/contact', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(d) });
     const j = await r.json();
     if (!j.ok) throw 0;
+    try { gtag('event', 'contact_sent'); window.osTrack && osTrack('contact_sent'); } catch (e) {}
     f.innerHTML = '<p class="msg">Sent. Thank you.</p>';
   } catch { b.disabled = false; err.textContent = 'Couldn’t send. Please try again.'; }
 });
