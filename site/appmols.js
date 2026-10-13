@@ -60,5 +60,10 @@ export function setup(fig){
       ctx.fillStyle=gr;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.globalAlpha=1;
     }
   }
-  return {draw,tick(dt){if(st.on&&!reduce){st.th+=dt*.0006;draw();}},active(on){st.on=on;draw();}};
+  // fig.drag: rotate by dragging (application pages); spin pauses while held
+  if(fig.drag){cv.style.cursor='grab';cv.style.touchAction='none';
+    cv.addEventListener('pointerdown',e=>{st.drag=[e.clientX,e.clientY];cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing';});
+    cv.addEventListener('pointermove',e=>{if(!st.drag)return;st.th+=(e.clientX-st.drag[0])*.01;st.ph=Math.max(-1.5,Math.min(1.5,st.ph+(e.clientY-st.drag[1])*.01));st.drag=[e.clientX,e.clientY];draw();});
+    const up=()=>{st.drag=null;cv.style.cursor='grab';};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);}
+  return {draw,tick(dt){if(st.on&&!reduce&&!st.drag){st.th+=dt*.0006;draw();}},active(on){st.on=on;draw();}};
 }

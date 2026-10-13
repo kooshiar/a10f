@@ -243,7 +243,7 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
 <body>
 {cards}
 <script type="module">
-import {{ setup }} from '/site/appmols.js';
+import {{ setup }} from '/site/appmols.js?v=3';
 document.querySelectorAll('.t').forEach(el => setup({{ dataset:{{ k:el.dataset.k }}, look:'dark', scale:.9, focus:'focus' in el.dataset, querySelector:() => el.querySelector('canvas') }}).draw());
 </script>
 </body>
@@ -294,10 +294,10 @@ document.querySelectorAll('.t').forEach(el => setup({{ dataset:{{ k:el.dataset.k
 </main>
 {FOOT}
 <script type="module">
-import {{ setup }} from '/site/appmols.js';
+import {{ setup }} from '/site/appmols.js?v=3';
 const look = new URLSearchParams(location.search).get('bg') === 'light' ? 'light' : 'dark';
 document.body.classList.toggle('light', look === 'light');
-const f = document.querySelector('.mol'), v = setup({{ dataset:{{ k:f.dataset.k }}, scale:.95, look, querySelector:() => f.querySelector('canvas') }});
+const f = document.querySelector('.mol'), v = setup({{ dataset:{{ k:f.dataset.k }}, scale:.95, look, drag:true, querySelector:() => f.querySelector('canvas') }});
 v.active(true); let last = performance.now();
 (function loop(t){{ v.tick(t - last); last = t; requestAnimationFrame(loop); }})(last);
 addEventListener('resize', () => v.draw());
