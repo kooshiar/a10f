@@ -48,7 +48,12 @@ async function contact(request, env) {
 
 // ---- gated decks: /decks/<name> asks for an email; only emails matching the deck's rule get in. Every entry is saved in D1.
 // The deck file sits in the assets but every /decks/* path runs through here first, so it is never served without the cookie.
-const DECKS = { dsc: { file: '/decks/dsc/deck', rule: /jacob/i, title: 'Data Center Construction', hint: 'Use your Jacobs email.' } };
+const DECKS = {
+  dsc: { file: '/decks/dsc/deck', rule: /jacob/i, title: 'Data Center Construction', hint: 'Use your Jacobs email.', table: 'deck_access' },
+  // spinoff decks: any valid email opens them; entries go to their own table
+  crp: { file: '/decks/crp/deck', rule: /./, title: 'CRP Binders', hint: '', table: 'spinoffs' },
+  heatcold: { file: '/decks/heatcold/deck', rule: /./, title: 'Heat and Cold Wraps', hint: '', table: 'spinoffs' },
+};
 const enc = new TextEncoder();
 const b64u = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 async function sign(env, text) {
@@ -60,7 +65,8 @@ const cookieOf = (request, name) => (request.headers.get('cookie') || '').split(
 async function deck(request, env, url) {
   const name = url.pathname.split('/')[2] || '';
   const d = DECKS[name];
-  if (!d || !env.DECK_SECRET) return new Response('Not found', { status: 404 });
+  if (!d) return privateDecks(request, env, url, name);
+  if (!env.DECK_SECRET) return new Response('Not found', { status: 404 });
   const ck = `deck_${name}`;
   if (request.method === 'POST') {
     const form = await request.formData().catch(() => null);
@@ -68,7 +74,7 @@ async function deck(request, env, url) {
     const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     const ok = valid && d.rule.test(email);
     try {
-      await env.DB.prepare('INSERT INTO deck_access (deck, email, granted, country, ua) VALUES (?, ?, ?, ?, ?)')
+      await env.DB.prepare(`INSERT INTO ${d.table} (deck, email, granted, country, ua) VALUES (?, ?, ?, ?, ?)`)
         .bind(name, email || null, ok ? 1 : 0, request.cf?.country || null, (request.headers.get('user-agent') || '').slice(0, 200)).run();
     } catch (e) { console.log('deck store failed', String(e).slice(0, 200)); }
     if (!ok) return gate(d, url, valid ? d.hint : 'Enter a valid email.', 403);
@@ -111,6 +117,62 @@ button{font:inherit;font-weight:500;font-size:16px;padding:12px 14px;border:0;bo
 <main><div class="g"><h1>${esc(d.title)}</h1><p>Enter your work email to open this deck.</p>
 <form method="post" action="${esc(url.pathname)}"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" required autofocus>
 ${err ? `<span class="err" role="alert">${esc(err)}</span>` : ''}<button type="submit">Open deck</button></form></div></main>
+<footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer></body></html>`;
+  return new Response(html, { status, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } });
+}
+
+// ---- /decks (the list) and the private decks below it: one password (ADMIN_PASS secret). No secret set = 404,
+// so a deploy can never expose them. The files sit in ./dist/decks but every /decks path runs through the worker first.
+const PRIVATE = ['sales', 'strategy', 'startup', 'amd'];
+const same = (a, b) => { if (a.length !== b.length) return false; let x = 0; for (let i = 0; i < a.length; i++) x |= a.charCodeAt(i) ^ b.charCodeAt(i); return x === 0; };
+async function privateDecks(request, env, url, name) {
+  if ((name && !PRIVATE.includes(name)) || !env.ADMIN_PASS || !env.DECK_SECRET) return new Response('Not found', { status: 404 });
+  if (request.method === 'POST') {
+    const form = await request.formData().catch(() => null);
+    const pass = String(form?.get('password') || '');
+    const ok = same(await sign(env, `pw|${pass}`), await sign(env, `pw|${env.ADMIN_PASS}`));
+    try {
+      await env.DB.prepare(`INSERT INTO ${d.table} (deck, email, granted, country, ua) VALUES (?, ?, ?, ?, ?)`)
+        .bind(name || 'list', null, ok ? 1 : 0, request.cf?.country || null, (request.headers.get('user-agent') || '').slice(0, 200)).run();
+    } catch (e) { console.log('admin store failed', String(e).slice(0, 200)); }
+    if (!ok) { await new Promise((r) => setTimeout(r, 800)); return adminGate(url, 'Wrong password.', 403); }
+    const exp = Date.now() + 30 * 864e5;
+    const token = `${exp}.${await sign(env, `admin|${exp}|${env.ADMIN_PASS}`)}`;
+    return new Response(null, { status: 303, headers: { location: url.pathname,
+      'set-cookie': `decks=${token}; Path=/decks; Max-Age=2592000; HttpOnly; Secure; SameSite=Lax` } });
+  }
+  const tok = cookieOf(request, 'decks');
+  if (tok) {
+    const [exp, sig] = tok.split('.');
+    if (Number(exp) > Date.now() && sig && same(sig, await sign(env, `admin|${exp}|${env.ADMIN_PASS}`))) {
+      const r = await env.ASSETS.fetch(request);
+      const h = new Headers(r.headers); h.set('cache-control', 'private, no-store'); h.set('x-robots-tag', 'noindex');
+      return new Response(r.body, { status: r.status, headers: h });
+    }
+  }
+  return adminGate(url, '', 200);
+}
+
+function adminGate(url, err, status) {
+  const esc = (t) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Decks · 97A</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/frame.css">
+<style>main{min-height:calc(100vh - 121px);display:flex;align-items:center}
+.g{max-width:420px;margin:0 auto;padding:48px 16px;display:flex;flex-direction:column;gap:22px}
+h1{margin:0;font-weight:600;font-size:34px;letter-spacing:-.03em;line-height:1.05}
+form{display:flex;flex-direction:column;gap:12px}
+label{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+input{font:inherit;font-size:16px;padding:12px 14px;border:1px solid var(--sep);border-radius:8px;color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+button{font:inherit;font-weight:500;font-size:16px;padding:12px 14px;border:0;border-radius:8px;background:var(--bg);color:var(--txt);cursor:pointer}
+.err{color:#C4271B;font-size:14px}</style></head><body>
+<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/">Applications</a><a href="/technology/">Technology</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
+<main><div class="g"><h1>Decks</h1>
+<form method="post" action="${esc(url.pathname)}"><label for="pw">Password</label><input id="pw" name="password" type="password" autocomplete="current-password" required autofocus>
+${err ? `<span class="err" role="alert">${esc(err)}</span>` : ''}<button type="submit">Open</button></form></div></main>
 <footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer></body></html>`;
   return new Response(html, { status, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } });
 }
