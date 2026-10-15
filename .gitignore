@@ -15,3 +15,13 @@ site/videos
 site/render
 cf/dist
 .wrangler
+
+# private decks under /decks, password-gated by the worker; never in git
+decks/index.html
+decks/sales/
+decks/strategy/
+decks/startup/
+decks/amd/
+decks/dsc/
+decks/crp/
+decks/heatcold/

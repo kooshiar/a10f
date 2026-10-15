@@ -132,7 +132,7 @@ async function privateDecks(request, env, url, name) {
     const pass = String(form?.get('password') || '');
     const ok = same(await sign(env, `pw|${pass}`), await sign(env, `pw|${env.ADMIN_PASS}`));
     try {
-      await env.DB.prepare(`INSERT INTO ${d.table} (deck, email, granted, country, ua) VALUES (?, ?, ?, ?, ?)`)
+      await env.DB.prepare('INSERT INTO deck_access (deck, email, granted, country, ua) VALUES (?, ?, ?, ?, ?)')
         .bind(name || 'list', null, ok ? 1 : 0, request.cf?.country || null, (request.headers.get('user-agent') || '').slice(0, 200)).run();
     } catch (e) { console.log('admin store failed', String(e).slice(0, 200)); }
     if (!ok) { await new Promise((r) => setTimeout(r, 800)); return adminGate(url, 'Wrong password.', 403); }
