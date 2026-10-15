@@ -123,7 +123,7 @@ ${err ? `<span class="err" role="alert">${esc(err)}</span>` : ''}<button type="s
 
 // ---- /decks (the list) and the private decks below it: one password (ADMIN_PASS secret). No secret set = 404,
 // so a deploy can never expose them. The files sit in ./dist/decks but every /decks path runs through the worker first.
-const PRIVATE = ['sales', 'strategy', 'startup', 'amd'];
+const PRIVATE = ['opportunities', 'sales', 'strategy', 'startup', 'amd'];
 const same = (a, b) => { if (a.length !== b.length) return false; let x = 0; for (let i = 0; i < a.length; i++) x |= a.charCodeAt(i) ^ b.charCodeAt(i); return x === 0; };
 async function privateDecks(request, env, url, name) {
   if ((name && !PRIVATE.includes(name)) || !env.ADMIN_PASS || !env.DECK_SECRET) return new Response('Not found', { status: 404 });
