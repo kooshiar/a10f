@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>97A · Scientists</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/frame.css">
+<style>
+  main.wrap{min-height:calc(100vh - 57px); display:flex; align-items:center; padding-top:56px; padding-bottom:120px}
+  .q{display:none; flex-direction:column; gap:32px; width:100%; max-width:720px}
+  .q.on{display:flex}
+  h1{margin:0; font-weight:600; font-size:clamp(28px,4.4vw,40px); letter-spacing:-.03em; line-height:1.08}
+  .fields{display:flex; flex-direction:column; gap:12px; max-width:480px}
+  input[type=text], input[type=url], input[type=email]{font:inherit; font-size:17px; color:var(--ink); background:#fff; border:1.5px solid var(--rule); border-radius:12px; padding:15px 16px; outline:none; width:100%}
+  input:focus{border-color:var(--ink)}
+  .chk{font-family:var(--mono); font-size:12px; min-height:16px; color:var(--mute)}
+  .chk.ok{color:#00804F} .chk.bad{color:#C0392B}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px}
+  .grid.big{grid-template-columns:repeat(4,1fr)}
+  .grid.wide{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+  .o{all:unset; box-sizing:border-box; cursor:pointer; border:1.5px solid var(--rule); border-radius:12px; padding:18px 16px; font-size:16px; font-weight:500; line-height:1.25;
+     display:flex; align-items:center; min-height:64px; transition:border-color .12s, background .12s}
+  .grid.big .o{font-size:24px; font-weight:600; justify-content:center; min-height:92px; letter-spacing:-.01em}
+  .o:hover{border-color:var(--sep)}
+  .o:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
+  .o[aria-pressed=true]{background:var(--ink); border-color:var(--ink); color:#fff}
+  .gap{height:6px}
+  .ac{position:relative}
+  .ac ul{list-style:none; margin:4px 0 0; padding:6px; position:absolute; left:0; right:0; top:100%; background:#fff; border:1.5px solid var(--rule); border-radius:12px; z-index:5; display:none}
+  .ac li{padding:10px 12px; border-radius:8px; cursor:pointer; font-size:15px}
+  .ac li span{color:var(--mute)}
+  .ac li.hi, .ac li:hover{background:#F2F3F6}
+  .nda{max-width:560px; min-height:auto; padding:20px; font-weight:500; gap:14px}
+  .nda .box{flex:none; width:22px; height:22px; border:1.5px solid currentColor; border-radius:5px; display:grid; place-items:center; font-size:15px}
+  .nda[aria-pressed=true] .box::after{content:"✓"}
+  .nav{display:flex; align-items:center; gap:14px; margin-top:4px}
+  .btn{all:unset; cursor:pointer; height:46px; padding:0 26px; border-radius:99px; background:var(--ink); color:#fff; font-family:var(--mono); font-size:12.5px; letter-spacing:.06em; text-transform:uppercase}
+  .btn.ghost{background:none; color:var(--ink2); padding:0 10px}
+  .btn:disabled{opacity:.4; cursor:default}
+  .btn:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
+  .dots{margin-left:auto; display:flex; gap:6px}
+  .dots i{width:22px; height:3px; border-radius:2px; background:var(--rule)}
+  .dots i.on{background:var(--ink)}
+  .err{font-family:var(--mono); font-size:12px; color:#C0392B; min-height:16px}
+  @media (max-width:640px){ main.wrap{align-items:flex-start; padding-top:44px} .grid.big{grid-template-columns:repeat(2,1fr)} .grid,.grid.wide{grid-template-columns:1fr 1fr} .o{font-size:15px; padding:14px 12px; min-height:58px} .dots i{width:12px} }
+</style>
+<style>
+  textarea{font:inherit; font-size:16px; color:var(--ink); background:#fff; border:1.5px solid var(--rule); border-radius:12px; padding:14px 16px; outline:none; width:100%; max-width:720px; min-height:120px; resize:vertical}
+  textarea:focus{border-color:var(--ink)}
+  h2{margin:0; font-family:var(--mono); font-weight:400; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--mute)}
+  .o{font-size:15px; min-height:56px; padding:14px 14px}
+</style>
+</head>
+<body>
+<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/">Applications</a><a href="/technology/">Technology</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
+<main class="wrap">
+
+<section class="q on" data-k="1">
+  <h1>Who are you?</h1>
+  <div class="fields">
+    <input type="text" id="name" placeholder="Full name" autocomplete="name">
+    <input type="email" id="email" placeholder="Email" autocomplete="email" inputmode="email">
+  </div>
+</section>
+
+<section class="q" data-k="2">
+  <h1>Which problems interest you?</h1>
+  <div class="grid wide" data-multi="problems"><button class="o">Bitter taste masking</button><button class="o">Drug solubility and formulation</button><button class="o">Drug crystal forms</button><button class="o">Drug stability</button><button class="o">Kidney binders (potassium, phosphate)</button><button class="o">Overdose and toxin antidotes</button><button class="o">Antimicrobial peptides</button><button class="o">Infection-free device coatings</button><button class="o">Biosensors and diagnostics</button><button class="o">Enzyme inhibitors</button><button class="o">Slow-release drug delivery</button><button class="o">Vaccine and protein stabilizers</button><button class="o">Cell freezing without DMSO</button><button class="o">Antibody purification</button><button class="o">Imaging contrast agents</button><button class="o">Peptide and macrocycle binders</button><button class="o">Biomarker capture</button><button class="o">Prodrugs and linkers</button><button class="o">PFAS and water cleanup</button><button class="o">CO₂ capture</button><button class="o">Lithium and critical metals</button><button class="o">Flavor and off-flavor</button><button class="o">Natural colors and sweeteners</button><button class="o">Crop and feed protection</button><button class="o">Fragrance capsules</button><button class="o">Battery materials</button><button class="o">Corrosion protection</button><button class="o">Plastic recycling</button></div>
+  <textarea id="ptext" maxlength="2000" placeholder="A problem you would like to solve, in a few sentences"></textarea>
+</section>
+
+<section class="q" data-k="3">
+  <h1>What can your lab make and test?</h1>
+  <h2>Make</h2>
+  <div class="grid wide" data-multi="make"><button class="o">Organic synthesis</button><button class="o">Peptide synthesis</button><button class="o">Protein expression</button><button class="o">Polymers and materials</button><button class="o">Nanoparticles</button><button class="o">Formulation</button><button class="o">Crystallization</button><button class="o">Cell culture</button></div>
+  <h2>Test</h2>
+  <div class="grid wide" data-multi="test"><button class="o">Binding (ITC, SPR, BLI)</button><button class="o">NMR</button><button class="o">LC-MS / HPLC</button><button class="o">UV-Vis / fluorescence</button><button class="o">X-ray crystallography</button><button class="o">Cell assays</button><button class="o">Enzyme assays</button><button class="o">Stability testing</button><button class="o">Microbiology</button><button class="o">Animal studies</button><button class="o">Electrochemistry</button><button class="o">Taste or sensory panels</button></div>
+  <textarea id="ltext" maxlength="1500" placeholder="Your lab and key equipment, in a few sentences"></textarea>
+</section>
+
+<section class="q" data-k="4">
+  <h1 id="thx">Thank you.</h1>
+</section>
+
+<div class="nav" id="nav" style="position:fixed;left:0;right:0;bottom:0;padding:16px max(16px,calc((100vw - 1040px)/2 + 40px));background:#fff;border-top:1px solid var(--rule)">
+  <button class="btn ghost" id="back">Back</button><button class="btn" id="next">Next</button><span class="err" id="err"></span>
+  <span class="dots" id="dots"></span>
+</div>
+</main>
+<script>
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const Q = $$('.q'), LAST = 3; let cur = 0;
+const dots = $('#dots'); for (let i = 0; i < LAST; i++) dots.appendChild(document.createElement('i'));
+$$('[data-multi] .o').forEach(b => { b.setAttribute('aria-pressed', 'false'); b.type = 'button'; });
+document.addEventListener('click', e => {
+  const b = e.target.closest('.o'); if (!b) return;
+  b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); save();
+});
+const picked = k => $$(`[data-multi="${k}"] .o[aria-pressed=true]`).map(b => b.textContent);
+// draft kept on this device only
+function data() {
+  return { name: $('#name').value.trim(), email: $('#email').value.trim(), problems: picked('problems'), problem_text: $('#ptext').value.trim(),
+           make: picked('make'), test: picked('test'), lab_text: $('#ltext').value.trim() };
+}
+function save() { try { localStorage.setItem('lab', JSON.stringify(data())); } catch {} }
+function load() {
+  let d; try { d = JSON.parse(localStorage.getItem('lab') || 'null'); } catch {} if (!d) return;
+  $('#name').value = d.name || ''; $('#email').value = d.email || ''; $('#ptext').value = d.problem_text || ''; $('#ltext').value = d.lab_text || '';
+  $$('.o').forEach(b => { const k = b.parentElement.dataset.multi; if (k && [].concat(d[k] || []).includes(b.textContent)) b.setAttribute('aria-pressed', 'true'); });
+}
+$$('input, textarea').forEach(i => i.addEventListener('change', save));
+load();
+function show(i) {
+  cur = i; Q.forEach((q, j) => q.classList.toggle('on', j === i));
+  [...dots.children].forEach((d, j) => d.classList.toggle('on', j <= i));
+  $('#back').style.display = i === 0 || i === LAST ? 'none' : '';
+  $('#next').textContent = i === LAST - 1 ? 'Submit' : 'Next';
+  $('#nav').style.display = i === LAST ? 'none' : 'flex'; $('#err').textContent = '';
+  const f = Q[i].querySelector('input'); if (f && matchMedia('(hover:hover)').matches) f.focus();
+  window.scrollTo(0, 0);
+}
+async function next() {
+  $('#err').textContent = '';
+  if (cur === 0) {
+    if (!$('#name').value.trim()) return $('#err').textContent = 'Name is needed.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('#email').value.trim())) return $('#err').textContent = 'Check the email.';
+  }
+  if (cur < LAST - 1) return show(cur + 1);
+  const b = $('#next'); b.disabled = true;
+  try {
+    const r = await fetch('/api/lab', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data()) });
+    const o = await r.json().catch(() => ({}));
+    if (!r.ok || !o.ok) throw 0;
+    try { localStorage.removeItem('lab'); } catch {}
+    $('#thx').textContent = `Thank you, ${data().name.split(' ')[0]}.`; show(LAST);
+  } catch { $('#err').textContent = 'Could not send. Try again.'; }
+  b.disabled = false;
+}
+$('#next').onclick = next; $('#back').onclick = () => cur > 0 && show(cur - 1);
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); next(); } });
+show(0);
+</script>
+</body>
+</html>
