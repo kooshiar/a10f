@@ -19,10 +19,14 @@ cf/dist
 # private decks under /decks, password-gated by the worker; never in git
 decks/index.html
 decks/sales/
-decks/strategy/
-decks/startup/
+decks/tech/
+decks/customers/
+decks/investors/
+decks/progress/
 decks/amd/
+decks/evonik/
 decks/dsc/
 decks/crp/
 decks/heatcold/
 decks/opportunities/
+decks/founders/
