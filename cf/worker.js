@@ -59,9 +59,10 @@ async function join(request, env) {
   const email = str(b.email, 200).toLowerCase();
   if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ ok: false, error: 'missing' }, 400);
   try {
-    await env.DB.prepare('INSERT INTO founders (name, email, linkedin, roles, problems, built, hours, city, nda, country, ua) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-      .bind(name, email, str(b.linkedin, 300) || null, list(b.roles, 12), list(b.problems, 20), list(b.built, 3), str(b.hours, 40) || null, str(b.city, 200) || null,
-            b.nda ? 1 : 0, request.cf?.country || null, (request.headers.get('user-agent') || '').slice(0, 200)).run();
+    await env.DB.prepare('INSERT INTO founders (name, email, linkedin, roles, problems, built, hours, city, nda, country, ua, problem_text, make, test, lab_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .bind(name, email, str(b.linkedin, 300) || null, list(b.roles, 12), list(b.problems, 40), list(b.built, 3), str(b.hours, 40) || null, str(b.city, 200) || null,
+            b.nda ? 1 : 0, request.cf?.country || null, (request.headers.get('user-agent') || '').slice(0, 200),
+            str(b.problem_text, 2000) || null, list(b.make, 20), list(b.test, 20), str(b.lab_text, 1500) || null).run();
   } catch (e) { console.log('join store failed', String(e).slice(0, 200)); return json({ ok: false }, 500); }
   return json({ ok: true });
 }
@@ -105,7 +106,7 @@ async function answersPage(env) {
   const arr = (t) => { try { return JSON.parse(t || '[]'); } catch { return []; } };
   const { results = [] } = await env.DB.prepare('SELECT * FROM founders ORDER BY id DESC').all();
   const rows = results.map((r) => `<tr><td><b>${r.linkedin ? `<a href="${esc(r.linkedin)}" target="_blank" rel="noopener">${esc(r.name)}</a>` : esc(r.name)}</b><span>${esc(r.email || '')}</span><span>${esc(r.city || '')}</span></td>
-<td>${esc(arr(r.roles).join(', '))}</td><td>${esc(arr(r.problems).join(', '))}</td><td>${arr(r.built).map(esc).join('<br>')}</td><td>${esc(r.hours || '')}</td><td>${r.nda ? '✓' : ''}</td><td>${esc((r.created || '').slice(0, 10))}</td></tr>`).join('');
+<td>${esc(arr(r.roles).join(', '))}</td><td>${esc(arr(r.problems).join(', '))}<span>${esc(r.problem_text || '')}</span></td><td>${esc(arr(r.make).concat(arr(r.test)).join(', '))}<span>${esc(r.lab_text || '')}</span></td><td>${arr(r.built).map(esc).join('<br>')}</td><td>${esc(r.hours || '')}</td><td>${r.nda ? '✓' : ''}</td><td>${esc((r.created || '').slice(0, 10))}</td></tr>`).join('');
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>Founder answers · 97A</title><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>body{margin:0;background:#F4F5F7;font-family:"Space Grotesk",system-ui,sans-serif;color:#0E0F12}.w{max-width:1200px;margin:0 auto;padding:40px 16px}
@@ -113,7 +114,7 @@ h1{font-weight:600;font-size:30px;letter-spacing:-.03em;margin:0 0 28px}.c{backg
 table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;vertical-align:top;padding:12px 14px;border-bottom:1px solid #E4E6EB}
 th{font:500 11px/1 "JetBrains Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:#7A808C}td span{display:block;color:#7A808C;font-size:12px;margin-top:3px}
 a{color:#0057FF;text-decoration:none}a:hover{text-decoration:underline}.bk{font:500 13px "JetBrains Mono",monospace;color:#454A55}</style></head>
-<body><div class="w"><a class="bk" href="/decks">← All decks</a><h1 style="margin-top:20px">Founder answers · ${results.length}</h1><div class="c"><table><tr><th>Name</th><th>Roles</th><th>Problems</th><th>Built</th><th>Hours/wk</th><th>NDA</th><th>Date</th></tr>${rows}</table></div></div></body></html>`;
+<body><div class="w"><a class="bk" href="/decks">← All decks</a><h1 style="margin-top:20px">Founder answers · ${results.length}</h1><div class="c"><table><tr><th>Name</th><th>Roles</th><th>Problems</th><th>Lab</th><th>Built</th><th>Hours/wk</th><th>NDA</th><th>Date</th></tr>${rows}</table></div></div></body></html>`;
   return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'private, no-store', 'x-robots-tag': 'noindex' } });
 }
 
