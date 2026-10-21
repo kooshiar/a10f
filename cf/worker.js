@@ -7,12 +7,15 @@ export default {
     const url = new URL(request.url);
     // one home: k14.ai. 97a.io, www and the old /technology and /k14 paths redirect, path kept
     const path = url.pathname.replace(/^\/technology(?=\/|$)/, '/tech').replace(/^\/k14(?=\/|$)/, '') || '/';
-    if ((url.hostname !== HOST && (SWITCHED || url.hostname === 'www.' + HOST)) || path !== url.pathname)
+    const local = url.hostname === 'localhost' || url.hostname === '127.0.0.1';   // wrangler dev
+    if ((url.hostname !== HOST && !local && (SWITCHED || url.hostname === 'www.' + HOST)) || path !== url.pathname)
       return Response.redirect(`https://${SWITCHED || url.hostname.endsWith(HOST) ? HOST : url.hostname}${path}${url.search}`, ['GET', 'HEAD'].includes(request.method) ? 301 : 308);
     if (url.pathname === '/api/session') return session(request, env);
     if (url.pathname === '/api/contact') return contact(request, env);
     if (url.pathname === '/api/join') return join(request, env);
     if (url.pathname === '/api/lab') return lab(request, env);
+    if (url.pathname === '/decks/_share') return shareCreate(request, env, url);
+    if (url.pathname.startsWith('/share/')) return shareView(request, env, url);
     if (url.pathname === '/decks' || url.pathname.startsWith('/decks/')) return deck(request, env, url);
     if (url.pathname === '/') return env.ASSETS.fetch(new Request(new URL('/site/', url), request));
     return env.ASSETS.fetch(request);
@@ -285,10 +288,41 @@ async function privateDecks(request, env, url, name) {
       const f = FILES[name];
       const r = await env.ASSETS.fetch(f && /^\/decks\/[^/]+\/?$/.test(url.pathname) ? new Request(new URL(f, url), request) : request);
       const h = new Headers(r.headers); h.set('cache-control', 'private, no-store'); h.set('x-robots-tag', 'noindex');
+      if (r.ok && (h.get('content-type') || '').includes('text/html')) return withBar(await r.text(), h, url);
       return new Response(r.body, { status: r.status, headers: h });
     }
   }
   return adminGate(url, locked ? 'Too many wrong passwords. Try again in 24 hours.' : '', 200);
+}
+
+// ---- every internal /decks page carries the site's top bar (share links never do). A page with its own bar (the decks
+// list) gets the current one swapped in; a full-screen deck opens in a frame under the bar, so its layout is untouched.
+const BAR = '<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/"><img src="/site/mark.svg" alt="">K14</a>'
+  + '<div class="tabs"><a href="/apps/">Apps</a><a href="/tech/">Tech</a><a href="/decks/" class="on" data-decks>Decks</a></div>'
+  + '<a data-cta href="/contact/">Contact</a></nav></div></header>';
+const GEIST = 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap';
+function withBar(html, h, url) {
+  h.delete('content-length'); h.delete('etag');
+  html = html.replace(/(<title>[^<]*?)97A/i, '$1K14');
+  if (url.searchParams.has('k14frame'))   // inside the frame: links to other pages open in the top window; slide hash shows in its URL
+    return new Response(html.replace(/<\/body>/i, `<script>document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href]');`
+      + `if(!a||a.target)return;const u=new URL(a.href,location.href);if(u.origin===location.origin&&u.pathname!==location.pathname){e.preventDefault();`
+      + `top.location.href=u.pathname+u.search+u.hash}},true);let h0=location.hash;setInterval(()=>{if(location.hash!==h0){h0=location.hash;try{top.history.replaceState(null,'',h0||' ')}catch(e){}}},300)</script></body>`),
+      { status: 200, headers: h });
+  if (/<header class="site">/.test(html))
+    return new Response(html.replace(/<header class="site">[\s\S]*?<\/header>/, BAR)
+      .replace(/https:\/\/fonts\.googleapis\.com\/css2\?family=Space\+Grotesk[^"]*/g, GEIST)
+      .replace(/<\/head>/i, '<link rel="icon" href="/site/favicon.svg"><script type="module" src="/site/auth.js"></script></head>'), { status: 200, headers: h });
+  const title = (html.match(/<title>([^<]*)<\/title>/i) || [0, 'Decks'])[1];
+  const src = url.pathname + (url.search ? url.search + '&' : '?') + 'k14frame=1';
+  return new Response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>${title}</title><link rel="icon" href="/site/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="${GEIST}" rel="stylesheet">
+<link rel="stylesheet" href="/site/frame.css"><script type="module" src="/site/auth.js"></script>
+<style>html,body{height:100%;overflow:hidden}#f{position:fixed;left:0;top:57px;width:100%;height:calc(100% - 57px);border:0;display:block;background:#fff}</style></head>
+<body>${BAR}<iframe id="f" title="${title.replace(/"/g, '&quot;')}" allow="fullscreen; clipboard-write"></iframe>
+<script>const f=document.getElementById('f');f.src=${JSON.stringify(src)}+location.hash;f.addEventListener('load',()=>{f.focus();try{document.title=f.contentDocument.title}catch(e){}});</script>
+</body></html>`, { status: 200, headers: h });
 }
 
 function adminGate(url, err, status) {
@@ -313,5 +347,83 @@ button{font:inherit;font-weight:500;font-size:16px;padding:12px 14px;border:0;bo
 ${err ? `<span class="err" role="alert">${esc(err)}</span>` : ''}<button type="submit">Open</button></form>
 <form method="post" action="${esc(url.pathname)}"><label for="em">Or sign in by email</label><input id="em" name="email" type="email" autocomplete="email" required><button type="submit">Send sign-in link</button></form></div></main>
 <footer class="site"><div class="wrap"><span class="logo"><img src="/site/mark.svg" alt="">K14</span><span>© 2026</span></div></footer></body></html>`;
+  return new Response(html, { status, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } });
+}
+
+
+// ---- share links: the owner (deck cookie) asks for /api/share {deck}; anyone with the /share/<name>-<5 chars> link
+// sees that one deck after giving an email. Emails go to D1 (share_views) and Supabase public.events (insert-only key).
+async function ownerOK(request, env) {
+  const tok = cookieOf(request, 'decks'); if (!tok || !env.ADMIN_PASS || !env.DECK_SECRET) return false;
+  const [exp, sig] = tok.split('.');
+  return Number(exp) > Date.now() && !!sig && same(sig, await sign(env, `admin|${exp}|${env.ADMIN_PASS}`));
+}
+async function shareCreate(request, env, url) {
+  if (request.method !== 'POST') return json({ ok: false }, 405);
+  if (!(await ownerOK(request, env))) return json({ ok: false }, 403);
+  let b = {}; try { b = await request.json(); } catch {}
+  const deckPath = String(b.deck || '').replace(/^\/+|\/+$/g, '');
+  if (!/^[a-z0-9-]+(\/[a-z0-9-]+)?$/.test(deckPath) || !PRIVATE.includes(deckPath.split('/')[0])) return json({ ok: false, error: 'deck' }, 400);
+  const short = deckPath.split('/').pop().slice(0, 16);
+  const abc = 'abcdefghijkmnpqrstuvwxyz23456789'; const rnd = crypto.getRandomValues(new Uint8Array(5));
+  const id = `${short}-${[...rnd].map((x) => abc[x % abc.length]).join('')}`;
+  await env.DB.prepare('INSERT INTO share_links (id, deck, created) VALUES (?, ?, ?)').bind(id, deckPath, Date.now()).run();
+  return json({ ok: true, url: `${url.origin}/share/${id}` });
+}
+async function shareView(request, env, url) {
+  const parts = url.pathname.split('/'); const id = parts[2] || ''; const rest = parts.slice(3).join('/');
+  if (!/^[a-z0-9-]{3,30}$/.test(id) || !env.DECK_SECRET) return new Response('Not found', { status: 404 });
+  const row = await env.DB.prepare('SELECT deck FROM share_links WHERE id = ?').bind(id).first().catch(() => null);
+  if (!row) return new Response('Not found', { status: 404 });
+  const ck = `sh_${id.replace(/-/g, '_')}`;
+  if (request.method === 'POST' && rest !== '_t') {
+    const form = await request.formData().catch(() => null);
+    const email = String(form?.get('email') || '').trim().toLowerCase().slice(0, 200);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return shareGate(url, id, 'Enter a valid email.', 400);
+    const country = request.cf?.country || null, ua = (request.headers.get('user-agent') || '').slice(0, 200);
+    try { await env.DB.prepare('INSERT INTO share_views (share, deck, email, country, ua, ts) VALUES (?, ?, ?, ?, ?, ?)').bind(id, row.deck, email, country, ua, Date.now()).run(); } catch (e) { console.log('share store failed', String(e).slice(0, 200)); }
+    try {
+      await fetch(`${SB.url}/rest/v1/events`, { method: 'POST', headers: { apikey: SB.key, Authorization: `Bearer ${SB.key}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify([{ ts: new Date().toISOString(), session: `share-${id}`, event: 'share_open', path: `/share/${id}`, view: 'share', referer: url.href,
+          props: { share: id, deck: row.deck, email, country } }]) });
+    } catch (e) { console.log('supabase share log failed', String(e).slice(0, 200)); }
+    const token = `${b64u(enc.encode(email))}.${await sign(env, `share|${id}|${email}`)}`;
+    return new Response(null, { status: 303, headers: { location: `/share/${id}/`, 'set-cookie': `${ck}=${token}; Path=/share/${id}; Max-Age=2592000; HttpOnly; Secure; SameSite=Lax` } });
+  }
+  const tok = cookieOf(request, ck); let ok = false;
+  if (tok) { const [e64, sig] = tok.split('.'); let email = ''; try { email = atob(e64.replace(/-/g, '+').replace(/_/g, '/')); } catch {}
+    ok = !!email && !!sig && same(sig, await sign(env, `share|${id}|${email}`)); }
+  if (!ok) return shareGate(url, id, '', 200);
+  if (rest === '_t' && request.method === 'POST') {   // time on each page, sent by the shared deck
+    let b = {}; try { b = await request.json(); } catch {}
+    const email = atob(tok.split('.')[0].replace(/-/g, '+').replace(/_/g, '/'));
+    const page = Math.max(0, Math.min(99, Number(b.page) || 0)), sec = Math.max(0, Math.min(7200, Math.round(Number(b.sec) || 0)));
+    if (sec >= 1) {
+      try { await env.DB.prepare('INSERT INTO share_time (share, deck, email, page, title, sec, ts) VALUES (?, ?, ?, ?, ?, ?, ?)').bind(id, row.deck, email, page, String(b.title || '').slice(0, 120), sec, Date.now()).run(); } catch (e) {}
+      try { await fetch(`${SB.url}/rest/v1/events`, { method: 'POST', headers: { apikey: SB.key, Authorization: `Bearer ${SB.key}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify([{ ts: new Date().toISOString(), session: `share-${id}`, event: 'share_page_time', path: `/share/${id}`, view: 'share', referer: url.href, props: { share: id, deck: row.deck, email, page, title: String(b.title || '').slice(0, 120), seconds: sec } }]) }); } catch (e) {}
+    }
+    return new Response(null, { status: 204 });
+  }
+  const base = `/decks/${row.deck}/`;
+  const file = rest ? base + rest : (FILES[row.deck] || base);
+  const r = await env.ASSETS.fetch(new Request(new URL(file, url), request));
+  const h = new Headers(r.headers); h.set('cache-control', 'private, no-store'); h.set('x-robots-tag', 'noindex');
+  if (rest || !(h.get('content-type') || '').includes('text/html')) return new Response(r.body, { status: r.status, headers: h });
+  let html = await r.text();
+  html = html.replace(/<head>/i, `<head><base href="/share/${id}/">`)
+    .replace(/<\/body>/i, `<style>.alldecks,#fsb,#fbx{display:none!important}</style><script>document.querySelectorAll('a[href]').forEach(a=>{const s=document.createElement('span');s.innerHTML=a.innerHTML;s.className=a.className;a.replaceWith(s)});document.querySelectorAll('.alldecks').forEach(n=>n.remove());</script><script>(()=>{const S=[...document.querySelectorAll('.slide')];let cur=-1,t0=Date.now();const send=()=>{if(cur<0)return;const sec=(Date.now()-t0)/1000;const s=S[cur];const ti=(s.querySelector('h2')||{}).textContent||'';navigator.sendBeacon(location.pathname.replace(/\\/?$/,'/')+'_t',new Blob([JSON.stringify({page:cur+1,sec,title:ti})],{type:'application/json'}));};const tick=()=>{const i=S.findIndex(s=>s.classList.contains('on'));if(i!==cur){send();cur=i;t0=Date.now();}};new MutationObserver(tick).observe(document.body,{subtree:true,attributes:true,attributeFilter:['class']});tick();addEventListener('visibilitychange',()=>{if(document.hidden){send();t0=Date.now();}else t0=Date.now();});addEventListener('pagehide',send);})();</script></body>`);
+  h.delete('content-length');
+  return new Response(html, { status: r.status, headers: h });
+}
+function shareGate(url, id, err, status) {
+  const esc = (t) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Shared deck</title>
+<style>body{margin:0;font-family:-apple-system,system-ui,sans-serif;background:#F4F3EF;color:#181818;display:flex;min-height:100vh;align-items:center;justify-content:center}
+.g{max-width:380px;width:100%;padding:24px;display:flex;flex-direction:column;gap:16px}h1{margin:0;font-size:28px;font-weight:600;letter-spacing:-.02em}p{margin:0;color:#5B6170}
+form{display:flex;flex-direction:column;gap:10px}input{font:inherit;font-size:16px;padding:12px 14px;border:1px solid #D5DAE2;border-radius:8px}
+button{font:inherit;font-size:16px;padding:12px;border:0;border-radius:8px;background:#181818;color:#fff;cursor:pointer}.err{color:#C4271B;font-size:14px}</style></head>
+<body><div class="g"><h1>Shared deck</h1><p>Enter your email to open it.</p><form method="post" action="/share/${esc(id)}/"><input name="email" type="email" autocomplete="email" placeholder="you@company.com" required autofocus>
+${err ? `<span class="err" role="alert">${esc(err)}</span>` : ''}<button type="submit">Open deck</button></form></div></body></html>`;
   return new Response(html, { status, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } });
 }

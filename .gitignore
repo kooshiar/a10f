@@ -30,3 +30,6 @@ decks/crp/
 decks/heatcold/
 decks/opportunities/
 decks/founders/
+
+# local wrangler dev secrets (test values only)
+cf/.dev.vars
