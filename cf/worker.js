@@ -1,7 +1,7 @@
 // k14.ai on Cloudflare (97a.io redirects here): static files from ./dist, "/" -> the homepage, POST /api/contact -> saved in D1, then emailed.
 // The destination address lives only in the CONTACT_TO secret (wrangler secret put CONTACT_TO), never in the page or repo.
 const HOST = 'k14.ai';
-const SWITCHED = false;   // true once k14.ai has its TLS certificate: then 97a.io redirects there
+const SWITCHED = true;   // k14.ai has its TLS certificate: 97a.io redirects there (false serves both hosts)
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
