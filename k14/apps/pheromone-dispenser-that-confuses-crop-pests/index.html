@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>K14 · Pheromone dispenser that confuses crop pests</title>
+<script async src="/site/analytics.js?v=1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/k14/frame.css">
+<link rel="icon" href="/k14/favicon.svg"><meta name="robots" content="noindex">
+<script>globalThis.MOLPAL=['#6FAF52','#ECE8DD','#A9D38F','#C9CED8','#DCE8D2'];globalThis.MOLGUEST='#F4F1E8'</script>
+<link rel="stylesheet" href="/k14/apps/app.css">
+</head>
+<body>
+<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/k14/"><img src="/k14/mark.svg" alt="">K14</a><div class="tabs"><a href="/k14/apps/" class="on">Applications</a><a href="/k14/technology/">Technology</a></div><a data-cta href="/k14/contact/">Contact</a></nav></div></header>
+<main class="wrap app">
+  <a class="crumb" href="/k14/apps/">Applications</a><span class="crumb">/</span><a class="crumb" href="/k14/apps/agriculture/">Agriculture</a>
+  <div class="grid">
+    <div class="card"><h1>Pheromone dispenser that confuses crop pests</h1><table><tr class="g0"><th scope="rowgroup" class="grp" rowspan="3">Why</th><th scope="row">Category</th><td><span class="chip tag">Agriculture</span></td></tr><tr><th scope="row">Level</th><td><span class="chip ok">Super easy</span> </td></tr><tr><th scope="row">Use</th><td>Release insect sex pheromone slowly in fields so moths can’t find mates, no insecticide</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="1">What</th><th scope="row">Atoms</th><td>Host ~150 + pheromone ~40. C H O</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="3">Build</th><th scope="row">Testing</th><td><span class="chip ok">Easy</span> Release rate in a heated chamber, weeks</td></tr><tr><th scope="row">Funding</th><td>Compute ~$8 · Make ~$2–5k · Test ~$5–15k · Other field trials ~$20k+</td></tr><tr><th scope="row">Time</th><td>Make 1–3 wks · Test 4–8 wks · Total ~2–3 months</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">How</th><td><a class="ask" href="/k14/contact/">Contact us for the design specs and build plan &rarr;</a></td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Demo</th><td>Pheromone sits in the trap and leaks out at a steady rate</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Competition</th><td>Shin-Etsu, Suterra, Biobest dispensers; Provivi (sprayable)</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="2">Business</th><th scope="row">Buyers</th><td>Growers, crop-protection firms</td></tr><tr><th scope="row">Revenue</th><td><span class="chip mid">Medium</span> License to dispenser makers. ~$0.2–1M/yr</td></tr></table></div>
+    <figure class="mol" data-k="pheromone"><canvas aria-label="(Z)-11-tetradecenyl acetate, a moth pheromone, in β-cyclodextrin"></canvas><figcaption>(Z)-11-tetradecenyl acetate, a moth pheromone, in β-cyclodextrin</figcaption></figure>
+  </div>
+  <nav class="pn"><a href="/k14/apps/ethylene-trap-that-keeps-fruit-fresh-longer/">&larr; Ethylene trap for fruit</a><a href="/k14/apps/mycotoxin-binder-for-animal-feed/">Mycotoxin binder &rarr;</a></nav>
+</main>
+<footer class="site"><div class="wrap"><span class="logo"><img src="/k14/mark.svg" alt="">K14</span><span>© 2026</span></div></footer>
+<script type="module">
+import { setup } from '/site/appmols.js?v=4';
+const look = new URLSearchParams(location.search).get('bg') === 'light' ? 'light' : null;
+document.body.classList.toggle('light', look === 'light');
+const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, look, drag:true, querySelector:() => f.querySelector('canvas') });
+v.active(true); let last = performance.now();
+(function loop(t){ v.tick(t - last); last = t; requestAnimationFrame(loop); })(last);
+addEventListener('resize', () => v.draw());
+// left / right arrow keys step through the applications
+const pn = document.querySelectorAll('.pn a');
+addEventListener('keydown', e => { if (e.altKey || e.metaKey || e.ctrlKey || /input|textarea/i.test(e.target.tagName)) return;
+  if (e.key === 'ArrowLeft') location.href = pn[0].href; if (e.key === 'ArrowRight') location.href = pn[1].href; });
+</script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script async src="/site/analytics.js?v=1"></script>
+<title>K14 · Contact</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/k14/frame.css">
+<link rel="icon" href="/k14/favicon.svg"><meta name="robots" content="noindex">
+<script>globalThis.MOLPAL=['#6FAF52','#ECE8DD','#A9D38F','#C9CED8','#DCE8D2'];globalThis.MOLGUEST='#F4F1E8'</script>
+<style>
+  main.wrap{min-height:calc(100vh - 57px - 65px); display:grid; align-items:center; justify-items:start; padding-block:64px}
+  form{width:min(460px, calc(100% - 32px)); display:flex; flex-direction:column; gap:14px}
+  input, textarea{font:inherit; font-size:16px; color:var(--ink); background:#fff; border:1.5px solid var(--rule); border-radius:12px; padding:14px 16px; outline:none}
+  input:focus, textarea:focus{border-color:var(--ink)}
+  textarea{min-height:160px; resize:vertical}
+  .hp{position:absolute; left:-9999px; width:1px; height:1px; opacity:0}
+  button{all:unset; cursor:pointer; align-self:flex-start; margin-top:6px; height:44px; padding:0 24px; border-radius:99px; background:var(--ink); color:#fff;
+    font-family:var(--mono); font-size:12.5px; letter-spacing:.06em; text-transform:uppercase}
+  button:disabled{opacity:.5; cursor:default}
+  .msg{font-size:18px; color:var(--ink)} .err{font-family:var(--mono); font-size:12px; color:#C0392B; min-height:16px}
+</style>
+</head>
+<body>
+<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/k14/"><img src="/k14/mark.svg" alt="">K14</a><div class="tabs"><a href="/k14/apps/">Applications</a><a href="/k14/technology/">Technology</a></div><a data-cta href="/k14/contact/" class="on">Contact</a></nav></div></header>
+<main class="wrap">
+  <form id="f" novalidate>
+    <input name="name" placeholder="Name" autocomplete="name" required>
+    <input name="linkedin" type="url" placeholder="LinkedIn URL" autocomplete="url">
+    <textarea name="message" placeholder="Message" required></textarea>
+    <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <button>Send</button>
+    <div class="err" id="err"></div>
+  </form>
+</main>
+<footer class="site"><div class="wrap"><span class="logo"><img src="/k14/mark.svg" alt="">K14</span><span>© 2026</span></div></footer>
+<script>
+const f = document.getElementById('f'), err = document.getElementById('err');
+f.addEventListener('submit', async e => {
+  e.preventDefault(); err.textContent = '';
+  const d = Object.fromEntries(new FormData(f));
+  if (!d.name.trim() || !d.message.trim()) { err.textContent = 'Name and message are needed.'; return; }
+  if (d.linkedin && !/^https?:\/\/([a-z]+\.)?linkedin\.com\//i.test(d.linkedin)) { err.textContent = 'That doesn’t look like a LinkedIn URL.'; return; }
+  const b = f.querySelector('button'); b.disabled = true;
+  try {
+    const r = await fetch('/api/contact', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(d) });
+    const j = await r.json();
+    if (!j.ok) throw 0;
+    try { gtag('event', 'contact_sent'); window.osTrack && osTrack('contact_sent'); } catch (e) {}
+    f.innerHTML = '<p class="msg">Sent. Thank you.</p>';
+  } catch { b.disabled = false; err.textContent = 'Couldn’t send. Please try again.'; }
+});
+</script>
+</body>
+</html>

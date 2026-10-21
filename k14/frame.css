@@ -1,0 +1,21 @@
+/* K14 page frame: the investor-deck palette (cream page, ink, one green), dark nav and footer. */
+:root{ --bg:#14161A; --txt:#ECEDEE; --txt2:#C9CED8; --dim:#8A909B; --sky:#8FCB72; --blue:#3F7F2C; --orange:#3F7F2C;
+       --ink:#181818; --ink2:#4F5666; --mute:#7C8494; --rule:#D5DAE2; --sep:#D5DAE2; --page:#FAF9F5;
+       --font:"Geist",ui-sans-serif,system-ui,sans-serif; --mono:"Geist Mono",ui-monospace,monospace }
+*{box-sizing:border-box}
+html,body{margin:0; background:var(--page); color:var(--ink); font-family:var(--font); -webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px; margin:0 auto; padding:0 40px}
+header.site{background:var(--bg)}
+.bar nav{height:56px; display:flex; align-items:center; gap:44px}
+.bar nav [data-cta]{margin-left:auto}
+.bar nav a{font-family:var(--mono); font-size:12px; letter-spacing:.08em; color:var(--txt2); text-decoration:none; text-transform:uppercase}
+.bar nav a:hover{color:var(--txt)}
+.bar nav .logo{display:flex; align-items:center; gap:9px; font-family:var(--font); font-weight:600; font-size:17px; letter-spacing:-.01em; text-transform:none; color:var(--txt)}
+.bar nav .logo img{width:24px; height:24px; display:block}
+.bar .tabs{display:flex; gap:28px}
+.bar .tabs a.on{color:var(--txt)}
+.bar{border-bottom:1px solid rgba(236,237,238,.1)}
+footer.site{background:var(--bg); border-top:1px solid rgba(236,237,238,.08); color:var(--dim); font-family:var(--mono); font-size:12px}
+footer.site .wrap{height:64px; display:flex; align-items:center; justify-content:space-between}
+footer.site .logo{display:flex; align-items:center; gap:8px} footer.site .logo img{width:18px; height:18px}
+@media (max-width:900px){ .wrap{padding:0 16px} .bar nav{gap:20px} .bar .tabs{gap:16px} .bar nav a{font-size:11px; letter-spacing:.04em} }

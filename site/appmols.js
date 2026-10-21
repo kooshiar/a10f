@@ -20,10 +20,10 @@ export function setup(fig){
   const gi=[...guest], C=foc?[0,1,2].map(j=>gi.reduce((s,i)=>s+d.X[i][j],0)/gi.length):[0,0,0];
   const X=d.X.map(p=>[p[0]-C[0],p[1]-C[1],p[2]-C[2]]);
   // site palette only: guest orange, host elements by count -> pearl, blue, sky, lilac, pink
-  const PAL=['#F4EBF0','#3B74D6','#8DB3F0','#D8CFEE','#EAD6E2'], cnt={};
+  const PAL=fig.pal||globalThis.MOLPAL||['#F4EBF0','#3B74D6','#8DB3F0','#D8CFEE','#EAD6E2'], cnt={};   // fig.pal: host colours for other backgrounds; MOLPAL: page-wide (the /k14 brand)
   d.els.forEach((e,i)=>{if(show[i]&&!guest.has(i))cnt[e]=(cnt[e]||0)+1;});
   const ecol={}; Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).forEach((e,k)=>ecol[e]=PAL[Math.min(k,PAL.length-1)]);
-  const cols=d.els.map((e,i)=>guest.has(i)?'#FF6B1A':ecol[e]);
+  const cols=d.els.map((e,i)=>guest.has(i)?(globalThis.MOLGUEST||'#FF6B1A'):ecol[e]);
   const rank={}; Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).forEach((e,k)=>rank[e]=k);
   // fig.look: 'light' = the deck's element colours for light backgrounds; 'dark' = the same hues lifted for dark
   // backgrounds (carbon light grey instead of black); default = site palette (homepage cards)
