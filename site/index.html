@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script async src="/site/analytics.js?v=1"></script>
+<script type="module" src="/site/auth.js"></script>
 <base href="/site/">
 <title>K14 · Molecular machines, designed by AI</title>
 <meta name="description" content="Molecular machines, designed by AI.">
@@ -16,7 +17,7 @@
 <style>
   /* 1 · title + one machine */
   .hero{background:var(--bg); color:var(--txt); overflow:hidden}
-  .hero .top{display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:40px; padding-top:8px; padding-bottom:4px; position:relative; overflow:hidden}
+  .hero .top{display:grid; grid-template-columns:1.15fr .85fr; align-items:center; gap:40px; padding-top:8px; padding-bottom:4px; position:relative; overflow:hidden}
   h1{margin:0; font-weight:500; font-size:clamp(38px, 4vw, 56px); line-height:1.02; letter-spacing:-.035em}
   h1 span{color:var(--sky)}
   .stage{position:relative; height:256px}
@@ -70,7 +71,7 @@
   .dia.levels .structure{justify-self:end} .dia.levels .physics{justify-self:start}
   .dia.levels .designer{padding-block:9px} .dia.levels .physics{padding-block:8px}
   @media (max-width:900px){
-    .hero .top{grid-template-columns:1fr; gap:0; padding-top:24px} h1{font-size:36px}
+    .hero .top{grid-template-columns:1fr; gap:0; padding-top:24px} h1{font-size:min(36px, calc((100vw - 32px) / 9.3))}
     .stage{height:60vw} #gl, svg#ov{inset:0}
     .row{grid-auto-columns:calc((100% - 32px) / 3); gap:16px} .card canvas{width:100%; height:auto; aspect-ratio:1; border-radius:22px} .card b{font-size:14px} .card small{font-size:10.5px}
     .dia.levels{grid-template-columns:minmax(0, 1fr); grid-template-areas:"agent" "designer" "structure" "physics" "data"; width:100%}
@@ -84,7 +85,7 @@
 <header class="hero">
   <div class="bar"><nav class="wrap"><a class="logo" href="/"><img src="/site/mark.svg" alt="">K14</a><div class="tabs"><a href="/apps/">Apps</a><a href="/tech/">Tech</a></div><a data-cta href="/contact/">Contact</a></nav></div>
   <div class="wrap top">
-    <h1>Molecular machines, <span>designed by AI.</span></h1>
+    <h1>Molecular machines,<br>designed by AI.</h1>
     <div class="stage"><div id="gl"></div><svg id="ov"></svg></div>
   </div>
 </header>
@@ -138,7 +139,7 @@ import { APPS, HOME } from './appsdata.js';
 const $ = s => document.getElementById(s);
 
 // 1 · one machine (?m=<id> previews another)
-const f = FILMS.find(x => x.id === new URLSearchParams(location.search).get('m')) || FILMS.find(x => x.id === 'catcher');
+const f = FILMS.find(x => x.id === new URLSearchParams(location.search).get('m')) || FILMS.find(x => x.id === 'hand3');
 const stage = new Stage($('gl'), null, { minimal:true, fill:x => Math.min(.95, x * 1.15) });
 stage.load(f).then(() => { stage.ov = { svg:$('ov') }; });
 

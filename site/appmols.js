@@ -6,8 +6,8 @@ const REST = { bond:'#5A6378', cell:'#2E3547' }, SCALE = .72;
 const DARK = { '#1A1A1A':'#CDD2DC', '#E10600':'#FF5A4F', '#0057FF':'#5C93FF', '#00A651':'#34D27A',
                '#FFC400':'#FFD24D', '#FF7A00':'#FF9440', '#8A2BE2':'#B37BFF' };
 import { DATA } from './appsdata.js';
-const COL={C:'#1A1A1A',O:'#E10600',N:'#0057FF',F:'#00A651',S:'#FFC400',P:'#FF7A00',Cl:'#00A651',Li:'#8A2BE2',Zn:'#0057FF',Si:'#FF7A00',Al:'#FF7A00',Ir:'#0057FF',Zr:'#00A651',Y:'#FFC400',Fe:'#E10600',Ni:'#00A651',Ru:'#FF7A00',Pt:'#0057FF',I:'#8A2BE2',Au:'#FF7A00',Mg:'#FF7A00',Hv:'#0057FF',Nd:'#8A2BE2',B:'#FF7A00',La:'#8A2BE2',K:'#8A2BE2',Gd:'#8A2BE2',Cu:'#C8642A',H:null};
-const RAD={C:.62,O:.6,N:.6,F:.55,S:.95,P:.85,Cl:1.0,Li:.55,Zn:.85,Si:.85,Al:.85,Ir:.8,Zr:.8,Y:.85,Fe:.75,Ni:.75,Ru:.8,Pt:.8,I:1.1,Au:1.0,Mg:.8,Hv:.4,Nd:1.1,B:.6,La:1.1,K:1.1,Gd:1.1,Cu:.75};
+const COL={C:'#1A1A1A',O:'#E10600',N:'#0057FF',F:'#00A651',S:'#FFC400',P:'#FF7A00',Cl:'#00A651',Li:'#8A2BE2',Zn:'#0057FF',Si:'#FF7A00',Al:'#FF7A00',Ir:'#0057FF',Zr:'#00A651',Y:'#FFC400',Fe:'#E10600',Ni:'#00A651',Ru:'#FF7A00',Pt:'#0057FF',I:'#8A2BE2',Au:'#FF7A00',Mg:'#FF7A00',Hv:'#0057FF',Nd:'#8A2BE2',Pr:'#8A2BE2',B:'#FF7A00',La:'#8A2BE2',K:'#8A2BE2',Gd:'#8A2BE2',Cu:'#C8642A',H:null};
+const RAD={C:.62,O:.6,N:.6,F:.55,S:.95,P:.85,Cl:1.0,Li:.55,Zn:.85,Si:.85,Al:.85,Ir:.8,Zr:.8,Y:.85,Fe:.75,Ni:.75,Ru:.8,Pt:.8,I:1.1,Au:1.0,Mg:.8,Hv:.4,Nd:1.1,Pr:1.1,B:.6,La:1.1,K:1.1,Gd:1.1,Cu:.75};
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function hex(c){return [1,3,5].map(i=>parseInt(c.slice(i,i+2),16));}
 function tone(c,t){const x=hex(c),y=t>0?[255,255,255]:[5,8,11],k=Math.abs(t);return `rgb(${x.map((v,i)=>Math.round(v+(y[i]-v)*k)).join(',')})`;}

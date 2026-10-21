@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>K14 · Binder for a reagent-free phosphate probe</title>
+<script async src="/site/analytics.js?v=1"></script>
+<script type="module" src="/site/auth.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/frame.css">
+<link rel="icon" href="/site/favicon.svg">
+<link rel="stylesheet" href="/apps/app.css">
+</head>
+<body>
+<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/"><img src="/site/mark.svg" alt="">K14</a><div class="tabs"><a href="/apps/" class="on">Apps</a><a href="/tech/">Tech</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
+<main class="wrap app">
+  <a class="crumb" href="/apps/">Apps</a><span class="crumb">/</span><a class="crumb" href="/apps/environment/">Environment</a>
+  <div class="grid">
+    <div class="card"><h1>Binder for a reagent-free phosphate probe</h1><table><tr class="g0"><th scope="rowgroup" class="grp" rowspan="2">Why</th><th scope="row">Category</th><td><span class="chip tag">Environment</span></td></tr><tr><th scope="row">Use</th><td>Track phosphate in sewage plants with a simple probe instead of a $29k analyzer</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">How</th><td><a class="ask" href="/contact/">Contact us for the design specs and build plan &rarr;</a></td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Competition</th><td>Wet-chemistry analyzers (~$29k); no phosphate probe is sold</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="2">Business</th><th scope="row">Buyers</th><td>Sewage plants (1,279 large US plants have P limits), probe makers</td></tr><tr><th scope="row">Market</th><td>$0.6B phosphate analyzers (2025)</td></tr></table></div>
+    <figure class="mol" data-k="tren"><canvas aria-label="Tren tris(phenylurea), a phosphate binder from the literature"></canvas><figcaption>Tren tris(phenylurea), a phosphate binder from the literature</figcaption></figure>
+  </div>
+  <nav class="pn"><a href="/apps/trap-for-1-4-dioxane-in-groundwater/">&larr; Dioxane trap</a><a href="/apps/ammonium-probe-binder-that-ignores-potassium/">Ammonium probe &rarr;</a></nav>
+</main>
+<footer class="site"><div class="wrap"><span class="logo"><img src="/site/mark.svg" alt="">K14</span><span>© 2026</span></div></footer>
+<script type="module">
+import { setup } from '/site/appmols.js?v=3';
+const look = new URLSearchParams(location.search).get('bg') === 'light' ? 'light' : 'dark';
+document.body.classList.toggle('light', look === 'light');
+const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, look, drag:true, querySelector:() => f.querySelector('canvas') });
+v.active(true); let last = performance.now();
+(function loop(t){ v.tick(t - last); last = t; requestAnimationFrame(loop); })(last);
+addEventListener('resize', () => v.draw());
+// left / right arrow keys step through the applications
+const pn = document.querySelectorAll('.pn a');
+addEventListener('keydown', e => { if (e.altKey || e.metaKey || e.ctrlKey || /input|textarea/i.test(e.target.tagName)) return;
+  if (e.key === 'ArrowLeft') location.href = pn[0].href; if (e.key === 'ArrowRight') location.href = pn[1].href; });
+</script>
+</body>
+</html>

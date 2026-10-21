@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>K14 · Early-strength booster for low-carbon cement</title>
+<script async src="/site/analytics.js?v=1"></script>
+<script type="module" src="/site/auth.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/frame.css">
+<link rel="icon" href="/site/favicon.svg">
+<link rel="stylesheet" href="/apps/app.css">
+</head>
+<body>
+<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/"><img src="/site/mark.svg" alt="">K14</a><div class="tabs"><a href="/apps/" class="on">Apps</a><a href="/tech/">Tech</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
+<main class="wrap app">
+  <a class="crumb" href="/apps/">Apps</a><span class="crumb">/</span><a class="crumb" href="/apps/industry/">Industry</a>
+  <div class="grid">
+    <div class="card"><h1>Early-strength booster for low-carbon cement</h1><table><tr class="g0"><th scope="rowgroup" class="grp" rowspan="2">Why</th><th scope="row">Category</th><td><span class="chip tag">Industry</span></td></tr><tr><th scope="row">Use</th><td>Speed day-1 strength in low-clinker cements, keeping set time and 28-day strength</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="2">Build</th><th scope="row">Testing</th><td>Mortar cubes: 1-, 3- and 28-day strength</td></tr><tr><th scope="row">Time</th><td>~2–3 months</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">How</th><td><a class="ask" href="/contact/">Contact us for the design specs and build plan &rarr;</a></td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Competition</th><td>Amine additives (TEA, TIPA), sulfate tuning</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="2">Business</th><th scope="row">Buyers</th><td>Cement makers, admixture makers</td></tr><tr><th scope="row">Market</th><td>$3.9–6.6B cement additives</td></tr></table></div>
+    <figure class="mol" data-k="tea"><canvas aria-label="Triethanolamine, today’s booster"></canvas><figcaption>Triethanolamine, today’s booster</figcaption></figure>
+  </div>
+  <nav class="pn"><a href="/apps/heat-shield-coating-for-jet-engine-blades/">&larr; Jet blade heat shield</a><a href="/apps/decaf-sponge-that-pulls-caffeine-and-keeps-flavor/">Decaf that keeps flavor &rarr;</a></nav>
+</main>
+<footer class="site"><div class="wrap"><span class="logo"><img src="/site/mark.svg" alt="">K14</span><span>© 2026</span></div></footer>
+<script type="module">
+import { setup } from '/site/appmols.js?v=3';
+const look = new URLSearchParams(location.search).get('bg') === 'light' ? 'light' : 'dark';
+document.body.classList.toggle('light', look === 'light');
+const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, look, drag:true, querySelector:() => f.querySelector('canvas') });
+v.active(true); let last = performance.now();
+(function loop(t){ v.tick(t - last); last = t; requestAnimationFrame(loop); })(last);
+addEventListener('resize', () => v.draw());
+// left / right arrow keys step through the applications
+const pn = document.querySelectorAll('.pn a');
+addEventListener('keydown', e => { if (e.altKey || e.metaKey || e.ctrlKey || /input|textarea/i.test(e.target.tagName)) return;
+  if (e.key === 'ArrowLeft') location.href = pn[0].href; if (e.key === 'ArrowRight') location.href = pn[1].href; });
+</script>
+</body>
+</html>

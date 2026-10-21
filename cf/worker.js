@@ -9,6 +9,7 @@ export default {
     const path = url.pathname.replace(/^\/technology(?=\/|$)/, '/tech').replace(/^\/k14(?=\/|$)/, '') || '/';
     if ((url.hostname !== HOST && (SWITCHED || url.hostname === 'www.' + HOST)) || path !== url.pathname)
       return Response.redirect(`https://${SWITCHED || url.hostname.endsWith(HOST) ? HOST : url.hostname}${path}${url.search}`, ['GET', 'HEAD'].includes(request.method) ? 301 : 308);
+    if (url.pathname === '/api/session') return session(request, env);
     if (url.pathname === '/api/contact') return contact(request, env);
     if (url.pathname === '/api/join') return join(request, env);
     if (url.pathname === '/api/lab') return lab(request, env);
@@ -179,7 +180,7 @@ function gate(d, url, err, status) {
 <meta name="robots" content="noindex"><title>${esc(d.title)} · K14</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/site/frame.css">
+<link rel="stylesheet" href="/site/frame.css"><script type="module" src="/site/auth.js"></script>
 <style>main{min-height:calc(100vh - 121px);display:flex;align-items:center}
 .g{max-width:420px;margin:0 auto;padding:48px 16px;display:flex;flex-direction:column;gap:22px}
 h1{margin:0;font-weight:600;font-size:34px;letter-spacing:-.03em;line-height:1.05}
@@ -196,6 +197,24 @@ button{font:inherit;font-weight:500;font-size:16px;padding:12px 14px;border:0;bo
 ${err ? `<span class="err" role="alert">${esc(err)}</span>` : ''}<button type="submit">Open deck</button></form></div></main>
 <footer class="site"><div class="wrap"><span class="logo"><img src="/site/mark.svg" alt="">K14</span><span>© 2026</span></div></footer></body></html>`;
   return new Response(html, { status, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } });
+}
+
+// ---- /api/session: the site's Google sign-in (Supabase). The page sends its Supabase access token; Supabase says who it
+// is; the owner gets the same 30-day deck cookie as the password. Everyone else just stays signed in, no decks.
+const SB = { url: 'https://mrmazotdgcmnrigzxkok.supabase.co', key: 'sb_publishable_yI8wFFTRjprK5MddelYlkQ_unHoGuEX' };
+async function session(request, env) {
+  const out = (body, cookie) => new Response(JSON.stringify(body), { headers: { 'content-type': 'application/json', 'cache-control': 'no-store',
+    ...(cookie ? { 'set-cookie': cookie } : {}) } });
+  if (request.method === 'DELETE') return out({ ok: true }, 'decks=; Path=/decks; Max-Age=0; HttpOnly; Secure; SameSite=Lax');
+  if (request.method !== 'POST' || !env.ADMIN_PASS || !env.DECK_SECRET) return out({ decks: false });
+  const tok = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!tok) return out({ decks: false });
+  const r = await fetch(`${SB.url}/auth/v1/user`, { headers: { apikey: SB.key, Authorization: `Bearer ${tok}` } }).catch(() => null);
+  const u = r && r.ok ? await r.json().catch(() => null) : null;
+  if (!u || String(u.email || '').toLowerCase() !== OWNER || !u.email_confirmed_at) return out({ decks: false });
+  const exp = Date.now() + 30 * 864e5;
+  const token = `${exp}.${await sign(env, `admin|${exp}|${env.ADMIN_PASS}`)}`;
+  return out({ decks: true }, `decks=${token}; Path=/decks; Max-Age=2592000; HttpOnly; Secure; SameSite=Lax`);
 }
 
 // ---- /decks (the list) and the private decks below it: one password (ADMIN_PASS secret). No secret set = 404,
@@ -278,7 +297,7 @@ function adminGate(url, err, status) {
 <meta name="robots" content="noindex"><title>Decks · K14</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/site/frame.css">
+<link rel="stylesheet" href="/site/frame.css"><script type="module" src="/site/auth.js"></script>
 <style>main{min-height:calc(100vh - 121px);display:flex;align-items:center}
 .g{max-width:420px;margin:0 auto;padding:48px 16px;display:flex;flex-direction:column;gap:22px}
 h1{margin:0;font-weight:600;font-size:34px;letter-spacing:-.03em;line-height:1.05}
@@ -289,7 +308,7 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--blue);outline-o
 button{font:inherit;font-weight:500;font-size:16px;padding:12px 14px;border:0;border-radius:8px;background:var(--bg);color:var(--txt);cursor:pointer}
 .err{color:#C4271B;font-size:14px}</style></head><body>
 <header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/"><img src="/site/mark.svg" alt="">K14</a><div class="tabs"><a href="/apps/">Apps</a><a href="/tech/">Tech</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
-<main><div class="g"><h1>Decks</h1>
+<main data-gate><div class="g"><h1>Decks</h1>
 <form method="post" action="${esc(url.pathname)}"><label for="pw">Password</label><input id="pw" name="password" type="password" autocomplete="current-password" required autofocus>
 ${err ? `<span class="err" role="alert">${esc(err)}</span>` : ''}<button type="submit">Open</button></form>
 <form method="post" action="${esc(url.pathname)}"><label for="em">Or sign in by email</label><input id="em" name="email" type="email" autocomplete="email" required><button type="submit">Send sign-in link</button></form></div></main>
