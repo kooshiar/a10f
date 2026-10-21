@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script async src="/site/analytics.js?v=1"></script>
 <base href="/site/">
-<title>97A · AI that designs molecular machines</title>
-<meta name="description" content="AI that designs molecular machines.">
+<title>K14 · Molecular machines, designed by AI</title>
+<meta name="description" content="Molecular machines, designed by AI.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="frame.css">
+<link rel="icon" href="/site/favicon.svg">
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
 <style>
@@ -28,7 +29,7 @@
   /* 2 · applications: title on its own line, one row; drag or scroll sideways */
   .apps{padding-block:36px 40px}
   .rowbox{position:relative}
-  .more{position:absolute; right:8px; top:8px; z-index:2; padding:6px 12px; border-radius:99px; background:var(--ink); box-shadow:0 0 0 1.5px #fff; color:#fff;
+  .more{position:absolute; right:8px; top:8px; z-index:2; padding:6px 12px; border-radius:99px; background:var(--ink); box-shadow:0 0 0 1.5px var(--page); color:#fff;
     font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; text-decoration:none}
   .more:hover{background:var(--blue)}
   .apps h2{margin-bottom:14px}
@@ -44,7 +45,7 @@
 
   /* 3 · technology: layered system, short band; style switch in the footer (1-4) */
   .techbg{background:var(--bg); color:var(--txt); --line:#4A5266; --c-agent:#8A90A2; --c-designer:#C9CDD8; --c-structure:#8A90A2; --c-physics:#C9CDD8; --c-data:#8A90A2}
-  .techbg.white{background:#fff; color:var(--ink); border-top:1px solid var(--sep); --line:#B4B9C2; --c-agent:#7A808C; --c-designer:#12151D; --c-structure:#7A808C; --c-physics:#12151D; --c-data:#7A808C}
+  .techbg.white{background:#fff; color:var(--ink); border-top:1px solid var(--sep); --line:#B4B9C2; --c-agent:#7A808C; --c-designer:#181818; --c-structure:#7A808C; --c-physics:#181818; --c-data:#7A808C}
   .tech{padding-block:32px 36px}
   .tech h2{margin-bottom:16px}
   .dia{position:relative; display:grid; width:max-content; max-width:100%; column-gap:36px; row-gap:10px}
@@ -58,8 +59,8 @@
   .agent{--c:var(--c-agent); grid-area:agent} .designer{--c:var(--c-designer); grid-area:designer} .structure{--c:var(--c-structure); grid-area:structure}
   .physics{--c:var(--c-physics); grid-area:physics} .data{--c:var(--c-data); grid-area:data}
   .techbg:not(.white) .designer, .techbg:not(.white) .physics{background:#1C2130}
-  .techbg.white .designer{background:#12151D; color:var(--txt)} .techbg.white .designer .ic{color:#C9CDD8}
-  .techbg.white .physics{background:#F3F4F6}
+  .techbg.white .designer{background:#181818; color:var(--txt); border-color:var(--blue)} .techbg.white .designer .ic{color:#C9CDD8}
+  .techbg.white .physics{background:#F1EFE8}
   /* flow: left to right, top level to base */
   .dia.flow{grid-template-columns:auto auto auto auto; grid-template-areas:"agent designer structure data" "agent designer physics data"; align-items:center}
   .dia.flow .designer .ic svg{width:24px; height:24px} .dia.flow .designer{padding:11px 14px 12px}
@@ -74,28 +75,28 @@
     .row{grid-auto-columns:calc((100% - 32px) / 3); gap:16px} .card canvas{width:100%; height:auto; aspect-ratio:1; border-radius:22px} .card b{font-size:14px} .card small{font-size:10.5px}
     .dia.levels{grid-template-columns:minmax(0, 1fr); grid-template-areas:"agent" "designer" "structure" "physics" "data"; width:100%}
     .dia.levels .nd, .dia.levels .structure, .dia.levels .physics{justify-self:stretch; justify-content:space-between}
-    .techbg.white .nd{background:#fff} .techbg.white .designer{background:#12151D} .techbg.white .physics{background:#F3F4F6}
+    .techbg.white .nd{background:#fff} .techbg.white .designer{background:#181818} .techbg.white .physics{background:#F1EFE8}
     .dia{width:auto} .dia.flow{grid-template-columns:1fr 1fr; grid-template-rows:auto; grid-template-areas:"agent agent" "designer designer" "structure physics" "data data"; height:auto} .dia.flow .agent{height:auto}
   }
 </style>
 </head>
 <body>
 <header class="hero">
-  <div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/">Applications</a><a href="/technology/">Technology</a></div><a data-cta href="/contact/">Contact</a></nav></div>
+  <div class="bar"><nav class="wrap"><a class="logo" href="/"><img src="/site/mark.svg" alt="">K14</a><div class="tabs"><a href="/apps/">Apps</a><a href="/tech/">Tech</a></div><a data-cta href="/contact/">Contact</a></nav></div>
   <div class="wrap top">
-    <h1>AI that designs <span>molecular machines.</span></h1>
+    <h1>Molecular machines, <span>designed by AI.</span></h1>
     <div class="stage"><div id="gl"></div><svg id="ov"></svg></div>
   </div>
 </header>
 
 <main>
   <section class="sec apps wrap">
-    <h2><a href="/apps/">Applications</a></h2>
+    <h2><a href="/apps/">Apps</a></h2>
     <div class="rowbox"><a class="more" href="/apps/">More</a><div class="row" id="row"></div></div>
   </section>
 
   <div class="techbg white" id="techbg"><section class="sec tech wrap">
-    <h2><a href="/technology/">Technology</a></h2>
+    <h2><a href="/tech/">Tech</a></h2>
     <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
   <symbol id="i-chat" viewBox="0 0 48 48"><path d="M8 10h32v20H22l-9 8v-8H8z"/><circle class="f" cx="17" cy="20" r="2.2"/><circle class="f" cx="24" cy="20" r="2.2"/><circle class="f" cx="31" cy="20" r="2.2"/></symbol>
   <symbol id="i-goal" viewBox="0 0 48 48"><circle cx="24" cy="24" r="16"/><circle cx="24" cy="24" r="9"/><circle class="fo" cx="24" cy="24" r="3.5"/></symbol>
@@ -126,11 +127,12 @@
     </div>
   </section></div>
 </main>
-<footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
+<footer class="site"><div class="wrap"><span class="logo"><img src="/site/mark.svg" alt="">K14</span><span>© 2026</span></div></footer>
 
 <script type="module">
 import { Stage } from './live.js';
-import { FILMS } from './films.js';
+import { FILMS, COLORS } from './films.js';
+Object.assign(COLORS, { blue:'#6FAF52', orange:'#EDE7D9' });   // hero machine green, the caught ball cream
 import { setup } from './appmols.js';
 import { APPS, HOME } from './appsdata.js';
 const $ = s => document.getElementById(s);
@@ -144,7 +146,7 @@ stage.load(f).then(() => { stage.ov = { svg:$('ov') }; });
 const row = $('row');
 const picks = HOME.map(s => APPS.find(a => a.slug === s));
 row.innerHTML = picks.map(a => `<a class="card" href="/apps/${a.slug}/" draggable="false"><canvas></canvas><div><b>${a.short}</b><small>${a.cs}</small></div></a>`).join('');
-const views = [...row.querySelectorAll('.card')].map((el, i) => setup({ dataset:{ k:picks[i].k }, focus:picks[i].focus, querySelector:() => el.querySelector('canvas') }));
+const views = [...row.querySelectorAll('.card')].map((el, i) => setup({ dataset:{ k:picks[i].k }, focus:picks[i].focus, look:'dark', querySelector:() => el.querySelector('canvas') }));
 // one structure moves at a time: hovering a card wakes its molecule and pauses the machine on top
 let last = performance.now(), hot = -1;
 (function loop(t){ if (hot >= 0) views[hot].tick(t - last); last = t; requestAnimationFrame(loop); })(last);

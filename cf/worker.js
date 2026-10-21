@@ -1,9 +1,14 @@
-// 97a.io on Cloudflare: static files from ./dist, "/" -> the homepage, POST /api/contact -> saved in D1, then emailed.
+// k14.ai on Cloudflare (97a.io redirects here): static files from ./dist, "/" -> the homepage, POST /api/contact -> saved in D1, then emailed.
 // The destination address lives only in the CONTACT_TO secret (wrangler secret put CONTACT_TO), never in the page or repo.
+const HOST = 'k14.ai';
+const SWITCHED = false;   // true once k14.ai has its TLS certificate: then 97a.io redirects there
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.hostname === 'www.97a.io') return Response.redirect(`https://97a.io${url.pathname}${url.search}`, 301);
+    // one home: k14.ai. 97a.io, www and the old /technology and /k14 paths redirect, path kept
+    const path = url.pathname.replace(/^\/technology(?=\/|$)/, '/tech').replace(/^\/k14(?=\/|$)/, '') || '/';
+    if ((url.hostname !== HOST && (SWITCHED || url.hostname === 'www.' + HOST)) || path !== url.pathname)
+      return Response.redirect(`https://${SWITCHED || url.hostname.endsWith(HOST) ? HOST : url.hostname}${path}${url.search}`, ['GET', 'HEAD'].includes(request.method) ? 301 : 308);
     if (url.pathname === '/api/contact') return contact(request, env);
     if (url.pathname === '/api/join') return join(request, env);
     if (url.pathname === '/api/lab') return lab(request, env);
@@ -38,7 +43,7 @@ async function contact(request, env) {
   const r = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(env.CONTACT_TO)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json', Origin: 'https://97a.io', Referer: 'https://97a.io/contact' },
-    body: JSON.stringify({ name, linkedin: linkedin || '-', message, _subject: `97A contact: ${name}`, _template: 'table', _captcha: 'false' }),
+    body: JSON.stringify({ name, linkedin: linkedin || '-', message, _subject: `K14 contact: ${name}`, _template: 'table', _captcha: 'false' }),
   });
   const text = await r.text(); let out = {};
   try { out = JSON.parse(text); } catch {}
@@ -91,7 +96,7 @@ async function scientistsPage(env) {
   const rows = results.map((r) => `<tr><td><b>${esc(r.name)}</b><span>${esc(r.email)}</span></td><td>${esc(arr(r.problems).join(', '))}<span>${esc(r.problem_text || '')}</span></td>
 <td>${esc(arr(r.make).join(', '))}</td><td>${esc(arr(r.test).join(', '))}<span>${esc(r.lab_text || '')}</span></td><td>${esc((r.created || '').slice(0, 10))}</td></tr>`).join('');
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
-<title>Scientist answers · 97A</title><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Scientist answers · K14</title><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>body{margin:0;background:#F4F5F7;font-family:"Space Grotesk",system-ui,sans-serif;color:#0E0F12}.w{max-width:1200px;margin:0 auto;padding:40px 16px}
 h1{font-weight:600;font-size:30px;letter-spacing:-.03em;margin:20px 0 28px}.c{background:#fff;border:1px solid #D5DAE2;border-radius:10px;overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;vertical-align:top;padding:12px 14px;border-bottom:1px solid #E4E6EB}
@@ -108,7 +113,7 @@ async function answersPage(env) {
   const rows = results.map((r) => `<tr><td><b>${r.linkedin ? `<a href="${esc(r.linkedin)}" target="_blank" rel="noopener">${esc(r.name)}</a>` : esc(r.name)}</b><span>${esc(r.email || '')}</span><span>${esc(r.city || '')}</span></td>
 <td>${esc(arr(r.roles).join(', '))}</td><td>${esc(arr(r.problems).join(', '))}<span>${esc(r.problem_text || '')}</span></td><td>${esc(arr(r.make).concat(arr(r.test)).join(', '))}<span>${esc(r.lab_text || '')}</span></td><td>${arr(r.built).map(esc).join('<br>')}</td><td>${esc(r.hours || '')}</td><td>${r.nda ? '✓' : ''}</td><td>${esc((r.created || '').slice(0, 10))}</td></tr>`).join('');
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
-<title>Founder answers · 97A</title><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Founder answers · K14</title><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>body{margin:0;background:#F4F5F7;font-family:"Space Grotesk",system-ui,sans-serif;color:#0E0F12}.w{max-width:1200px;margin:0 auto;padding:40px 16px}
 h1{font-weight:600;font-size:30px;letter-spacing:-.03em;margin:0 0 28px}.c{background:#fff;border:1px solid #D5DAE2;border-radius:10px;overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;vertical-align:top;padding:12px 14px;border-bottom:1px solid #E4E6EB}
@@ -136,8 +141,8 @@ const cookieOf = (request, name) => (request.headers.get('cookie') || '').split(
 
 async function deck(request, env, url) {
   const name = url.pathname.split('/')[2] || '';
-  const d = DECKS[name];
-  if (!d) return privateDecks(request, env, url, name);
+  return privateDecks(request, env, url, name);
+  const d = DECKS[name];   // legacy email gates, unused: every deck now needs the deck password or the owner sign-in link
   if (!env.DECK_SECRET) return new Response('Not found', { status: 404 });
   const ck = `deck_${name}`;
   if (request.method === 'POST') {
@@ -171,9 +176,9 @@ async function deck(request, env, url) {
 function gate(d, url, err, status) {
   const esc = (t) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex"><title>${esc(d.title)} · 97A</title>
+<meta name="robots" content="noindex"><title>${esc(d.title)} · K14</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/frame.css">
 <style>main{min-height:calc(100vh - 121px);display:flex;align-items:center}
 .g{max-width:420px;margin:0 auto;padding:48px 16px;display:flex;flex-direction:column;gap:22px}
@@ -185,33 +190,72 @@ input{font:inherit;font-size:16px;padding:12px 14px;border:1px solid var(--sep);
 input:focus-visible,button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 button{font:inherit;font-weight:500;font-size:16px;padding:12px 14px;border:0;border-radius:8px;background:var(--bg);color:var(--txt);cursor:pointer}
 .err{color:#C4271B;font-size:14px}</style></head><body>
-<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/">Applications</a><a href="/technology/">Technology</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
+<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/"><img src="/site/mark.svg" alt="">K14</a><div class="tabs"><a href="/apps/">Apps</a><a href="/tech/">Tech</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
 <main><div class="g"><h1>${esc(d.title)}</h1><p>Enter your work email to open this deck.</p>
 <form method="post" action="${esc(url.pathname)}"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" required autofocus>
 ${err ? `<span class="err" role="alert">${esc(err)}</span>` : ''}<button type="submit">Open deck</button></form></div></main>
-<footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer></body></html>`;
+<footer class="site"><div class="wrap"><span class="logo"><img src="/site/mark.svg" alt="">K14</span><span>© 2026</span></div></footer></body></html>`;
   return new Response(html, { status, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } });
 }
 
 // ---- /decks (the list) and the private decks below it: one password (ADMIN_PASS secret). No secret set = 404,
 // so a deploy can never expose them. The files sit in ./dist/decks but every /decks path runs through the worker first.
-const PRIVATE = ['opportunities', 'sales', 'tech', 'customers', 'investors', 'amd', 'progress', 'founders', 'answers', 'scientists', 'evonik'];
+const FILES = { dsc: '/decks/dsc/deck', crp: '/decks/crp/deck', heatcold: '/decks/heatcold/deck' };   // decks served from one file
+const OWNER = 'kooshiar@gmail.com';   // the one email that can sign in by link (sent to the CONTACT_TO inbox)
+const PRIVATE = ['dsc', 'crp', 'heatcold', 'opportunities', 'sales', 'tech', 'customers', 'investors', 'amd', 'progress', 'founders', 'answers', 'scientists', 'evonik', 'cemvita',
+  'bio', 'bioprogress'];   // bio spinoff decks; bioprogress serves only the bio rows the one progress table reads
 const same = (a, b) => { if (a.length !== b.length) return false; let x = 0; for (let i = 0; i < a.length; i++) x |= a.charCodeAt(i) ^ b.charCodeAt(i); return x === 0; };
 async function privateDecks(request, env, url, name) {
-  if ((name && !PRIVATE.includes(name)) || !env.ADMIN_PASS || !env.DECK_SECRET) return new Response('Not found', { status: 404 });
+  if ((name && name !== 'login' && !PRIVATE.includes(name)) || !env.ADMIN_PASS || !env.DECK_SECRET) return new Response('Not found', { status: 404 });
+  const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+  const grant = async (to) => {
+    const exp = Date.now() + 30 * 864e5;
+    const token = `${exp}.${await sign(env, `admin|${exp}|${env.ADMIN_PASS}`)}`;
+    return new Response(null, { status: 303, headers: { location: to,
+      'set-cookie': `decks=${token}; Path=/decks; Max-Age=2592000; HttpOnly; Secure; SameSite=Lax` } });
+  };
+  // owner sign-in link: /decks/login?t=<exp>.<sig>&to=/decks/...
+  if (name === 'login') {
+    const [exp, sig] = String(url.searchParams.get('t') || '').split('.');
+    const to = /^\/decks(\/|$)/.test(url.searchParams.get('to') || '') ? url.searchParams.get('to') : '/decks/';
+    if (Number(exp) > Date.now() && sig && same(sig, await sign(env, `login|${exp}|${OWNER}`))) return grant(to);
+    return adminGate(url, 'This sign-in link has expired. Ask for a new one.', 403);
+  }
+  // 3 wrong passwords from one address = locked for 24 hours
+  let lock = null;
+  try { lock = await env.DB.prepare('SELECT fails, until FROM deck_lock WHERE ip = ?').bind(ip).first(); } catch (e) {}
+  const locked = lock && Number(lock.until) > Date.now();
   if (request.method === 'POST') {
     const form = await request.formData().catch(() => null);
+    const email = String(form?.get('email') || '').trim().toLowerCase();
+    if (email) {   // owner sign-in by link; any other email gets the same reply so the owner address is not revealed
+      if (email === OWNER && env.CONTACT_TO) {
+        const exp = Date.now() + 15 * 6e4;
+        const link = `https://k14.ai/decks/login?t=${exp}.${await sign(env, `login|${exp}|${OWNER}`)}&to=${encodeURIComponent(url.pathname)}`;
+        try {
+          await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(env.CONTACT_TO)}`, { method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', Origin: 'https://97a.io', Referer: 'https://97a.io/decks' },
+            body: JSON.stringify({ name: 'Deck sign-in', message: `Sign-in link (15 min): ${link}`, _subject: 'Deck sign-in link', _template: 'table', _captcha: 'false' }) });
+        } catch (e) { console.log('login mail failed', String(e).slice(0, 200)); }
+      }
+      return adminGate(url, 'If that email can sign in, a link is on its way (valid 15 minutes).', 200);
+    }
+    if (locked) return adminGate(url, 'Too many wrong passwords. Try again in 24 hours.', 429);
     const pass = String(form?.get('password') || '');
     const ok = same(await sign(env, `pw|${pass}`), await sign(env, `pw|${env.ADMIN_PASS}`));
     try {
       await env.DB.prepare('INSERT INTO deck_access (deck, email, granted, country, ua) VALUES (?, ?, ?, ?, ?)')
         .bind(name || 'list', null, ok ? 1 : 0, request.cf?.country || null, (request.headers.get('user-agent') || '').slice(0, 200)).run();
     } catch (e) { console.log('admin store failed', String(e).slice(0, 200)); }
-    if (!ok) { await new Promise((r) => setTimeout(r, 800)); return adminGate(url, 'Wrong password.', 403); }
-    const exp = Date.now() + 30 * 864e5;
-    const token = `${exp}.${await sign(env, `admin|${exp}|${env.ADMIN_PASS}`)}`;
-    return new Response(null, { status: 303, headers: { location: url.pathname,
-      'set-cookie': `decks=${token}; Path=/decks; Max-Age=2592000; HttpOnly; Secure; SameSite=Lax` } });
+    if (!ok) {
+      const fails = (lock && Number(lock.until) <= Date.now() && Number(lock.fails) >= 3 ? 0 : Number(lock?.fails || 0)) + 1;
+      const until = fails >= 3 ? Date.now() + 864e5 : 0;
+      try { await env.DB.prepare('INSERT INTO deck_lock (ip, fails, until) VALUES (?, ?, ?) ON CONFLICT(ip) DO UPDATE SET fails = excluded.fails, until = excluded.until').bind(ip, fails, until).run(); } catch (e) {}
+      await new Promise((r) => setTimeout(r, 800));
+      return adminGate(url, fails >= 3 ? 'Too many wrong passwords. Try again in 24 hours.' : `Wrong password. ${3 - fails} ${3 - fails === 1 ? 'try' : 'tries'} left.`, 403);
+    }
+    try { await env.DB.prepare('DELETE FROM deck_lock WHERE ip = ?').bind(ip).run(); } catch (e) {}
+    return grant(url.pathname);
   }
   const tok = cookieOf(request, 'decks');
   if (tok) {
@@ -219,20 +263,21 @@ async function privateDecks(request, env, url, name) {
     if (Number(exp) > Date.now() && sig && same(sig, await sign(env, `admin|${exp}|${env.ADMIN_PASS}`))) {
       if (name === 'answers') return answersPage(env);
       if (name === 'scientists') return scientistsPage(env);
-      const r = await env.ASSETS.fetch(request);
+      const f = FILES[name];
+      const r = await env.ASSETS.fetch(f && /^\/decks\/[^/]+\/?$/.test(url.pathname) ? new Request(new URL(f, url), request) : request);
       const h = new Headers(r.headers); h.set('cache-control', 'private, no-store'); h.set('x-robots-tag', 'noindex');
       return new Response(r.body, { status: r.status, headers: h });
     }
   }
-  return adminGate(url, '', 200);
+  return adminGate(url, locked ? 'Too many wrong passwords. Try again in 24 hours.' : '', 200);
 }
 
 function adminGate(url, err, status) {
   const esc = (t) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex"><title>Decks · 97A</title>
+<meta name="robots" content="noindex"><title>Decks · K14</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/frame.css">
 <style>main{min-height:calc(100vh - 121px);display:flex;align-items:center}
 .g{max-width:420px;margin:0 auto;padding:48px 16px;display:flex;flex-direction:column;gap:22px}
@@ -243,10 +288,11 @@ input{font:inherit;font-size:16px;padding:12px 14px;border:1px solid var(--sep);
 input:focus-visible,button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 button{font:inherit;font-weight:500;font-size:16px;padding:12px 14px;border:0;border-radius:8px;background:var(--bg);color:var(--txt);cursor:pointer}
 .err{color:#C4271B;font-size:14px}</style></head><body>
-<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/">Applications</a><a href="/technology/">Technology</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
+<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/"><img src="/site/mark.svg" alt="">K14</a><div class="tabs"><a href="/apps/">Apps</a><a href="/tech/">Tech</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
 <main><div class="g"><h1>Decks</h1>
 <form method="post" action="${esc(url.pathname)}"><label for="pw">Password</label><input id="pw" name="password" type="password" autocomplete="current-password" required autofocus>
-${err ? `<span class="err" role="alert">${esc(err)}</span>` : ''}<button type="submit">Open</button></form></div></main>
-<footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer></body></html>`;
+${err ? `<span class="err" role="alert">${esc(err)}</span>` : ''}<button type="submit">Open</button></form>
+<form method="post" action="${esc(url.pathname)}"><label for="em">Or sign in by email</label><input id="em" name="email" type="email" autocomplete="email" required><button type="submit">Send sign-in link</button></form></div></main>
+<footer class="site"><div class="wrap"><span class="logo"><img src="/site/mark.svg" alt="">K14</span><span>© 2026</span></div></footer></body></html>`;
   return new Response(html, { status, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } });
 }

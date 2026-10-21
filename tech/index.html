@@ -4,10 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script async src="/site/analytics.js?v=1"></script>
-<title>97A · Technology</title>
+<title>K14 · Technology</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/frame.css">
+<link rel="icon" href="/site/favicon.svg">
 <style>
   main.wrap{padding-block:36px 64px}
   .tw{display:grid; grid-template-columns:minmax(0, 340px) minmax(0, 1fr); gap:56px; align-items:start}
@@ -26,14 +27,14 @@
   .ic svg{flex:none; width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
   .ic .f, .ic .fo{fill:currentColor; stroke:none} .ic .o{stroke:currentColor}
   .agent, .designer{grid-column:1 / 3; justify-self:center; width:62%} .data{grid-column:1 / 3}
-  .designer{background:#12151D; border-color:#12151D; color:var(--txt)} .designer i, .designer .d span{color:var(--dim)} .designer .ic{color:#C9CDD8}
-  .physics{background:#F3F4F6; border-color:var(--ink)}
+  .designer{background:#181818; border-color:#181818; color:var(--txt)} .designer i, .designer .d span{color:var(--dim)} .designer .ic{color:#C9CDD8}
+  .physics{background:#F1EFE8; border-color:var(--ink)}
   @media (max-width:900px){ .tw{grid-template-columns:1fr; gap:32px} }
   @media (max-width:760px){ .lv{grid-template-columns:1fr; gap:28px} .agent, .designer, .data{grid-column:auto; width:auto} }
 </style>
 </head>
 <body>
-<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/">Applications</a><a href="/technology/" class="on">Technology</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
+<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/"><img src="/site/mark.svg" alt="">K14</a><div class="tabs"><a href="/apps/">Apps</a><a href="/tech/" class="on">Tech</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
 <main class="wrap">
   <div class="tw">
   <div>
@@ -70,7 +71,7 @@
   </div>
   </div>
 </main>
-<footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
+<footer class="site"><div class="wrap"><span class="logo"><img src="/site/mark.svg" alt="">K14</span><span>© 2026</span></div></footer>
 <script>
 function links(){
   const lv = document.getElementById('lv'), R = lv.getBoundingClientRect(), wide = innerWidth > 760;

@@ -82,17 +82,18 @@ CONTACT_ROW = ('<tr class="g0"><th scope="row" class="grp" colspan="2">How</th>'
 
 FONTS = ('<script async src="/site/analytics.js?v=1"></script>\n'
          '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
-         '<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">\n'
-         '<link rel="stylesheet" href="/site/frame.css">')
+         '<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">\n'
+         '<link rel="stylesheet" href="/site/frame.css">\n'
+         '<link rel="icon" href="/site/favicon.svg">')
 
 
 def bar(active):
     t = lambda k, h, x="": f'<a {x}href="{h}"' + (' class="on"' if k == active else '') + f'>{k}</a>'
-    return (f'<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs">{t("Applications", "/apps/")}'
-            f'{t("Technology", "/technology/")}</div>{t("Contact", "/contact/", "data-cta ")}</nav></div></header>')
+    return (f'<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/"><img src="/site/mark.svg" alt="">K14</a><div class="tabs">{t("Apps", "/apps/")}'
+            f'{t("Tech", "/tech/")}</div>{t("Contact", "/contact/", "data-cta ")}</nav></div></header>')
 
 
-FOOT = '<footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>'
+FOOT = '<footer class="site"><div class="wrap"><span class="logo"><img src="/site/mark.svg" alt="">K14</span><span>© 2026</span></div></footer>'
 
 
 def slug(t):
@@ -183,7 +184,7 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>97A · {html.escape(title)}</title>
+<title>K14 · {html.escape(title)}</title>
 {FONTS}
 <style>
 {HEAD_CSS}
@@ -191,14 +192,14 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
 </style>
 </head>
 <body>
-{bar("Applications")}
+{bar("Apps")}
 {body}
 {FOOT}
 {TILE_JS}
 </body>
 </html>
 """
-    (WEB / "apps" / "index.html").write_text(page("Applications", f'<main class="wrap">\n{cells}\n</main>', """  main.wrap{padding-block:8px 24px}
+    (WEB / "apps" / "index.html").write_text(page("Apps", f'<main class="wrap">\n{cells}\n</main>', """  main.wrap{padding-block:8px 24px}
   .row{display:flex}
   .row + .row{border-top:1px solid var(--sep)}
   .cell{flex:none; padding-top:14px; padding-bottom:12px; min-width:0}
@@ -228,7 +229,7 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>97A · Cards</title>
+<title>K14 · Cards</title>
 {FONTS}
 <style>
   body{{background:#fff; padding:40px 0 80px}}
@@ -256,7 +257,7 @@ document.querySelectorAll('.t').forEach(el => setup({{ dataset:{{ k:el.dataset.k
                         for a in apps if a["cat"] == c)
         d = WEB / "apps" / cslug[c]; d.mkdir(parents=True, exist_ok=True)
         (d / "index.html").write_text(page(c, f"""<main class="wrap">
-  <a class="crumb" href="/apps/">Applications</a>
+  <a class="crumb" href="/apps/">Apps</a>
   {head(c, "h1")}
   <ul class="list">{items}</ul>
 </main>""", """  main.wrap{padding-block:26px 56px}
@@ -278,14 +279,14 @@ document.querySelectorAll('.t').forEach(el => setup({{ dataset:{{ k:el.dataset.k
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>97A · {html.escape(a["title"])}</title>
+<title>K14 · {html.escape(a["title"])}</title>
 {FONTS}
 <link rel="stylesheet" href="/apps/app.css">
 </head>
 <body>
-{bar("Applications")}
+{bar("Apps")}
 <main class="wrap app">
-  <a class="crumb" href="/apps/">Applications</a><span class="crumb">/</span><a class="crumb" href="/apps/{slug(a["cat"])}/">{html.escape(a["cat"])}</a>
+  <a class="crumb" href="/apps/">Apps</a><span class="crumb">/</span><a class="crumb" href="/apps/{slug(a["cat"])}/">{html.escape(a["cat"])}</a>
   <div class="grid">
     <div class="card"><h1>{html.escape(a["title"])}</h1>{a["table"]}</div>
     <figure class="mol" data-k="{a["k"]}"><canvas aria-label="{html.escape(a["cap"])}"></canvas><figcaption>{html.escape(a["cap"])}</figcaption></figure>

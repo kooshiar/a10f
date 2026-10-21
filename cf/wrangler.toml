@@ -3,6 +3,8 @@ main = "worker.js"
 compatibility_date = "2026-10-01"
 workers_dev = false
 routes = [
+  { pattern = "k14.ai", custom_domain = true },
+  { pattern = "www.k14.ai", custom_domain = true },
   { pattern = "97a.io", custom_domain = true },
   { pattern = "www.97a.io", custom_domain = true },
 ]
@@ -12,7 +14,7 @@ directory = "./dist"
 binding = "ASSETS"
 html_handling = "auto-trailing-slash"
 not_found_handling = "none"
-run_worker_first = ["/", "/api/*", "/decks", "/decks/*"]
+run_worker_first = true   # every request: the worker redirects 97a.io and old paths to k14.ai
 
 # every contact message is stored here before it is emailed
 [[d1_databases]]

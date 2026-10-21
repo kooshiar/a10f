@@ -4,10 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script async src="/site/analytics.js?v=1"></script>
-<title>97A · Contact</title>
+<title>K14 · Contact</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/frame.css">
+<link rel="icon" href="/site/favicon.svg">
 <style>
   main.wrap{min-height:calc(100vh - 57px - 65px); display:grid; align-items:center; justify-items:start; padding-block:64px}
   form{width:min(460px, calc(100% - 32px)); display:flex; flex-direction:column; gap:14px}
@@ -22,7 +23,7 @@
 </style>
 </head>
 <body>
-<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/">97A</a><div class="tabs"><a href="/apps/">Applications</a><a href="/technology/">Technology</a></div><a data-cta href="/contact/" class="on">Contact</a></nav></div></header>
+<header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/"><img src="/site/mark.svg" alt="">K14</a><div class="tabs"><a href="/apps/">Apps</a><a href="/tech/">Tech</a></div><a data-cta href="/contact/" class="on">Contact</a></nav></div></header>
 <main class="wrap">
   <form id="f" novalidate>
     <input name="name" placeholder="Name" autocomplete="name" required>
@@ -33,7 +34,7 @@
     <div class="err" id="err"></div>
   </form>
 </main>
-<footer class="site"><div class="wrap"><span>97A</span><span>© 2026</span></div></footer>
+<footer class="site"><div class="wrap"><span class="logo"><img src="/site/mark.svg" alt="">K14</span><span>© 2026</span></div></footer>
 <script>
 const f = document.getElementById('f'), err = document.getElementById('err');
 f.addEventListener('submit', async e => {
