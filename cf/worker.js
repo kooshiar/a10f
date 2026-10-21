@@ -304,6 +304,8 @@ const GEIST = 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&f
 function withBar(html, h, url) {
   h.delete('content-length'); h.delete('etag');
   html = html.replace(/(<title>[^<]*?)97A/i, '$1K14');
+  if (/^\/decks\/(bio)?progress(\/|$)/.test(url.pathname))   // progress pages stay light even when the OS is in dark mode
+    html = html.replace(/<html([^>]*)>/i, (m, a) => /data-theme/.test(a) ? m.replace(/data-theme="[^"]*"/, 'data-theme="light"') : `<html${a} data-theme="light">`);
   if (url.searchParams.has('k14frame'))   // inside the frame: links to other pages open in the top window; slide hash shows in its URL
     return new Response(html.replace(/<\/body>/i, `<script>document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href]');`
       + `if(!a||a.target)return;const u=new URL(a.href,location.href);if(u.origin===location.origin&&u.pathname!==location.pathname){e.preventDefault();`
