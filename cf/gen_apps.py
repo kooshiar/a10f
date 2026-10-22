@@ -30,8 +30,8 @@ SHORT = {
     "Fertilizer stabilizer that stops nitrogen loss": "Fertilizer stabilizer",
     "Herbicide that kills resistant weeds": "Resistant-weed killer",
     "Catalyst that makes ammonia at low heat": "Low-heat ammonia",
-    "Feed additive that cuts cow methane": "Cow methane cutter",
-    "Perfume capsule that releases scent slowly": "Slow-release perfume",
+    "Feed additive that cuts cow methane": "Less cow methane",
+    "Perfume capsule that releases scent slowly": "Lasting perfume",
     "Vitamin C serum that doesn’t turn brown": "Stable vitamin C",
     "Odor trap for deodorants": "Deodorant odor trap",
     "Reef-safe sunscreen UV filter": "Reef-safe UV filter",
@@ -41,9 +41,9 @@ SHORT = {
     "Drug crystal form check before scale-up": "Drug crystal check",
     "Potassium binder for kidney patients": "Potassium binder",
     "Sensor surface that tracks inflammation at home": "Inflammation sensor",
-    "Slow-release joint injection for arthritis": "Slow-release joint shot",
+    "Slow-release joint injection for arthritis": "Arthritis shot",
     "Crystal blocker for gout": "Gout crystal blocker",
-    "Antibiotic-free coating that stops catheter infections": "Infection-free catheter",
+    "Antibiotic-free coating that stops catheter infections": "Catheter coating",
     "MRI contrast agent without gadolinium": "Gadolinium-free MRI",
     "Stabilizer that keeps vaccines safe without a freezer": "Freezer-free vaccines",
     "Cell-freezing solution without DMSO": "DMSO-free cell freezing",
@@ -69,8 +69,8 @@ SHORT = {
     "Copper-free antifouling paint for ships": "Copper-free ship paint",
     "Heat shield coating for jet engine blades": "Jet blade heat shield",
     "Corrosion inhibitor for liquid-cooling loops": "Cooling-loop corrosion",
-    "Longer-life transformer oil": "Long-life transformer oil",
-    "Concrete additive for heavier data center floors": "Stronger data-center floors",
+    "Longer-life transformer oil": "Transformer oil",
+    "Concrete additive for heavier data center floors": "Data-center floors",
 }
 CAT_SHORT = {"Food & drink": "Food", "Agriculture": "Farming", "Cosmetics & home": "Home", "Data centers & chips": "Chips"}
 HOME = ["PFAS trap for drinking water", "Solid electrolyte for solid-state batteries", "Heat paste that pulls heat out of AI chips",
@@ -109,7 +109,7 @@ EXTRA = [
          use="Steadier ammonium probes for sewage aeration, which uses 25–60% of plant power",
          comp="Nonactin probes, only 10–20× ammonium over potassium", buyers="Sewage plants, probe makers",
          market="$290M ammonium sensors (2025)"),
-    dict(title="Early-strength booster for low-carbon cement", short="Low-carbon cement booster", cat="Industry", k="tea",
+    dict(title="Early-strength booster for low-carbon cement", short="Cement booster", cat="Industry", k="tea",
          cap="Triethanolamine, today’s booster", use="Speed day-1 strength in low-clinker cements, keeping set time and 28-day strength",
          test="Mortar cubes: 1-, 3- and 28-day strength", time="~2–3 months", comp="Amine additives (TEA, TIPA), sulfate tuning",
          buyers="Cement makers, admixture makers", market="$3.9–6.6B cement additives"),
@@ -302,7 +302,8 @@ def main():
     G, PAD = 24, 22                                     # px between tiles; px between a tile and an inner line
     cslug = {c: slug(c) for c in cats}
     assert not set(cslug.values()) & {a["slug"] for a in apps}
-    tile = lambda a: f'<a class="tile" href="/apps/{a["slug"]}/" data-k="{a["k"]}"{" data-focus" if a["focus"] else ""}><canvas></canvas><b>{html.escape(a["short"])}</b></a>'
+    dots = lambda a: f'<span class="dots" title="{STAGES[a["st"] - 1]}">' + "".join(f'<i class="{"on" if j < a["st"] else ""}"></i>' for j in range(5)) + "</span>"
+    tile = lambda a: f'<a class="tile" href="/apps/{a["slug"]}/" data-k="{a["k"]}"{" data-focus" if a["focus"] else ""}><canvas></canvas><b>{html.escape(a["short"])}</b>{dots(a)}</a>'
     def head(c, tag="h2"):
         n = sum(a["cat"] == c for a in apps)
         return f'<{tag}><a href="/apps/{cslug[c]}/">{html.escape(c)}<span class="n">{n}</span></a></{tag}>'
@@ -335,7 +336,8 @@ tiles.forEach((el, i) => { el.onmouseenter = () => { hot = i; views[i].active(tr
   .tile canvas{display:block; border-radius:19px; background:var(--bg); transition:transform .2s}
   body.light .tile canvas{background:#F3F4F6}
   .tile:hover canvas{transform:translateY(-2px)}
-  .tile b{display:block; padding:6px 1px 0; font-weight:500; line-height:1.25; letter-spacing:-.005em}"""
+  .tile b{display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.5em; padding:6px 1px 0; font-weight:500; line-height:1.25; letter-spacing:-.005em}
+  .dots{display:flex; gap:3px; margin-top:5px} .dots i{width:6px; height:6px; border-radius:99px; background:var(--rule)} .dots i.on{background:var(--blue)}"""
     page = lambda title, body, css: f"""<!doctype html>
 <html lang="en">
 <head>
@@ -410,7 +412,7 @@ document.querySelectorAll('.t').forEach(el => setup({{ dataset:{{ k:el.dataset.k
 
     # ---- one page per category: every application in it, with its one-line use
     for c in cats:
-        items = "".join(f'<li>{tile(a)}<div><a class="t" href="/apps/{a["slug"]}/">{html.escape(a["title"])}</a><p>{html.escape(a["use"])}</p></div></li>'
+        items = "".join(f'<li>{tile(a)}<div><a class="t" href="/apps/{a["slug"]}/">{html.escape(a["title"])}</a><p>{html.escape(a["use"])}</p>{dots(a)}</div></li>'
                         for a in apps if a["cat"] == c)
         d = WEB / "apps" / cslug[c]; d.mkdir(parents=True, exist_ok=True)
         (d / "index.html").write_text(page(c, f"""<main class="wrap">
@@ -422,7 +424,7 @@ document.querySelectorAll('.t').forEach(el => setup({{ dataset:{{ k:el.dataset.k
   h1{margin-top:10px; font-size:30px; font-weight:600; letter-spacing:-.03em} h1 .n{font-size:17px}
   .list{list-style:none; margin:26px 0 0; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:22px 40px}
   .list li{display:flex; gap:18px; align-items:center; padding-bottom:22px; border-bottom:1px solid var(--sep)}
-  .tile{width:96px} .tile canvas{width:96px; height:96px} .tile b{display:none}
+  .tile{width:96px} .tile canvas{width:96px; height:96px} .tile b, .tile .dots{display:none} .list .dots{margin-top:8px}
   .t{font-weight:500; font-size:17px; letter-spacing:-.01em; color:var(--ink); text-decoration:none} .t:hover{color:var(--blue)}
   .list p{margin:6px 0 0; font-size:14px; line-height:1.45; color:var(--ink2)}
   @media (max-width:900px){ .list{grid-template-columns:1fr} }"""))
