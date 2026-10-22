@@ -20,7 +20,10 @@ const glow = (hex) => new THREE.MeshBasicMaterial({ color:hex, toneMapped:false 
 // render looks for ball films (opts.look): ball = scale on the atom radius, stick = bond radius in Å,
 // hollow = see-through balls with a bright rim, surface = that group drawn as one smooth molecular surface
 export const LOOKS = { thin:{ ball:.55, stick:.05 }, fine:{ ball:.32, stick:.032 }, licorice:{ ballAbs:.085, stick:.085 },
-  hollow:{ ball:1, stick:.04, hollow:true }, surface:{ ball:.5, stick:.05, surface:'guest' } };
+  hollow:{ ball:1, stick:.04, hollow:true }, surface:{ ball:.5, stick:.05, surface:'guest' },
+  // target as a surface; the machine either with small see-through balls, or flat (unlit) small balls on narrow bonds
+  surfaceHollow:{ ball:.58, stick:.04, hollow:true, surface:'guest' }, surfaceFlat:{ ball:.4, stick:.04, flat:true, surface:'guest' } };
+const flat = (hex) => new THREE.MeshBasicMaterial({ color:hex });
 const rim = (hex) => new THREE.ShaderMaterial({ transparent:true, depthWrite:false,
   uniforms:{ color:{ value:new THREE.Color(hex) } },
   vertexShader:`varying vec3 vN; varying vec3 vV;
@@ -85,12 +88,12 @@ export class Stage {
     names.forEach((g, k) => sc.groups[g].forEach(a => this.gid[a] = k));
     const sph = new THREE.SphereGeometry(1, 28, 20), cyl = new THREE.CylinderGeometry(1, 1, 1, 14, 1, true);
     const look = this.look = LOOKS[this.opts.look] || {};
-    this.balls = names.map((g, k) => { const idx = sc.groups[g]; const m = new THREE.InstancedMesh(sph, (look.hollow ? rim : mat)(COLORS[f.groups[g]]), idx.length);
+    this.balls = names.map((g, k) => { const idx = sc.groups[g]; const m = new THREE.InstancedMesh(sph, (look.hollow ? rim : look.flat ? flat : mat)(COLORS[f.groups[g]]), idx.length);
       m.userData.idx = idx; this.root.add(m); return m; });
     // half bonds per group
     const halves = names.map(() => []);
     for (const [a, b] of sc.bonds){ if (this.gid[a] >= 0) halves[this.gid[a]].push([a, b]); if (this.gid[b] >= 0) halves[this.gid[b]].push([b, a]); }
-    this.sticks = f.stick ? names.map((g, k) => { const m = new THREE.InstancedMesh(cyl, mat(COLORS[f.groups[g]]), Math.max(1, halves[k].length));
+    this.sticks = f.stick ? names.map((g, k) => { const m = new THREE.InstancedMesh(cyl, (look.flat ? flat : mat)(COLORS[f.groups[g]]), Math.max(1, halves[k].length));
       m.userData.h = halves[k]; m.count = halves[k].length; this.root.add(m); return m; }) : [];
     if (f.tets){
       const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(sc.tets.length * 12 * 3), 3));
