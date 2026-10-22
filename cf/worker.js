@@ -224,7 +224,7 @@ async function session(request, env) {
 // so a deploy can never expose them. The files sit in ./dist/decks but every /decks path runs through the worker first.
 const FILES = { dsc: '/decks/dsc/deck', crp: '/decks/crp/deck', heatcold: '/decks/heatcold/deck' };   // decks served from one file
 const OWNER = 'kooshiar@gmail.com';   // the one email that can sign in by link (sent to the CONTACT_TO inbox)
-const PRIVATE = ['design', 'investors2', 'dsc', 'crp', 'heatcold', 'opportunities', 'sales', 'tech', 'customers', 'investors', 'amd', 'progress', 'founders', 'answers', 'scientists', 'evonik', 'cemvita',
+const PRIVATE = ['design', 'dsc', 'crp', 'heatcold', 'opportunities', 'sales', 'tech', 'customers', 'investors', 'amd', 'progress', 'founders', 'answers', 'scientists', 'evonik', 'cemvita',
   'bio', 'bioprogress'];   // bio spinoff decks; bioprogress serves only the bio rows the one progress table reads
 const same = (a, b) => { if (a.length !== b.length) return false; let x = 0; for (let i = 0; i < a.length; i++) x |= a.charCodeAt(i) ^ b.charCodeAt(i); return x === 0; };
 async function privateDecks(request, env, url, name) {
