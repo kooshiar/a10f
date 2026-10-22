@@ -205,6 +205,10 @@ def main():
         at = max(i for i, a in enumerate(apps) if a["cat"] == e["cat"]) + 1
         apps.insert(at, dict(slug=slug(e["title"]), title=e["title"], short=e["short"], cat=e["cat"], cs=CAT_SHORT.get(e["cat"], e["cat"]),
                              use=e["use"], k=e["k"], cap=e["cap"], focus=False, table=extra_table(e)))
+    # the target is drawn as one lavender surface, so colour notes like "(green = fluorine)" no longer hold for it
+    for a in apps:
+        if (data.get(a["k"]) or {}).get("guest"):
+            a["cap"] = re.sub(r"\s*\([^)]*=[^)]*\)", "", a["cap"])
     n = 54 - len(REMOVE) + len(EXTRA)
     assert len(apps) == n and len({a["slug"] for a in apps}) == n
     cats = list(dict.fromkeys(a["cat"] for a in apps))

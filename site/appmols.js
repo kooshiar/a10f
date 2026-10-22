@@ -34,7 +34,7 @@ export function setup(fig){
   const d=DATA[fig.dataset.k], cv=fig.querySelector('canvas'), ctx=cv.getContext('2d');
   const guest=new Set(Array.isArray(d.guest)?d.guest:d.guest?[...Array(d.guest).keys()]:[]);
   // fig.focus: draw only the guest molecule, centred (tiles of apps that share the same host ring)
-  const bulk=(fig.style||new URLSearchParams(location.search).get('style'))==='bulk';   // target as a surface (see drawBulk)
+  const bulk=(fig.style||new URLSearchParams(location.search).get('style')||'bulk')==='bulk';   // site style (design deck p13): target as a surface; ?style=classic for the old balls
   const foc=!!(fig.focus&&guest.size&&!bulk);   // bulk shows the host ring too, around the target
   const show=d.els.map((e,i)=>COL[e]!=null&&(!foc||guest.has(i)));
   const gi=[...guest], C=foc?[0,1,2].map(j=>gi.reduce((s,i)=>s+d.X[i][j],0)/gi.length):[0,0,0];
@@ -75,7 +75,7 @@ export function setup(fig){
     host.filter(it=>it.z<gz).forEach(one);
     if(gi.length){                                       // molecular surface, lit like the hero's target
       const big=gi.length<3?(d.guestScale||1.35):1, C=gi.map(i=>{const [x,y]=pr(P[i]);return {x,y,r:RAD[d.els[i]]*2.6*sc*.62*big};});
-      surface(ctx,C,fig.target||globalThis.MOLTARGET||'#EDE7D9');}   // fig.target: the target's colour (hero cream by default)
+      surface(ctx,C,fig.target||globalThis.MOLTARGET||'#B9A6FF');}   // fig.target: the target's colour (site: lavender, no machine atom uses it)
     host.filter(it=>it.z>=gz).forEach(one);
   }
   function draw(){
