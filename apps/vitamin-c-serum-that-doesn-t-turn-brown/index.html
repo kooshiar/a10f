@@ -4,30 +4,32 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>K14 · Vitamin C serum that doesn’t turn brown</title>
+<meta name="description" content="Keep vitamin C from oxidizing in water-based serums while it still reaches the skin">
 <script async src="/site/analytics.js?v=1"></script>
 <script type="module" src="/site/auth.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/frame.css">
 <link rel="icon" href="/site/favicon.svg">
-<link rel="stylesheet" href="/apps/app.css">
+<link rel="stylesheet" href="/apps/app.css?v=2">
 </head>
 <body>
 <header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/"><img src="/site/mark.svg" alt="">K14</a><div class="tabs"><a href="/apps/" class="on">Apps</a><a href="/tech/">Tech</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
 <main class="wrap app">
-  <a class="crumb" href="/apps/">Apps</a><span class="crumb">/</span><a class="crumb" href="/apps/cosmetics-home/">Cosmetics &amp; home</a>
-  <div class="grid">
-    <div class="card"><h1>Vitamin C serum that doesn’t turn brown</h1><table><tr class="g0"><th scope="rowgroup" class="grp" rowspan="3">Why</th><th scope="row">Category</th><td><span class="chip tag">Cosmetics & home</span></td></tr><tr><th scope="row">Level</th><td><span class="chip ok">Super easy</span> </td></tr><tr><th scope="row">Use</th><td>Keep vitamin C from oxidizing in water-based serums while it still reaches the skin</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="1">What</th><th scope="row">Atoms</th><td>Host 100–200 + vitamin C 20 + water. C H O</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="3">Build</th><th scope="row">Testing</th><td><span class="chip ok">Easy</span> Color and potency over weeks at 40 °C</td></tr><tr><th scope="row">Funding</th><td>Compute ~$8 · Make ~$2–5k · Test ~$5–15k · Other ~$5k patent</td></tr><tr><th scope="row">Time</th><td>Make 1–2 wks · Test 4–8 wks · Total ~2–3 months</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">How</th><td><a class="ask" href="/contact/">Contact us for the design specs and build plan &rarr;</a></td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Demo</th><td>Vitamin C tucked in the host, oxygen can’t reach it</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Competition</th><td>Stable derivatives (ascorbyl glucoside, THD ascorbate), airless packs</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="2">Business</th><th scope="row">Buyers</th><td>L’Oréal, Estée Lauder, dsm-firmenich, BASF</td></tr><tr><th scope="row">Revenue</th><td><span class="chip mid">Medium</span> Ingredient license to cosmetics suppliers. ~$0.3–2M/yr</td></tr></table></div>
-    <figure class="mol" data-k="vitc"><canvas aria-label="Vitamin C inside β-cyclodextrin"></canvas><figcaption>Vitamin C inside β-cyclodextrin</figcaption></figure>
+  <div class="fold nosol">
+    <div class="b ttl"><div class="crumb"><a href="/apps/">Apps</a> / <a href="/apps/cosmetics-home/">Cosmetics &amp; home</a></div><h1>Vitamin C serum that doesn’t turn brown</h1></div>
+    <figure class="b mol" data-k="vitc"><canvas aria-label="Vitamin C inside β-cyclodextrin"></canvas></figure>
+    <div class="b"><h3>Why</h3><p><b>Keep vitamin C from oxidizing in water-based serums while it still reaches the skin.</b></p></div>
+    <div class="b"><h3>Business</h3><p><b>L’Oréal, Estée Lauder, dsm-firmenich, BASF</b></p><p>Ingredient license to cosmetics suppliers. ~$0.3–2M/yr</p></div>
+    
+    <div class="b prog"><h3>Progress</h3><ol class="trk"><li class="done"><i></i><span>Problem researched</span></li><li class="now"><i></i><span>Designs completed</span></li><li class=""><i></i><span>Scored vs today’s best</span></li><li class=""><i></i><span>Lab tested</span></li><li class=""><i></i><span>Partner pilot</span></li></ol><a class="btn" href="/contact/?about=vitamin-c-serum-that-doesn-t-turn-brown">Work with us on this <span>&rarr;</span></a></div>
   </div>
   <nav class="pn"><a href="/apps/perfume-capsule-that-releases-scent-slowly/">&larr; Slow-release perfume</a><a href="/apps/odor-trap-for-deodorants/">Deodorant odor trap &rarr;</a></nav>
 </main>
 <footer class="site"><div class="wrap"><span class="logo"><img src="/site/mark.svg" alt="">K14</span><span>© 2026</span></div></footer>
 <script type="module">
-import { setup } from '/site/appmols.js?v=3';
-const look = new URLSearchParams(location.search).get('bg') === 'light' ? 'light' : 'dark';
-document.body.classList.toggle('light', look === 'light');
-const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, look, drag:true, querySelector:() => f.querySelector('canvas') });
+import { setup } from '/site/appmols.js?v=5';
+const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, look:'dark', drag:true, querySelector:() => f.querySelector('canvas') });
 v.active(true); let last = performance.now();
 (function loop(t){ v.tick(t - last); last = t; requestAnimationFrame(loop); })(last);
 addEventListener('resize', () => v.draw());

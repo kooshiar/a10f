@@ -147,6 +147,72 @@ def slug(t):
     return re.sub(r"-+", "-", re.sub(r"[^a-z0-9]+", "-", t.lower().replace("₂", "2"))).strip("-")
 
 
+# ---- app pages as business pages (2026-10-22, design deck p31): why, business, our design vs the best product today, progress.
+# Numbers come from the spinoff runs (web/decks/progress, web/decks/bioprogress); our design names and structures are never used.
+SPIN = {"Cork-taint remover for wine": "cork", "CO₂ trap that works in humid air": "co2", "Cyanide-free gold extraction": "gold",
+        "Ethylene trap that keeps fruit fresh longer": "ethylene", "Phosphorus catcher for farm runoff": "phosphate",
+        "Rare-earth separator for magnet supply chains": "rareearth", "PFAS trap for drinking water": "pfas",
+        "Boron catcher for desalination": "boron", "Trap for 1,4-dioxane in groundwater": "dioxane",
+        "Binder for a reagent-free phosphate probe": "psensor", "Ammonium probe binder that ignores potassium": "ammonium",
+        "Early-strength booster for low-carbon cement": "cement", "TMAH recovery for chip fabs": "tmah", "Wraps that hold one temperature": "heatcold",
+        "Corrosion inhibitor for liquid-cooling loops": "culoop", "Coolant for data centers after 3M leaves PFAS": "coolant",
+        "Stabilizer that keeps vaccines safe without a freezer": "bio/vaxstab", "Cell-freezing solution without DMSO": "bio/cryo",
+        "Cheap ligand that pulls antibodies out of cell broth": "bio/abcap"}
+STAGES = ["Problem researched", "Designs completed", "Scored vs today’s best", "Lab tested", "Partner pilot"]
+DECKS = WEB / "decks"
+
+
+def jload(p):
+    try:
+        return json.loads(p.read_text())
+    except Exception:
+        return {}
+
+
+def deck_why(key):
+    """Headline and line of the spinoff deck's first page: the problem in the buyer's numbers."""
+    bio = key.startswith("bio/"); k = key.split("/")[-1]
+    for f in ([DECKS / "bio" / k / "index.html"] if bio else [DECKS / "opportunities" / k / "index.html", DECKS / k / "deck.html"]):
+        if f.exists():
+            m = re.search(r'<section class="slide[^"]*"[^>]*>(.*?)</section>', f.read_text(), re.S)
+            if not m: continue
+            clean = lambda x: re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", x))).strip()
+            h = re.search(r"<h[12][^>]*>(.*?)</h[12]>", m.group(1), re.S); q = re.search(r"<p[^>]*>(.*?)</p>", m.group(1), re.S)
+            if h: return clean(h.group(1)), clean(q.group(1)) if q else ""
+    return None
+
+
+def spin_info(a):
+    """why (headline, line), numbers (max 4: big, label, small) and the progress step for one app."""
+    key = SPIN.get(a["title"])
+    info = dict(why=None, nums=[], at=1)
+    if not key: return info
+    info["why"] = deck_why(key)
+    k = key.split("/")[-1]
+    sc = jload(DECKS / ("bioprogress" if key.startswith("bio/") else "progress") / "scores.json").get(k)
+    if not sc or sc.get("ours") is None or sc.get("theirs") is None: return info
+    ours, theirs = sc["ours"], sc["theirs"]
+    info["at"] = 3 if ours > theirs else 2
+    if ours <= theirs: return info
+    cmp = jload(DECKS / "progress" / f"cmp_{k}.json")
+    if cmp.get("options"):
+        mine = next((o for o in cmp["options"] if o["label"] == sc.get("ours_name")), None)
+        best = next((o for o in cmp["options"] if o["kind"] == "known" and o["label"].lower() == str(sc.get("theirs_name", "")).lower()), None) \
+            or max((o for o in cmp["options"] if o["kind"] == "known"), key=lambda o: o.get("overall") or 0, default=None)
+        if mine and best:
+            gains = []
+            for name, w, x, y in zip(cmp["rows"], cmp["weights"], mine["vals"], best["vals"]):
+                if x is None or y is None or x - y < 15 or name.lower().startswith(("cost", "price", "us supply")): continue
+                big = (f"{x / y:.1f}×" if x / y < 10 else f"{x / y:.0f}×") if y >= 10 else f"{x} vs {y}"
+                gains.append((w * (x - y), big, name, f"score {x} vs {y}"))
+            info["nums"] = [g[1:] for g in sorted(gains, reverse=True)[:2]]
+            pm, pb = mine.get("price"), best.get("price")
+            if pm and pb and pm < pb * .95:
+                info["nums"].append((f"{round((1 - pm / pb) * 100)}%", "lower cost", f"${pm:.2f} vs ${pb:.2f} per kg"))
+    info["nums"].append((f"{ours}<small> vs {theirs}</small>", "overall score", "out of 100, on what buyers need"))
+    return info
+
+
 def chip_cat(cat):
     return f'<span class="chip tag">{html.escape(cat)}</span>'
 
@@ -192,8 +258,10 @@ def main():
         rows = rows[:i] + [need, CONTACT_ROW] + rows[i + 6:]
         fig = re.search(r'data-k="([^"]+)"[^>]*title="([^"]*)"', body)
         use = re.sub(r"<[^>]+>", "", re.search(r'<th scope="row">Use</th><td>(.*?)</td>', body, re.S).group(1)).strip()
+        cellx = lambda lab: html.unescape(re.sub(r"<span class=\"chip[^>]*>[^<]*</span>\s*", "", (re.search(rf'<th scope="row">{lab}</th><td>(.*?)</td>', body, re.S) or [None, ""])[1])).strip()
         apps.append(dict(slug=slug(title), title=title, short=SHORT.get(title, title), cat=cat, cs=CAT_SHORT.get(cat, cat), use=html.unescape(use),
-                         k=fig.group(1) if fig else None, cap=html.unescape(fig.group(2)) if fig else "", focus='cyclodextrin' in (fig.group(2) if fig else ''), table="<table>" + "".join(rows) + "</table>"))
+                         k=fig.group(1) if fig else None, cap=html.unescape(fig.group(2)) if fig else "", focus='cyclodextrin' in (fig.group(2) if fig else ''), table="<table>" + "".join(rows) + "</table>",
+                         buyers=re.sub(r"<[^>]+>", "", cellx("Buyers")), market=re.sub(r"<[^>]+>", "", cellx("Revenue"))))
     assert len(apps) == 54
     apps = [a for a in apps if a["title"] not in REMOVE]
     for a in apps:
@@ -204,7 +272,7 @@ def main():
     for e in EXTRA:
         at = max(i for i, a in enumerate(apps) if a["cat"] == e["cat"]) + 1
         apps.insert(at, dict(slug=slug(e["title"]), title=e["title"], short=e["short"], cat=e["cat"], cs=CAT_SHORT.get(e["cat"], e["cat"]),
-                             use=e["use"], k=e["k"], cap=e["cap"], focus=False, table=extra_table(e)))
+                             use=e["use"], k=e["k"], cap=e["cap"], focus=False, table=extra_table(e), buyers=e["buyers"], market=e["market"]))
     # the target is drawn as one lavender surface, so colour notes like "(green = fluorine)" no longer hold for it
     for a in apps:
         if (data.get(a["k"]) or {}).get("guest"):
@@ -357,35 +425,44 @@ document.querySelectorAll('.t').forEach(el => setup({{ dataset:{{ k:el.dataset.k
   .list p{margin:6px 0 0; font-size:14px; line-height:1.45; color:var(--ink2)}
   @media (max-width:900px){ .list{grid-template-columns:1fr} }"""))
 
-    # ---- one page per application
+    # ---- one page per application: a short business page that fits one screen (design deck p31)
     for n, a in enumerate(apps):
         prev, nxt = apps[n - 1], apps[(n + 1) % len(apps)]
         d = WEB / "apps" / a["slug"]; d.mkdir(parents=True, exist_ok=True)
+        info = spin_info(a); e = html.escape
+        why_h, why_p = info["why"] or (a["use"].rstrip(".") , "")
+        why = f'<p><b>{e(why_h)}{"" if why_h.endswith(".") else "."}</b></p>' + (f"<p>{e(why_p)}</p>" if why_p else "")
+        biz = (f'<p><b>{e(a.get("buyers") or "")}</b></p>' if a.get("buyers") else "") + (f'<p>{e(a.get("market") or "")}</p>' if a.get("market") else "")
+        nums = "".join(f"<div><b>{big}</b><span>{e(lab)}</span><em>{e(sm)}</em></div>" for big, lab, sm in info["nums"])
+        sol = f'<div class="b sol"><h3>Our design vs the best product today</h3><div class="nums" style="--n:{len(info["nums"])}">{nums}</div></div>' if info["nums"] else ""
+        trk = "".join(f'<li class="{"done" if j < info["at"] else "now" if j == info["at"] else ""}"><i></i><span>{t}</span></li>' for j, t in enumerate(STAGES))
         (d / "index.html").write_text(f"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>K14 · {html.escape(a["title"])}</title>
+<title>K14 · {e(a["title"])}</title>
+<meta name="description" content="{e(why_h)}">
 {FONTS}
-<link rel="stylesheet" href="/apps/app.css">
+<link rel="stylesheet" href="/apps/app.css?v=2">
 </head>
 <body>
 {bar("Apps")}
 <main class="wrap app">
-  <a class="crumb" href="/apps/">Apps</a><span class="crumb">/</span><a class="crumb" href="/apps/{slug(a["cat"])}/">{html.escape(a["cat"])}</a>
-  <div class="grid">
-    <div class="card"><h1>{html.escape(a["title"])}</h1>{a["table"]}</div>
-    <figure class="mol" data-k="{a["k"]}"><canvas aria-label="{html.escape(a["cap"])}"></canvas><figcaption>{html.escape(a["cap"])}</figcaption></figure>
+  <div class="fold{'' if sol else ' nosol'}">
+    <div class="b ttl"><div class="crumb"><a href="/apps/">Apps</a> / <a href="/apps/{slug(a["cat"])}/">{e(a["cat"])}</a></div><h1>{e(a["title"])}</h1></div>
+    <figure class="b mol" data-k="{a["k"]}"><canvas aria-label="{e(a["cap"])}"></canvas></figure>
+    <div class="b"><h3>Why</h3>{why}</div>
+    <div class="b"><h3>Business</h3>{biz}</div>
+    {sol}
+    <div class="b prog"><h3>Progress</h3><ol class="trk">{trk}</ol><a class="btn" href="/contact/?about={a["slug"]}">Work with us on this <span>&rarr;</span></a></div>
   </div>
-  <nav class="pn"><a href="/apps/{prev["slug"]}/">&larr; {html.escape(prev["short"])}</a><a href="/apps/{nxt["slug"]}/">{html.escape(nxt["short"])} &rarr;</a></nav>
+  <nav class="pn"><a href="/apps/{prev["slug"]}/">&larr; {e(prev["short"])}</a><a href="/apps/{nxt["slug"]}/">{e(nxt["short"])} &rarr;</a></nav>
 </main>
 {FOOT}
 <script type="module">
-import {{ setup }} from '/site/appmols.js?v=3';
-const look = new URLSearchParams(location.search).get('bg') === 'light' ? 'light' : 'dark';
-document.body.classList.toggle('light', look === 'light');
-const f = document.querySelector('.mol'), v = setup({{ dataset:{{ k:f.dataset.k }}, scale:.95, look, drag:true, querySelector:() => f.querySelector('canvas') }});
+import {{ setup }} from '/site/appmols.js?v=5';
+const f = document.querySelector('.mol'), v = setup({{ dataset:{{ k:f.dataset.k }}, scale:.95, look:'dark', drag:true, querySelector:() => f.querySelector('canvas') }});
 v.active(true); let last = performance.now();
 (function loop(t){{ v.tick(t - last); last = t; requestAnimationFrame(loop); }})(last);
 addEventListener('resize', () => v.draw());

@@ -4,30 +4,32 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>K14 · Chip-making precursor that deposits cleaner films</title>
+<meta name="description" content="Gas molecule that lays down one atomic layer at a time, with fewer impurities">
 <script async src="/site/analytics.js?v=1"></script>
 <script type="module" src="/site/auth.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/frame.css">
 <link rel="icon" href="/site/favicon.svg">
-<link rel="stylesheet" href="/apps/app.css">
+<link rel="stylesheet" href="/apps/app.css?v=2">
 </head>
 <body>
 <header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/"><img src="/site/mark.svg" alt="">K14</a><div class="tabs"><a href="/apps/" class="on">Apps</a><a href="/tech/">Tech</a></div><a data-cta href="/contact/">Contact</a></nav></div></header>
 <main class="wrap app">
-  <a class="crumb" href="/apps/">Apps</a><span class="crumb">/</span><a class="crumb" href="/apps/data-centers-chips/">Data centers &amp; chips</a>
-  <div class="grid">
-    <div class="card"><h1>Chip-making precursor that deposits cleaner films</h1><table><tr class="g0"><th scope="rowgroup" class="grp" rowspan="3">Why</th><th scope="row">Category</th><td><span class="chip tag">Data centers & chips</span></td></tr><tr><th scope="row">Level</th><td><span class="chip hard">Hard</span> </td></tr><tr><th scope="row">Use</th><td>Gas molecule that lays down one atomic layer at a time, with fewer impurities</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="1">What</th><th scope="row">Atoms</th><td>Molecule 10–40 + surface 100–300. Al Hf Ti Ru C H N O</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="3">Build</th><th scope="row">Testing</th><td><span class="chip hard">Hard</span> ALD tool time with a partner</td></tr><tr><th scope="row">Funding</th><td>Compute ~$500–1k · Make ~$20–50k · Test ~$30–100k tool time · Other ~$20k patents</td></tr><tr><th scope="row">Time</th><td>Make 3–6 months · Test 3–6 months of tool time · Total ~6–12 months</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">How</th><td><a class="ask" href="/contact/">Contact us for the design specs and build plan &rarr;</a></td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Demo</th><td>Precursor lands, reacts, leaves a clean layer, pulse by pulse</td></tr><tr class="g0"><th scope="row" class="grp" colspan="2">Competition</th><td>In-house R&amp;D at suppliers</td></tr><tr class="g0"><th scope="rowgroup" class="grp" rowspan="2">Business</th><th scope="row">Buyers</th><td>Merck (EMD), Air Liquide, Entegris; users TSMC, Intel, Samsung</td></tr><tr><th scope="row">Revenue</th><td><span class="chip ok">High</span> Co-development ~$0.5–2M, royalty on chemical sales. ~$1–5M/yr</td></tr></table></div>
-    <figure class="mol" data-k="ald"><canvas aria-label="Trimethylaluminum, the classic precursor (orange = Al)"></canvas><figcaption>Trimethylaluminum, the classic precursor (orange = Al)</figcaption></figure>
+  <div class="fold nosol">
+    <div class="b ttl"><div class="crumb"><a href="/apps/">Apps</a> / <a href="/apps/data-centers-chips/">Data centers &amp; chips</a></div><h1>Chip-making precursor that deposits cleaner films</h1></div>
+    <figure class="b mol" data-k="ald"><canvas aria-label="Trimethylaluminum, the classic precursor (orange = Al)"></canvas></figure>
+    <div class="b"><h3>Why</h3><p><b>Gas molecule that lays down one atomic layer at a time, with fewer impurities.</b></p></div>
+    <div class="b"><h3>Business</h3><p><b>Merck (EMD), Air Liquide, Entegris; users TSMC, Intel, Samsung</b></p><p>Co-development ~$0.5–2M, royalty on chemical sales. ~$1–5M/yr</p></div>
+    
+    <div class="b prog"><h3>Progress</h3><ol class="trk"><li class="done"><i></i><span>Problem researched</span></li><li class="now"><i></i><span>Designs completed</span></li><li class=""><i></i><span>Scored vs today’s best</span></li><li class=""><i></i><span>Lab tested</span></li><li class=""><i></i><span>Partner pilot</span></li></ol><a class="btn" href="/contact/?about=chip-making-precursor-that-deposits-cleaner-films">Work with us on this <span>&rarr;</span></a></div>
   </div>
   <nav class="pn"><a href="/apps/concrete-additive-for-heavier-data-center-floors/">&larr; Stronger data-center floors</a><a href="/apps/long-life-blue-emitter-for-oled-screens/">Long-life blue OLED &rarr;</a></nav>
 </main>
 <footer class="site"><div class="wrap"><span class="logo"><img src="/site/mark.svg" alt="">K14</span><span>© 2026</span></div></footer>
 <script type="module">
-import { setup } from '/site/appmols.js?v=3';
-const look = new URLSearchParams(location.search).get('bg') === 'light' ? 'light' : 'dark';
-document.body.classList.toggle('light', look === 'light');
-const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, look, drag:true, querySelector:() => f.querySelector('canvas') });
+import { setup } from '/site/appmols.js?v=5';
+const f = document.querySelector('.mol'), v = setup({ dataset:{ k:f.dataset.k }, scale:.95, look:'dark', drag:true, querySelector:() => f.querySelector('canvas') });
 v.active(true); let last = performance.now();
 (function loop(t){ v.tick(t - last); last = t; requestAnimationFrame(loop); })(last);
 addEventListener('resize', () => v.draw());

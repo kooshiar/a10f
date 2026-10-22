@@ -20,6 +20,14 @@
   button{all:unset; cursor:pointer; align-self:flex-start; margin-top:6px; height:44px; padding:0 24px; border-radius:99px; background:var(--ink); color:#fff;
     font-family:var(--mono); font-size:12.5px; letter-spacing:.06em; text-transform:uppercase}
   button:disabled{opacity:.5; cursor:default}
+  /* who is writing: one choice; an app page link prefills what it is about */
+  fieldset{border:0; margin:0 0 4px; padding:0; display:flex; flex-wrap:wrap; gap:8px}
+  legend{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--mute); margin-bottom:10px; padding:0}
+  .as input{position:absolute; opacity:0; pointer-events:none}
+  .as span{display:inline-block; padding:9px 15px; border-radius:99px; border:1.5px solid var(--rule); background:#fff; font-size:14px; color:var(--ink); cursor:pointer}
+  .as input:checked + span{border-color:var(--blue); background:var(--blue); color:#fff}
+  .as input:focus-visible + span{outline:2px solid var(--blue); outline-offset:2px}
+  .about{font-size:14px; color:var(--ink2)} .about b{color:var(--ink); font-weight:500}
   .msg{font-size:18px; color:var(--ink)} .err{font-family:var(--mono); font-size:12px; color:#C0392B; min-height:16px}
 </style>
 </head>
@@ -27,6 +35,15 @@
 <header class="site"><div class="bar"><nav class="wrap"><a class="logo" href="/"><img src="/site/mark.svg" alt="">K14</a><div class="tabs"><a href="/apps/">Apps</a><a href="/tech/">Tech</a></div><a data-cta href="/contact/" class="on">Contact</a></nav></div></header>
 <main class="wrap">
   <form id="f" novalidate>
+    <fieldset id="as"><legend>I am a</legend>
+      <label class="as"><input type="radio" name="interest" value="corporate"><span>Corporate partner</span></label>
+      <label class="as"><input type="radio" name="interest" value="investor"><span>Investor</span></label>
+      <label class="as"><input type="radio" name="interest" value="scientist"><span>Scientist</span></label>
+      <label class="as"><input type="radio" name="interest" value="lab"><span>Lab or testing partner</span></label>
+      <label class="as"><input type="radio" name="interest" value="founder"><span>Founder for a spinoff</span></label>
+      <label class="as"><input type="radio" name="interest" value="other"><span>Other</span></label>
+    </fieldset>
+    <p class="about" id="about" hidden></p><input type="hidden" name="about" id="aboutv">
     <input name="name" placeholder="Name" autocomplete="name" required>
     <input name="linkedin" type="url" placeholder="LinkedIn URL" autocomplete="url">
     <textarea name="message" placeholder="Message" required></textarea>
@@ -36,11 +53,17 @@
   </form>
 </main>
 <footer class="site"><div class="wrap"><span class="logo"><img src="/site/mark.svg" alt="">K14</span><span>© 2026</span></div></footer>
-<script>
+<script type="module">
+import { APPS } from '/site/appsdata.js';
+// from an app page: /contact/?about=<app slug> (and ?as=<interest>)
+const q = new URLSearchParams(location.search), app = APPS.find(a => a.slug === q.get('about'));
+if (app){ const ab = document.getElementById('about'); ab.hidden = false; ab.innerHTML = 'About <b></b>'; ab.querySelector('b').textContent = app.title; document.getElementById('aboutv').value = app.slug; }
+const pre = document.querySelector(`#as input[value="${q.get('as') || (app ? 'corporate' : '')}"]`); if (pre) pre.checked = true;
 const f = document.getElementById('f'), err = document.getElementById('err');
 f.addEventListener('submit', async e => {
   e.preventDefault(); err.textContent = '';
   const d = Object.fromEntries(new FormData(f));
+  if (!d.interest) { err.textContent = 'Choose who you are.'; return; }
   if (!d.name.trim() || !d.message.trim()) { err.textContent = 'Name and message are needed.'; return; }
   if (d.linkedin && !/^https?:\/\/([a-z]+\.)?linkedin\.com\//i.test(d.linkedin)) { err.textContent = 'That doesn’t look like a LinkedIn URL.'; return; }
   const b = f.querySelector('button'); b.disabled = true;
