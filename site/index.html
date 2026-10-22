@@ -140,7 +140,7 @@ const $ = s => document.getElementById(s);
 
 // 1 · one machine (?m=<id> previews another)
 const f = FILMS.find(x => x.id === new URLSearchParams(location.search).get('m')) || FILMS.find(x => x.id === 'hand3');
-const stage = new Stage($('gl'), null, { minimal:true, look:new URLSearchParams(location.search).get('look'), fill:x => Math.min(.95, x * 1.15) });   // ?look= thin, fine, licorice, hollow, surface
+const stage = new Stage($('gl'), null, { minimal:true, look:new URLSearchParams(location.search).get('look') || 'surfaceHollow', fill:x => Math.min(.95, x * 1.15) });   // design deck page 7; ?look= tries another (live.js LOOKS)
 stage.load(f).then(() => { stage.ov = { svg:$('ov') }; });
 
 // applications: molecule tiles; drag or scroll sideways; each opens its page
