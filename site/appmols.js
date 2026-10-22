@@ -74,7 +74,7 @@ export function setup(fig){
       ctx.lineWidth=Math.max(1,r*.24);ctx.strokeStyle=c;ctx.stroke();};
     host.filter(it=>it.z<gz).forEach(one);
     if(gi.length){                                       // molecular surface, lit like the hero's target
-      const big=gi.length<3?(d.guestScale||1.35):1, C=gi.map(i=>{const [x,y]=pr(P[i]);return {x,y,r:RAD[d.els[i]]*2.6*sc*.62*big};});
+      const f=gi.length<3?1.25:1.6, C=gi.map(i=>{const [x,y]=pr(P[i]);return {x,y,r:RAD[d.els[i]]*sc*f};});   // a lone ion at its own size (it sits in the ring), molecules ~van der Waals
       surface(ctx,C,fig.target||globalThis.MOLTARGET||'#B9A6FF');}   // fig.target: the target's colour (site: lavender, no machine atom uses it)
     host.filter(it=>it.z>=gz).forEach(one);
   }
