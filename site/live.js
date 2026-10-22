@@ -22,7 +22,8 @@ const glow = (hex) => new THREE.MeshBasicMaterial({ color:hex, toneMapped:false 
 export const LOOKS = { thin:{ ball:.55, stick:.05 }, fine:{ ball:.32, stick:.032 }, licorice:{ ballAbs:.085, stick:.085 },
   hollow:{ ball:1, stick:.04, hollow:true }, surface:{ ball:.5, stick:.05, surface:'guest' },
   // target as a surface; the machine either with small see-through balls, or flat (unlit) small balls on narrow bonds
-  surfaceHollow:{ ball:.58, stick:.04, hollow:true, surface:'guest' }, surfaceFlat:{ ball:.4, stick:.04, flat:true, surface:'guest' } };
+  surfaceHollow:{ ball:.58, stick:.04, hollow:true, surface:'guest' }, surfaceFlat:{ ball:.4, stick:.04, flat:true, surface:'guest' },
+  surfaceHollowSee:{ ball:.58, stick:.04, hollow:true, surface:'guest', see:.62 }, surfaceFlatSee:{ ball:.4, stick:.04, flat:true, surface:'guest', see:.62 } };   // see = surface opacity
 const flat = (hex) => new THREE.MeshBasicMaterial({ color:hex });
 const rim = (hex) => new THREE.ShaderMaterial({ transparent:true, depthWrite:false,
   uniforms:{ color:{ value:new THREE.Color(hex) } },
@@ -124,11 +125,11 @@ export class Stage {
       this.film = { ...this.film, labels:[...this.film.labels, { at:'co2', text:['CO₂', 'trapped in a pore'] }, { at:'n2', text:['N₂', 'stays in the gas'] }] };
     }
     if (look.surface && sc.groups[look.surface]){       // that group as one smooth surface (metaballs on its atoms)
-      const k = names.indexOf(look.surface); if (this.balls[k]) this.balls[k].visible = false; if (this.sticks[k]) this.sticks[k].visible = false;
+      const k = names.indexOf(look.surface); if (!look.see){ if (this.balls[k]) this.balls[k].visible = false; if (this.sticks[k]) this.sticks[k].visible = false; }   // see-through: its atoms show inside
       const b = new THREE.Box3(), p = new Float32Array(n * 3), v = new THREE.Vector3();
       for (let fr = 0; fr < sc.frames; fr += 10){ this.posAt(fr, p); for (const a of sc.groups[look.surface]) b.expandByPoint(v.set(p[3*a], p[3*a+1], p[3*a+2])); }
       const c = b.getCenter(new THREE.Vector3()), half = Math.max(...b.getSize(new THREE.Vector3()).toArray()) / 2 + 3.5;
-      const m = mat(COLORS[f.groups[look.surface]]); m.roughness = .55; m.clearcoat = .15;
+      const m = mat(COLORS[f.groups[look.surface]]); m.roughness = .55; m.clearcoat = .15; if (look.see){ m.transparent = true; m.opacity = look.see; }
       this.mc = new MarchingCubes(64, m, false, false, 60000); this.mc.isolation = 80;
       this.mc.position.copy(c); this.mc.scale.setScalar(half); this.mc.userData = { c, half, idx:sc.groups[look.surface] }; this.root.add(this.mc);
     }
