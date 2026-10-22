@@ -23,7 +23,8 @@ export const LOOKS = { thin:{ ball:.55, stick:.05 }, fine:{ ball:.32, stick:.032
   hollow:{ ball:1, stick:.04, hollow:true }, surface:{ ball:.5, stick:.05, surface:'guest' },
   // target as a surface; the machine either with small see-through balls, or flat (unlit) small balls on narrow bonds
   surfaceHollow:{ ball:.58, stick:.04, hollow:true, surface:'guest' }, surfaceFlat:{ ball:.4, stick:.04, flat:true, surface:'guest' },
-  surfaceHollowSee:{ ball:.58, stick:.04, hollow:true, surface:'guest', see:.62 }, surfaceFlatSee:{ ball:.4, stick:.04, flat:true, surface:'guest', see:.62 } };   // see = surface opacity
+  surfaceHollowSee:{ ball:.58, stick:.04, hollow:true, surface:'guest', see:.62 },
+  surfaceHollowArmA:{ ball:.58, stick:.04, hollow:true, surface:'guest', whiteArm:0 }, surfaceHollowArmB:{ ball:.58, stick:.04, hollow:true, surface:'guest', whiteArm:1 }, surfaceFlatSee:{ ball:.4, stick:.04, flat:true, surface:'guest', see:.62 } };   // see = surface opacity
 const flat = (hex) => new THREE.MeshBasicMaterial({ color:hex });
 const rim = (hex) => new THREE.ShaderMaterial({ transparent:true, depthWrite:false,
   uniforms:{ color:{ value:new THREE.Color(hex) } },
@@ -79,7 +80,13 @@ export class Stage {
   v(x, y, z, out){ return this.up === 'z' ? out.set(x, z, -y) : out.set(x, y, z); }
 
   async buildBalls(base){
-    const sc = this.sc, f = this.film, n = sc.n;
+    const sc = this.sc, n = sc.n;
+    // look.whiteArm: one arm of the machine (film.arms[i]) drawn in white, as its own group
+    const wa = (LOOKS[this.opts.look] || {}).whiteArm;
+    if (wa != null && this.film.arms && sc.groups.machine){ const arm = new Set(this.film.arms[wa]);
+      sc.groups = { ...sc.groups, machine:sc.groups.machine.filter(a => !arm.has(a)), arm:[...arm] };
+      this.film = { ...this.film, groups:{ ...this.film.groups, arm:'snow' } }; }
+    const f = this.film;
     const dyn = new Int16Array(await fetch(base + 'dyn.bin').then(r => r.arrayBuffer()));
     const sta = sc.static.length ? new Float32Array(await fetch(base + 'static.bin').then(r => r.arrayBuffer())) : null;
     this.dyn = dyn; this.nd = sc.dyn.length;

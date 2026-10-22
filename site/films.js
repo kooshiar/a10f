@@ -1,5 +1,5 @@
 // Copy and per-machine render settings for the live hero. Data lives in live/<id>/ (exported from the films).
-export const COLORS = { blue:'#3B74D6', sky:'#8DB3F0', pearl:'#F4EBF0', pink:'#EAD6E2', lilac:'#D8CFEE', orange:'#FF6B1A' };
+export const COLORS = { blue:'#3B74D6', sky:'#8DB3F0', pearl:'#F4EBF0', pink:'#EAD6E2', lilac:'#D8CFEE', orange:'#FF6B1A', snow:'#ECEDEE' };
 
 const r = Math.round;
 export const FILMS = [
@@ -43,6 +43,13 @@ export const FILMS = [
     style:'balls', groups:{ machine:'blue', guest:'orange' }, stick:.14, view:{ yaw:22, elev:16, fill:.86 }, labels:[], readout:() => [] },
   { id:'arm', short:["Cargo at the arm's tip", "The switch turns · the arm swings", "Cargo moved to the other side"], name:'Molecular arm', size:'15 Å', kind:'Small molecule',
     style:'balls', groups:{ machine:'blue', guest:'orange' }, stick:.14, view:{ yaw:0, elev:0, fill:.66 }, labels:[], readout:() => [] },
+  { id:'hand1', short:["Amantadine waits", "Our hand closes on it", "Held"], name:'Designed hand 1', size:'12 Å', kind:'Small molecule',
+    style:'balls', groups:{ machine:'blue', guest:'orange' }, stick:.14, view:{ yaw:22, elev:16, fill:.86 }, labels:[], readout:() => [] },
+  { id:'hand2', short:["Amantadine waits", "Our hand closes on it", "Held"], name:'Designed hand 2', size:'12 Å', kind:'Small molecule',
+    style:'balls', groups:{ machine:'blue', guest:'orange' }, stick:.14, view:{ yaw:22, elev:16, fill:.86 }, labels:[], readout:() => [] },
+  { id:'hand3', short:["Amantadine waits", "Our hand closes on it", "Held"], name:'Designed hand 3', size:'12 Å', kind:'Small molecule',
+    style:'balls', groups:{ machine:'blue', guest:'orange' }, stick:.14, view:{ yaw:22, elev:16, fill:.86 }, labels:[], readout:() => [],
+    arms:[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 29, 30, 31, 32, 33, 34, 35], [21, 22, 23, 24, 25, 26, 27, 43, 44, 45, 46, 47]] },   // the two ends (atoms + H)
   { id:'atp', short:["At rest", "Protons flow · the rotor turns", "Each third of a turn makes one ATP"], name:'ATP synthase', size:'220 Å', kind:'Protein',
     lede:'The rotary motor in every living cell. Protons flowing through the membrane turn its rotor; each third of a turn makes one ATP.',
     style:'surface', view:{ yaw:-28, elev:8, fill:.78 },
