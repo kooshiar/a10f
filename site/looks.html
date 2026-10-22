@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>K14 · Hero looks</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/frame.css">
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
+<style>
+  body{background:var(--bg)}
+  .grid{display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px; padding:24px}
+  .cell{position:relative; border:1px solid rgba(236,237,238,.1); border-radius:14px; overflow:hidden}
+  .st{height:300px} .st canvas{display:block; width:100%; height:100%}
+  .cell b{position:absolute; left:14px; top:12px; font-family:var(--mono); font-weight:500; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--txt2)}
+  @media (max-width:900px){ .grid{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="grid" id="g"></div>
+<script type="module">
+import { Stage } from './live.js';
+import { FILMS, COLORS } from './films.js';
+Object.assign(COLORS, { blue:'#6FAF52', orange:'#EDE7D9' });   // same as the homepage
+const id = new URLSearchParams(location.search).get('m') || 'hand3';
+const f = FILMS.find(x => x.id === id);
+const LOOKS = [['now', null], ['thin', 'thin'], ['fine', 'fine'], ['licorice', 'licorice'], ['hollow', 'hollow'], ['surface', 'surface']];
+const g = document.getElementById('g');
+for (const [name, look] of LOOKS){
+  const cell = document.createElement('div'); cell.className = 'cell';
+  cell.innerHTML = `<div class="st"></div><b>${name}</b>`; g.append(cell);
+  const s = new Stage(cell.querySelector('.st'), null, { minimal:true, look, fill:x => Math.min(.95, x * 1.15) });
+  await s.load(f);
+}
+</script>
+</body>
+</html>

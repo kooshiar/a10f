@@ -10,12 +10,24 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
+import { MarchingCubes } from 'three/addons/objects/MarchingCubes.js';
 import { COLORS } from './films.js';
 
 const DUR = 20;
 const mat = (hex) => new THREE.MeshPhysicalMaterial({ color:hex, roughness:.4, metalness:0, clearcoat:.3, clearcoatRoughness:.3,
   sheen:.12, sheenColor:new THREE.Color('#FFD9EA'), sheenRoughness:.7 });
 const glow = (hex) => new THREE.MeshBasicMaterial({ color:hex, toneMapped:false });
+// render looks for ball films (opts.look): ball = scale on the atom radius, stick = bond radius in Å,
+// hollow = see-through balls with a bright rim, surface = that group drawn as one smooth molecular surface
+export const LOOKS = { thin:{ ball:.55, stick:.05 }, fine:{ ball:.32, stick:.032 }, licorice:{ ballAbs:.085, stick:.085 },
+  hollow:{ ball:1, stick:.04, hollow:true }, surface:{ ball:.5, stick:.05, surface:'guest' } };
+const rim = (hex) => new THREE.ShaderMaterial({ transparent:true, depthWrite:false,
+  uniforms:{ color:{ value:new THREE.Color(hex) } },
+  vertexShader:`varying vec3 vN; varying vec3 vV;
+    void main(){ vec4 mv = modelViewMatrix * instanceMatrix * vec4(position, 1.0);
+      vN = normalize(normalMatrix * mat3(instanceMatrix) * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`,
+  fragmentShader:`uniform vec3 color; varying vec3 vN; varying vec3 vV;
+    void main(){ float f = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 2.2); gl_FragColor = vec4(color, .06 + .9 * f); }` });
 
 export class Stage {
   constructor(host, overlay, opts = {}){
@@ -50,7 +62,7 @@ export class Stage {
   }
 
   async load(film){
-    this.ready = false; this.film = film; this.A = this.B = null; this.tetMesh = this.trails = this.boxLine = this.arrow = this.rotor = this.flow = null; this.sticks = []; this.balls = [];
+    this.ready = false; this.film = film; this.A = this.B = null; this.tetMesh = this.trails = this.boxLine = this.arrow = this.rotor = this.flow = null; this.sticks = []; this.balls = []; this.mc = null;
     const base = `live/${film.id}/`, sc = this.sc = await fetch(base + 'scene.json').then(r => r.json());
     if (this.root){ this.scene.remove(this.root); this.root.traverse(o => { o.geometry?.dispose(); }); }
     this.root = new THREE.Group(); this.scene.add(this.root);
@@ -72,7 +84,8 @@ export class Stage {
     this.gid = new Int32Array(n).fill(-1); const names = Object.keys(f.groups);
     names.forEach((g, k) => sc.groups[g].forEach(a => this.gid[a] = k));
     const sph = new THREE.SphereGeometry(1, 28, 20), cyl = new THREE.CylinderGeometry(1, 1, 1, 14, 1, true);
-    this.balls = names.map((g, k) => { const idx = sc.groups[g]; const m = new THREE.InstancedMesh(sph, mat(COLORS[f.groups[g]]), idx.length);
+    const look = this.look = LOOKS[this.opts.look] || {};
+    this.balls = names.map((g, k) => { const idx = sc.groups[g]; const m = new THREE.InstancedMesh(sph, (look.hollow ? rim : mat)(COLORS[f.groups[g]]), idx.length);
       m.userData.idx = idx; this.root.add(m); return m; });
     // half bonds per group
     const halves = names.map(() => []);
@@ -106,6 +119,15 @@ export class Stage {
       const n2 = sc.groups.n2.filter((a, i) => i % 2 === 0).find(a => (cx(a) > hi + 8 || cx(a) < lo - 8) && Math.abs(last[3*a+1]) < 12);
       sc.anchors.co2 = [co2]; sc.anchors.n2 = [n2];
       this.film = { ...this.film, labels:[...this.film.labels, { at:'co2', text:['CO₂', 'trapped in a pore'] }, { at:'n2', text:['N₂', 'stays in the gas'] }] };
+    }
+    if (look.surface && sc.groups[look.surface]){       // that group as one smooth surface (metaballs on its atoms)
+      const k = names.indexOf(look.surface); if (this.balls[k]) this.balls[k].visible = false; if (this.sticks[k]) this.sticks[k].visible = false;
+      const b = new THREE.Box3(), p = new Float32Array(n * 3), v = new THREE.Vector3();
+      for (let fr = 0; fr < sc.frames; fr += 10){ this.posAt(fr, p); for (const a of sc.groups[look.surface]) b.expandByPoint(v.set(p[3*a], p[3*a+1], p[3*a+2])); }
+      const c = b.getCenter(new THREE.Vector3()), half = Math.max(...b.getSize(new THREE.Vector3()).toArray()) / 2 + 3.5;
+      const m = mat(COLORS[f.groups[look.surface]]); m.roughness = .55; m.clearcoat = .15;
+      this.mc = new MarchingCubes(64, m, false, false, 60000); this.mc.isolation = 80;
+      this.mc.position.copy(c); this.mc.scale.setScalar(half); this.mc.userData = { c, half, idx:sc.groups[look.surface] }; this.root.add(this.mc);
     }
     this.hull = this.ballHull();
   }
@@ -173,12 +195,17 @@ export class Stage {
       for (let k = 0; k < 3; k++) P[3*i+k] = jump ? (w < .5 ? A[3*i+k] : B[3*i+k]) : A[3*i+k] + (B[3*i+k] - A[3*i+k]) * w; }
     const M = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), d = new THREE.Vector3();
     const rad = this.sc.radius;
-    for (const m of this.balls){ m.userData.idx.forEach((a, j) => { const r = rad[a]; m.setMatrixAt(j, M.compose(p.set(P[3*a], P[3*a+1], P[3*a+2]), q.identity(), s.set(r, r, r))); }); m.instanceMatrix.needsUpdate = true; }
-    const sr = this.film.stick;
+    const lk = this.look || {};
+    for (const m of this.balls){ m.userData.idx.forEach((a, j) => { const r = lk.ballAbs || rad[a] * (lk.ball || 1); m.setMatrixAt(j, M.compose(p.set(P[3*a], P[3*a+1], P[3*a+2]), q.identity(), s.set(r, r, r))); }); m.instanceMatrix.needsUpdate = true; }
+    const sr = lk.stick || this.film.stick;
     for (const m of this.sticks){ m.userData.h.forEach(([a, b], j) => {
       const ax = P[3*a], ay = P[3*a+1], az = P[3*a+2], mx = (ax + P[3*b]) / 2, my = (ay + P[3*b+1]) / 2, mz = (az + P[3*b+2]) / 2;
       d.set(mx - ax, my - ay, mz - az); const L = d.length(); q.setFromUnitVectors(up, d.normalize());
       m.setMatrixAt(j, M.compose(p.set((ax + mx) / 2, (ay + my) / 2, (az + mz) / 2), q, s.set(sr, L, sr))); }); m.instanceMatrix.needsUpdate = true; }
+    if (this.mc){ const { c, half, idx } = this.mc.userData; this.mc.reset();
+      for (const a of idx){ const r = (rad[a] < .4 ? 1.15 : 1.6) / (2 * half);   // ~van der Waals radius, H smaller
+        this.mc.addBall((P[3*a] - c.x) / (2 * half) + .5, (P[3*a+1] - c.y) / (2 * half) + .5, (P[3*a+2] - c.z) / (2 * half) + .5, 140 * r * r, 60); }
+      this.mc.update(); }
     if (this.tetMesh){
       const arr = this.tetMesh.geometry.attributes.position.array; let o = 0;
       for (const t of this.sc.tets) for (const [a, b, c] of [[0, 1, 2], [0, 1, 3], [0, 2, 3], [1, 2, 3]]) for (const i of [t[a], t[b], t[c]]){ arr[o++] = P[3*i]; arr[o++] = P[3*i+1]; arr[o++] = P[3*i+2]; }
